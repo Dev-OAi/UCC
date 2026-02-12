@@ -117,6 +117,7 @@ function App() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
+              aria-label="Search data"
               placeholder="Search across all columns..."
               className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-lg transition-all"
               value={searchTerm}
@@ -126,10 +127,12 @@ function App() {
         </div>
 
         <div className="flex items-center justify-between border-b border-gray-100">
-          <div className="flex space-x-4">
+          <div className="flex space-x-4" role="tablist">
             {types.map(type => (
               <button
                 key={type}
+                role="tab"
+                aria-selected={activeTab === type}
                 onClick={() => setActiveTab(type)}
                 className={`pb-2 px-1 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === type
@@ -144,8 +147,9 @@ function App() {
 
           <div className="flex items-center space-x-4 pb-2">
             <div className="flex items-center space-x-2">
-              <label className="text-xs font-semibold text-gray-400 uppercase">Zip:</label>
+              <label htmlFor="zip-filter" className="text-xs font-semibold text-gray-400 uppercase">Zip:</label>
               <select
+                id="zip-filter"
                 value={selectedZip}
                 onChange={(e) => setSelectedZip(e.target.value)}
                 className="text-xs bg-gray-50 border-none rounded md:pr-8 focus:ring-0 cursor-pointer"
@@ -154,8 +158,9 @@ function App() {
               </select>
             </div>
             <div className="flex items-center space-x-2">
-              <label className="text-xs font-semibold text-gray-400 uppercase">Location:</label>
+              <label htmlFor="location-filter" className="text-xs font-semibold text-gray-400 uppercase">Location:</label>
               <select
+                id="location-filter"
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
                 className="text-xs bg-gray-50 border-none rounded md:pr-8 focus:ring-0 cursor-pointer"
@@ -175,9 +180,11 @@ function App() {
 
       <main className="flex-1 overflow-hidden flex flex-col">
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center" aria-live="polite">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <span className="ml-4 text-gray-600 font-medium">Loading {allData.length} rows...</span>
+            <span className="ml-4 text-gray-600 font-medium">
+              {allData.length > 0 ? `Loading ${allData.length.toLocaleString()} rows...` : 'Initializing data explorer...'}
+            </span>
           </div>
         ) : (
           <div className="flex-1 overflow-hidden flex flex-col p-6">
@@ -191,7 +198,21 @@ function App() {
                   </div>
                 </div>
               </div>
-              <Table data={filteredData} visibleColumns={visibleColumns} />
+              {filteredData.length > 0 ? (
+                <Table data={filteredData} visibleColumns={visibleColumns} />
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-500 bg-gray-50/50">
+                  <Filter className="w-12 h-12 mb-4 text-gray-300" />
+                  <p className="text-lg font-medium text-gray-900">No results found</p>
+                  <p className="text-sm">Try adjusting your filters or search term</p>
+                  <button
+                    onClick={clearFilters}
+                    className="mt-4 px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
             </div>
             {isFiltered && (
               <div className="mt-4 flex justify-center">
