@@ -30,7 +30,7 @@ def generate_manifest():
                 rel_to_base = os.path.relpath(root, base_dir)
                 parts = rel_to_base.split(os.sep)
 
-                data_type = parts[0] if len(parts) > 0 and parts[0] != '.' else "Unknown"
+                data_type = parts[0] if len(parts) > 0 and parts[0] != '.' else ("YP" if file.startswith("YP ") else "General")
                 zip_code = parts[1] if len(parts) > 1 else ""
 
                 # Extract location from filename if possible
