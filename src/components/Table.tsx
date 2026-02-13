@@ -35,6 +35,7 @@ export const Table: React.FC<TableProps> = ({
 
     const values = new Set<string>();
     const rowCount = allData.length;
+    
     for (let i = 0; i < rowCount; i++) {
       const row = allData[i];
       const val = openDropdown === 'Location' ? row._location : openDropdown === 'Zip' ? row._zip : row[openDropdown];
@@ -88,7 +89,9 @@ export const Table: React.FC<TableProps> = ({
               <button
                 onClick={() => setOpenDropdown(openDropdown === col ? null : col)}
                 className={`flex items-center space-x-1 px-2 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors w-full text-left ${
-                  (columnFilters[col]?.length > 0 || sortConfig?.key === col) ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : ''
+                  (columnFilters[col]?.length > 0 || sortConfig?.key === col) 
+                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                    : ''
                 }`}
               >
                 <span className="truncate">{col}</span>

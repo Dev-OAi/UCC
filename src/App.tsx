@@ -26,6 +26,7 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
+  // Dark Mode Logic
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
   });
@@ -101,7 +102,9 @@ function App() {
     setActiveTab('Home');
   };
 
-  const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || (activeTab !== 'All' && activeTab !== 'Home' && activeTab !== 'Insights');
+  const isFiltered = searchTerm !== '' || 
+    Object.values(columnFilters).some(v => v.length > 0) || 
+    (activeTab !== 'All' && activeTab !== 'Home' && activeTab !== 'Insights');
 
   const types = useMemo(() => {
     const t = new Set(manifest.map(m => m.type));
@@ -154,7 +157,7 @@ function App() {
     }
 
     return filtered;
-  }, [allData, activeTab, searchTerm, columnFilters, sortConfig]);
+  }, [categoryData, searchTerm, columnFilters, sortConfig]);
 
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
