@@ -291,19 +291,38 @@ function App() {
               </div>
 
               <div className="flex-1 overflow-hidden relative group/table">
-                <Table
-                  data={filteredData}
-                  allData={categoryData}
-                  visibleColumns={visibleColumns}
-                  selectedRow={selectedRow}
-                  onRowSelect={setSelectedRow}
-                  columnFilters={columnFilters}
-                  onFilterChange={(col, values) => {
-                    setColumnFilters(prev => ({ ...prev, [col]: values }));
-                  }}
-                  sortConfig={sortConfig}
-                  onSortChange={setSortConfig}
-                />
+                {filteredData.length > 0 ? (
+                  <Table
+                    data={filteredData}
+                    allData={categoryData}
+                    visibleColumns={visibleColumns}
+                    selectedRow={selectedRow}
+                    onRowSelect={setSelectedRow}
+                    columnFilters={columnFilters}
+                    onFilterChange={(col, values) => {
+                      setColumnFilters(prev => ({ ...prev, [col]: values }));
+                    }}
+                    sortConfig={sortConfig}
+                    onSortChange={setSortConfig}
+                  />
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-500 h-full">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl mb-6 text-blue-500 dark:text-blue-400">
+                      <FilterX className="w-12 h-12" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No records found</h3>
+                    <p className="text-gray-500 dark:text-slate-400 max-w-xs mb-8 leading-relaxed">
+                      We couldn't find anything matching your search. Try adjusting your filters or search terms.
+                    </p>
+                    <button
+                      onClick={clearFilters}
+                      className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none active:scale-95"
+                    >
+                      <FilterX className="w-4 h-4 mr-2" />
+                      Clear All Filters
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
