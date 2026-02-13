@@ -7,6 +7,7 @@ import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
+import { Insights } from './components/Insights';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -24,6 +25,20 @@ function App() {
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+
+  // Dark Mode Logic
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true';
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', String(isDarkMode));
+  }, [isDarkMode]);
 
   useEffect(() => {
     async function init() {
@@ -47,7 +62,6 @@ function App() {
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
-    // Collect columns from a sample of each data type to avoid performance issues
     const types = Array.from(new Set(allData.slice(0, 1000).map(d => d._type)));
     types.forEach(t => {
       const sample = allData.find(d => d._type === t);
@@ -63,10 +77,9 @@ function App() {
   useEffect(() => {
     if (allData.length === 0) return;
 
-    if (activeTab === 'Home' || activeTab === 'All') {
+    if (activeTab === 'Home' || activeTab === 'All' || activeTab === 'Insights') {
       setVisibleColumns(allColumns);
     } else {
-      // Auto-switch columns based on data type
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
         const keys = Object.keys(sample)
@@ -89,7 +102,9 @@ function App() {
     setActiveTab('Home');
   };
 
-  const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || (activeTab !== 'All' && activeTab !== 'Home');
+  const isFiltered = searchTerm !== '' || 
+    Object.values(columnFilters).some(v => v.length > 0) || 
+    (activeTab !== 'All' && activeTab !== 'Home' && activeTab !== 'Insights');
 
   const types = useMemo(() => {
     const t = new Set(manifest.map(m => m.type));
@@ -107,7 +122,7 @@ function App() {
   }, [manifest]);
 
   const categoryData = useMemo(() => {
-    if (activeTab === 'All' || activeTab === 'Home') return allData;
+    if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') return allData;
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
@@ -142,7 +157,7 @@ function App() {
     }
 
     return filtered;
-  }, [allData, activeTab, searchTerm, columnFilters, sortConfig]);
+  }, [categoryData, searchTerm, columnFilters, sortConfig]);
 
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
@@ -168,15 +183,17 @@ function App() {
   };
 
   if (error) {
-    return <div className="p-8 text-red-500">{error}</div>;
+    return <div className="p-8 text-red-500 dark:text-red-400">{error}</div>;
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 transition-colors duration-200">
       <Header
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
       />
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -211,13 +228,13 @@ function App() {
           onClose={() => setIsMobileMenuOpen(false)}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 bg-white md:shadow-inner md:rounded-tl-2xl border-l border-t border-gray-200 md:ml-[-1px]">
+        <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:shadow-inner md:rounded-tl-2xl border-l border-t border-gray-200 dark:border-slate-800 md:ml-[-1px]">
           {loading ? (
             <div className="flex-1 flex flex-col items-center justify-center space-y-4">
               <div className="relative">
-                <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-blue-100 dark:border-slate-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
               </div>
-              <p className="text-gray-500 font-medium animate-pulse">Initializing data streams...</p>
+              <p className="text-gray-500 dark:text-slate-400 font-medium animate-pulse">Initializing data streams...</p>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
             <Dashboard
@@ -225,29 +242,30 @@ function App() {
               onSelectCategory={setActiveTab}
               rowCount={allData.length}
             />
+          ) : activeTab === 'Insights' ? (
+            <Insights data={allData} types={types} />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex items-center space-x-4">
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900 tracking-tight">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
                       {activeTab === 'Home' ? 'Search Results' : `${activeTab} Data Hub`}
                     </h2>
-                    <div className="flex items-center text-xs text-gray-500 font-medium">
+                    <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 font-medium">
                       <span>{filteredData.length.toLocaleString()} records found</span>
-                      <span className="mx-2 text-gray-300">•</span>
-                      <MapPin className="w-3 h-3 mr-1 text-gray-400" />
+                      <span className="mx-2 text-gray-300 dark:text-slate-700">•</span>
+                      <MapPin className="w-3 h-3 mr-1 text-gray-400 dark:text-slate-500" />
                       <span>{columnFilters['Location']?.[0] || 'Global View'}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3">
-                  {/* Download Button Integrated Here */}
                   <button
                     onClick={() => setIsSecurityModalOpen(true)}
                     disabled={loading || filteredData.length === 0}
-                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors shadow-sm text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Download CSV"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -262,7 +280,7 @@ function App() {
                   {isFiltered && (
                     <button
                       onClick={clearFilters}
-                      className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-md transition-colors border border-transparent hover:border-red-100"
+                      className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/50"
                     >
                       <FilterX className="w-3.5 h-3.5 mr-1.5" />
                       Clear Filters
