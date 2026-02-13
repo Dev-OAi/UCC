@@ -6,7 +6,8 @@ import { Sidebar } from './components/Sidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
-import { MapPin, FilterX, Database, Search } from 'lucide-react';
+import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
+import Papa from 'papaparse';
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -107,6 +108,29 @@ function App() {
     });
   }, [allData, activeTab, searchTerm, selectedZip, selectedLocation]);
 
+  const downloadCSV = () => {
+    const dataToExport = filteredData.map(row => {
+      const exportRow: any = {};
+      visibleColumns.forEach(col => {
+        if (col === 'Location') exportRow[col] = row._location;
+        else if (col === 'Zip') exportRow[col] = row._zip;
+        else exportRow[col] = row[col];
+      });
+      return exportRow;
+    });
+
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `data_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (error) {
     return <div className="p-8 text-red-500">{error}</div>;
   }
@@ -173,6 +197,17 @@ function App() {
                 </div>
 
                 <div className="flex items-center space-x-3">
+                  {/* Download Button Integrated Here */}
+                  <button
+                    onClick={downloadCSV}
+                    disabled={loading || filteredData.length === 0}
+                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Download CSV"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">Download CSV</span>
+                  </button>
+
                   <ColumnToggle
                     columns={allColumns}
                     visibleColumns={visibleColumns}
