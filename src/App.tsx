@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
 import { Table } from './components/Table';
 import { ColumnToggle } from './components/ColumnToggle';
-import { Search, Filter, Database, MapPin } from 'lucide-react';
+import { Search, Filter, Database, MapPin, Download } from 'lucide-react';
+import Papa from 'papaparse';
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -101,6 +102,29 @@ function App() {
     });
   }, [allData, activeTab, searchTerm, selectedZip, selectedLocation]);
 
+  const downloadCSV = () => {
+    const dataToExport = filteredData.map(row => {
+      const exportRow: any = {};
+      visibleColumns.forEach(col => {
+        if (col === 'Location') exportRow[col] = row._location;
+        else if (col === 'Zip') exportRow[col] = row._zip;
+        else exportRow[col] = row[col];
+      });
+      return exportRow;
+    });
+
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `data_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (error) {
     return <div className="p-8 text-red-500">{error}</div>;
   }
@@ -113,15 +137,26 @@ function App() {
             <Database className="w-6 h-6 text-blue-600" />
             <h1 className="text-xl font-bold">Data Explorer</h1>
           </div>
-          <div className="relative w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search across all columns..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-lg transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center space-x-4">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search across all columns..."
+                className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500 rounded-lg transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={downloadCSV}
+              disabled={loading || filteredData.length === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Download CSV"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden md:inline">Download CSV</span>
+            </button>
           </div>
         </div>
 
