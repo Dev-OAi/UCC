@@ -6,7 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
-import { MapPin, FilterX } from 'lucide-react';
+import { MapPin, FilterX, Database, Search } from 'lucide-react';
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -68,7 +68,7 @@ function App() {
     setSearchTerm('');
     setSelectedZip('All');
     setSelectedLocation('All');
-    setActiveTab('All');
+    setActiveTab('Home');
   };
 
   const isFiltered = searchTerm !== '' || selectedZip !== 'All' || selectedLocation !== 'All' || (activeTab !== 'All' && activeTab !== 'Home');

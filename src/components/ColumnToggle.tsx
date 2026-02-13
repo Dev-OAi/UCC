@@ -14,6 +14,9 @@ export const ColumnToggle: React.FC<ColumnToggleProps> = ({ columns, visibleColu
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-label="Toggle column visibility"
         className="flex items-center space-x-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <Settings2 className="w-3.5 h-3.5" />
