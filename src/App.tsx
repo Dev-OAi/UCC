@@ -17,8 +17,8 @@ function App() {
 
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedZip, setSelectedZip] = useState<string>('All');
-  const [selectedLocation, setSelectedLocation] = useState<string>('All');
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -82,12 +82,12 @@ function App() {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedZip('All');
-    setSelectedLocation('All');
+    setColumnFilters({});
+    setSortConfig(null);
     setActiveTab('Home');
   };
 
-  const isFiltered = searchTerm !== '' || selectedZip !== 'All' || selectedLocation !== 'All' || (activeTab !== 'All' && activeTab !== 'Home');
+  const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || (activeTab !== 'All' && activeTab !== 'Home');
 
   const types = useMemo(() => {
     const t = new Set(manifest.map(m => m.type));
@@ -104,16 +104,19 @@ function App() {
     return ['All', ...Array.from(l).sort()];
   }, [manifest]);
 
+  const categoryData = useMemo(() => {
+    if (activeTab === 'All' || activeTab === 'Home') return allData;
+    return allData.filter(row => row._type === activeTab);
+  }, [allData, activeTab]);
+
   const filteredData = useMemo(() => {
-    return allData.filter(row => {
-      const matchesTab = activeTab === 'All' || activeTab === 'Home' || row._type === activeTab;
-      if (!matchesTab) return false;
-
-      const matchesZip = selectedZip === 'All' || row._zip === selectedZip;
-      if (!matchesZip) return false;
-
-      const matchesLoc = selectedLocation === 'All' || row._location === selectedLocation;
-      if (!matchesLoc) return false;
+    let filtered = categoryData.filter(row => {
+      const matchesColumnFilters = Object.entries(columnFilters).every(([col, values]) => {
+        if (!values || values.length === 0) return true;
+        const rowValue = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
+        return values.includes(String(rowValue || ''));
+      });
+      if (!matchesColumnFilters) return false;
 
       if (!searchTerm) return true;
       const s = searchTerm.toLowerCase();
@@ -121,7 +124,23 @@ function App() {
         !key.startsWith('_') && val && String(val).toLowerCase().includes(s)
       );
     });
-  }, [allData, activeTab, searchTerm, selectedZip, selectedLocation]);
+
+    if (sortConfig) {
+      filtered = [...filtered].sort((a, b) => {
+        const aVal = sortConfig.key === 'Location' ? a._location : sortConfig.key === 'Zip' ? a._zip : a[sortConfig.key];
+        const bVal = sortConfig.key === 'Location' ? b._location : sortConfig.key === 'Zip' ? b._zip : b[sortConfig.key];
+
+        if (aVal === bVal) return 0;
+        if (aVal === null || aVal === undefined) return 1;
+        if (bVal === null || bVal === undefined) return -1;
+
+        const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
+        return sortConfig.direction === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
+  }, [allData, activeTab, searchTerm, columnFilters, sortConfig]);
 
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
@@ -167,11 +186,21 @@ function App() {
             setIsMobileMenuOpen(false);
           }}
           zips={zips}
-          selectedZip={selectedZip}
-          setSelectedZip={setSelectedZip}
+          selectedZip={columnFilters['Zip']?.[0] || 'All'}
+          setSelectedZip={(zip) => {
+            setColumnFilters(prev => ({
+              ...prev,
+              Zip: zip === 'All' ? [] : [zip]
+            }));
+          }}
           locations={locations}
-          selectedLocation={selectedLocation}
-          setSelectedLocation={setSelectedLocation}
+          selectedLocation={columnFilters['Location']?.[0] || 'All'}
+          setSelectedLocation={(loc) => {
+            setColumnFilters(prev => ({
+              ...prev,
+              Location: loc === 'All' ? [] : [loc]
+            }));
+          }}
           onGoHome={() => {
             setActiveTab('Home');
             setIsMobileMenuOpen(false);
@@ -206,7 +235,7 @@ function App() {
                       <span>{filteredData.length.toLocaleString()} records found</span>
                       <span className="mx-2 text-gray-300">•</span>
                       <MapPin className="w-3 h-3 mr-1 text-gray-400" />
-                      <span>{selectedLocation === 'All' ? 'Global View' : selectedLocation}</span>
+                      <span>{columnFilters['Location']?.[0] || 'Global View'}</span>
                     </div>
                   </div>
                 </div>
@@ -243,9 +272,16 @@ function App() {
               <div className="flex-1 overflow-hidden relative group/table">
                 <Table
                   data={filteredData}
+                  allData={categoryData}
                   visibleColumns={visibleColumns}
                   selectedRow={selectedRow}
                   onRowSelect={setSelectedRow}
+                  columnFilters={columnFilters}
+                  onFilterChange={(col, values) => {
+                    setColumnFilters(prev => ({ ...prev, [col]: values }));
+                  }}
+                  sortConfig={sortConfig}
+                  onSortChange={setSortConfig}
                 />
               </div>
             </div>

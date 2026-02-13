@@ -1,17 +1,57 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { DataRow } from '../lib/dataService';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ChevronDown, Filter } from 'lucide-react';
+import { FilterDropdown } from './FilterDropdown';
 
 interface TableProps {
   data: DataRow[];
+  allData: DataRow[];
   visibleColumns: string[];
   selectedRow: DataRow | null;
   onRowSelect: (row: DataRow) => void;
+  columnFilters: Record<string, string[]>;
+  onFilterChange: (column: string, values: string[]) => void;
+  sortConfig: { key: string, direction: 'asc' | 'desc' } | null;
+  onSortChange: (config: { key: string, direction: 'asc' | 'desc' } | null) => void;
 }
 
-export const Table: React.FC<TableProps> = ({ data, visibleColumns, selectedRow, onRowSelect }) => {
+export const Table: React.FC<TableProps> = ({
+  data,
+  allData,
+  visibleColumns,
+  selectedRow,
+  onRowSelect,
+  columnFilters,
+  onFilterChange,
+  sortConfig,
+  onSortChange
+}) => {
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const columns = visibleColumns;
+
+  const uniqueValuesForOpenColumn = useMemo(() => {
+    if (!openDropdown) return [];
+
+    const values = new Set<string>();
+    const rowCount = allData.length;
+    // Limit processing to 100,000 rows for unique values if it's too large
+    // to keep the UI responsive, or use a sample.
+    // But let's try 1M first with optimized loop.
+    for (let i = 0; i < rowCount; i++) {
+      const row = allData[i];
+      const val = openDropdown === 'Location' ? row._location : openDropdown === 'Zip' ? row._zip : row[openDropdown];
+      if (val !== undefined && val !== null && val !== '') {
+        values.add(String(val));
+      }
+      // Safety break for extremely large datasets
+      if (values.size > 2000) break;
+    }
+
+    return Array.from(values).sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+    );
+  }, [allData, openDropdown]);
 
   const getDisplayValue = (row: DataRow, col: string) => {
     if (col === 'Location') return row._location;
@@ -46,9 +86,32 @@ export const Table: React.FC<TableProps> = ({ data, visibleColumns, selectedRow,
           {columns.map(col => (
             <th
               key={col}
-              className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap"
+              className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap relative"
             >
-              {col}
+              <button
+                onClick={() => setOpenDropdown(openDropdown === col ? null : col)}
+                className={`flex items-center space-x-1 px-2 py-1.5 rounded hover:bg-gray-200 transition-colors w-full text-left ${
+                  (columnFilters[col]?.length > 0 || sortConfig?.key === col) ? 'text-blue-600 bg-blue-50' : ''
+                }`}
+              >
+                <span className="truncate">{col}</span>
+                <ChevronDown className={`w-3 h-3 shrink-0 transition-transform ${openDropdown === col ? 'rotate-180' : ''}`} />
+                {columnFilters[col]?.length > 0 && (
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full absolute top-2 right-2"></div>
+                )}
+              </button>
+
+              <FilterDropdown
+                column={col}
+                allValues={openDropdown === col ? uniqueValuesForOpenColumn : []}
+                selectedValues={columnFilters[col] || []}
+                onSelect={(values) => onFilterChange(col, values)}
+                onSort={(direction) => onSortChange({ key: col, direction })}
+                currentSort={sortConfig?.key === col ? sortConfig.direction : null}
+                onClear={() => onFilterChange(col, [])}
+                isOpen={openDropdown === col}
+                onClose={() => setOpenDropdown(null)}
+              />
             </th>
           ))}
         </tr>
