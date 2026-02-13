@@ -6,9 +6,11 @@ import { ExternalLink } from 'lucide-react';
 interface TableProps {
   data: DataRow[];
   visibleColumns: string[];
+  selectedRow: DataRow | null;
+  onRowSelect: (row: DataRow) => void;
 }
 
-export const Table: React.FC<TableProps> = ({ data, visibleColumns }) => {
+export const Table: React.FC<TableProps> = ({ data, visibleColumns, selectedRow, onRowSelect }) => {
   const columns = visibleColumns;
 
   const getDisplayValue = (row: DataRow, col: string) => {
@@ -56,7 +58,12 @@ export const Table: React.FC<TableProps> = ({ data, visibleColumns }) => {
           {columns.map(col => (
             <td
               key={col}
-              className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100 whitespace-nowrap max-w-xs truncate hover:whitespace-normal hover:overflow-visible hover:bg-white relative z-0 hover:z-10"
+              onClick={() => onRowSelect(row)}
+              className={`px-4 py-3 text-sm border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedRow === row
+                  ? 'bg-blue-100/50 text-blue-700 font-semibold'
+                  : (index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50') + ' text-gray-600 hover:bg-blue-50/30'
+              } whitespace-nowrap max-w-[250px] truncate`}
               title={String(getDisplayValue(row, col) || '')}
             >
               {renderCell(getDisplayValue(row, col))}

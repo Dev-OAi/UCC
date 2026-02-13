@@ -38,27 +38,40 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let headers: string[] = [];
         let startIndex = 0;
 
+        // Skip leading empty rows
+        while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
+          startIndex++;
+        }
+
+        if (startIndex >= data.length) {
+          resolve([]);
+          return;
+        }
+
         // Simple header detection
-        const firstRow = data[0];
-        const secondRow = data[1];
+        const firstRow = data[startIndex];
 
         const isHeader = (row: string[]) => {
           if (!row) return false;
           // If any cell contains "(772)" or "http", it's probably data, not header
-          return !row.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
+          // Also check for common data patterns like zips or long numbers
+          return !row.some(cell =>
+            /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
+            (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
+          );
         };
 
-        if (isHeader(firstRow) && firstRow.some(c => c.trim() !== '')) {
+        if (isHeader(firstRow) && firstRow.some(c => c && c.trim() !== '')) {
           headers = firstRow.map(h => h.trim() || 'Untitled');
-          startIndex = 1;
+          startIndex++;
         } else {
           // No header found, generate default ones based on type if possible
-          if (file.type === 'YP') {
+          if (file.type === 'YP' || file.filename.startsWith('YP ')) {
             headers = ['Category', 'Page-Ref', 'Business Name', 'Phone', 'Website'];
           } else {
             headers = firstRow.map((_, i) => `Column ${i + 1}`);
           }
-          startIndex = 0;
+          // Do not increment startIndex if firstRow is data
         }
 
         const rows: DataRow[] = data.slice(startIndex).map(row => {
