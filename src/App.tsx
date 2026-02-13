@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
+import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -22,6 +23,7 @@ function App() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -243,7 +245,7 @@ function App() {
                 <div className="flex items-center space-x-3">
                   {/* Download Button Integrated Here */}
                   <button
-                    onClick={downloadCSV}
+                    onClick={() => setIsSecurityModalOpen(true)}
                     disabled={loading || filteredData.length === 0}
                     className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Download CSV"
@@ -293,6 +295,15 @@ function App() {
           onClose={() => setSelectedRow(null)}
         />
       </div>
+
+      <DownloadSecurityModal
+        isOpen={isSecurityModalOpen}
+        onClose={() => setIsSecurityModalOpen(false)}
+        onSuccess={() => {
+          setIsSecurityModalOpen(false);
+          downloadCSV();
+        }}
+      />
     </div>
   );
 }
