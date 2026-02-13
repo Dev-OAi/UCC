@@ -45,19 +45,34 @@ function App() {
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
-    allData.slice(0, 50).forEach(row => {
-      Object.keys(row).forEach(key => {
-        if (!key.startsWith('_')) keys.add(key);
-      });
+    // Collect columns from a sample of each data type to avoid performance issues
+    const types = Array.from(new Set(allData.slice(0, 1000).map(d => d._type)));
+    types.forEach(t => {
+      const sample = allData.find(d => d._type === t);
+      if (sample) {
+        Object.keys(sample).forEach(key => {
+          if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location') keys.add(key);
+        });
+      }
     });
     return [...Array.from(keys), 'Location', 'Zip'];
   }, [allData]);
 
   useEffect(() => {
-    if (allColumns.length > 0 && visibleColumns.length === 0) {
+    if (allData.length === 0) return;
+
+    if (activeTab === 'Home' || activeTab === 'All') {
       setVisibleColumns(allColumns);
+    } else {
+      // Auto-switch columns based on data type
+      const sample = allData.find(d => d._type === activeTab);
+      if (sample) {
+        const keys = Object.keys(sample)
+          .filter(key => !key.startsWith('_') && key !== 'Zip' && key !== 'Location');
+        setVisibleColumns([...keys, 'Location', 'Zip']);
+      }
     }
-  }, [allColumns]);
+  }, [activeTab, allColumns, allData]);
 
   const toggleColumn = (col: string) => {
     setVisibleColumns(prev =>
