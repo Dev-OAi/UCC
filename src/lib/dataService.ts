@@ -68,23 +68,37 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           // No header found, generate default ones based on type if possible
           if (file.type === 'YP' || file.filename.startsWith('YP ')) {
             headers = ['Category', 'Page-Ref', 'Business Name', 'Phone', 'Website'];
+          } else if (file.type === 'SB') {
+            headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
           } else {
             headers = firstRow.map((_, i) => `Column ${i + 1}`);
           }
           // Do not increment startIndex if firstRow is data
         }
 
-        const rows: DataRow[] = data.slice(startIndex).map(row => {
+        let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
             obj[h] = row[i];
           });
           obj._source = file.filename;
           obj._type = file.type;
-          obj._zip = file.zip;
-          obj._location = file.location;
+          // Use manifest zip/location as fallback, but prefer data from the row if it exists
+          obj._zip = file.zip || obj['Zip'] || obj['ZIP'] || '';
+          obj._location = file.location || obj['Location'] || '';
           return obj;
         });
+
+        // Post-processing for SB data
+        if (file.type === 'SB') {
+          rows = rows.filter(row => {
+            const name = row['Entity Name'];
+            const regNo = row['Registration Number'];
+            const link = row['Sunbiz Link'];
+            // Main SB row typically has a name, a registration number starting with a letter, and a link
+            return name && regNo && link && /^[A-Z]\d+/.test(regNo) && link.includes('sunbiz.org');
+          });
+        }
 
         resolve(rows);
       },
