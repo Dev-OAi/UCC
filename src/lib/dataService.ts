@@ -3,8 +3,9 @@ import Papa from 'papaparse';
 export interface FileManifest {
   path: string;
   type: string;
-  zip: string;
-  location: string;
+  zip?: string;
+  location?: string;
+  category?: string;
   filename: string;
 }
 

@@ -46,7 +46,8 @@ function App() {
         const m = await fetchManifest();
         setManifest(m);
 
-        const dataPromises = m.map(file => loadCsv(file));
+        const csvFiles = m.filter(f => f.type !== 'PDF');
+        const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
         setAllData(results.flat());
         setLoading(false);
@@ -107,17 +108,17 @@ function App() {
     (activeTab !== 'All' && activeTab !== 'Home' && activeTab !== 'Insights');
 
   const types = useMemo(() => {
-    const t = new Set(manifest.map(m => m.type));
+    const t = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.type));
     return ['All', ...Array.from(t).sort()];
   }, [manifest]);
 
   const zips = useMemo(() => {
-    const z = new Set(manifest.map(m => m.zip).filter(Boolean));
+    const z = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[]);
     return ['All', ...Array.from(z).sort()];
   }, [manifest]);
 
   const locations = useMemo(() => {
-    const l = new Set(manifest.map(m => m.location).filter(Boolean));
+    const l = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[]);
     return ['All', ...Array.from(l).sort()];
   }, [manifest]);
 
@@ -311,6 +312,7 @@ function App() {
         <RightSidebar
           selectedRow={selectedRow}
           onClose={() => setSelectedRow(null)}
+          manifest={manifest}
         />
       </div>
 
