@@ -48,6 +48,19 @@ def generate_manifest():
                     "location": location,
                     "filename": file
                 })
+            elif file.endswith('.pdf'):
+                filepath = os.path.join(root, file)
+                relative_path = os.path.relpath(filepath, 'public')
+
+                # Assume category is the filename without extension
+                category = file.replace('.pdf', '')
+
+                manifest.append({
+                    "path": relative_path,
+                    "type": "PDF",
+                    "category": category,
+                    "filename": file
+                })
 
     with open('public/manifest.json', 'w') as f:
         json.dump(manifest, f, indent=2)

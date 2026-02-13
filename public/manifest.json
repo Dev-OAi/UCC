@@ -89,5 +89,23 @@
     "zip": "32960",
     "location": "Vero Beach",
     "filename": "YP Phone Number Lookup Vero Beach - Sheet1.csv"
+  },
+  {
+    "path": "Data/PDFs/Commercial Printing.pdf",
+    "type": "PDF",
+    "category": "Commercial Printing",
+    "filename": "Commercial Printing.pdf"
+  },
+  {
+    "path": "Data/PDFs/Acupuncturists.pdf",
+    "type": "PDF",
+    "category": "Acupuncturists",
+    "filename": "Acupuncturists.pdf"
+  },
+  {
+    "path": "Data/PDFs/Abrasive Product Manufacturers.pdf",
+    "type": "PDF",
+    "category": "Abrasive Product Manufacturers",
+    "filename": "Abrasive Product Manufacturers.pdf"
   }
 ]
