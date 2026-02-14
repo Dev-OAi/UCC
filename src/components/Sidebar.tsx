@@ -43,6 +43,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
+    if (window.innerWidth < 768) {
+      onClose?.();
+    }
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -60,7 +67,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="p-4 space-y-6">
         <div className="space-y-1">
           <button
-            onClick={onGoHome}
+            onClick={() => {
+              onGoHome();
+              if (window.innerWidth < 768) onClose?.();
+            }}
             role="tab"
             aria-selected={activeTab === 'Home'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
@@ -74,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('Insights')}
+            onClick={() => handleTabClick('Insights')}
             role="tab"
             aria-selected={activeTab === 'Insights'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
@@ -88,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('SMB Selector')}
+            onClick={() => handleTabClick('SMB Selector')}
             role="tab"
             aria-selected={activeTab === 'SMB Selector'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
@@ -102,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('Activity Log')}
+            onClick={() => handleTabClick('Activity Log')}
             role="tab"
             aria-selected={activeTab === 'Activity Log'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
@@ -119,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="relative group">
             <button
-              onClick={() => setActiveTab('Products')}
+              onClick={() => handleTabClick('Products')}
               role="tab"
               aria-selected={activeTab === 'Products'}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
@@ -163,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {types.map(type => (
                 <button
                   key={type}
-                  onClick={() => setActiveTab(type)}
+                  onClick={() => handleTabClick(type)}
                   role="tab"
                   aria-selected={activeTab === type}
                   className={`w-full flex items-center px-3 py-1.5 rounded-md text-sm transition-colors ${

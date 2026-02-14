@@ -34,7 +34,7 @@ const getEmptyEntry = (entryType: EntryType): Entry => {
     }
 }
 
-const baseInputClasses = "w-full text-sm px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900";
+const baseInputClasses = "w-full text-sm px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-slate-100";
 
 // Helper component for auto-sizing textareas
 const AutoSizingTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => {
@@ -116,7 +116,7 @@ export const LogSection = <T extends Entry>({ title, entries, setEntries, entryT
                         type="checkbox"
                         checked={value}
                         onChange={e => handleInputChange(entry.id, key, e.target.checked)}
-                        className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-5 w-5 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:bg-slate-700"
                     />
                 </div>
             );
@@ -147,62 +147,97 @@ export const LogSection = <T extends Entry>({ title, entries, setEntries, entryT
             <AutoSizingTextarea
                 value={value}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(entry.id, key, e.target.value)}
-                className={`${baseInputClasses} min-h-12`}
+                className={`${baseInputClasses} min-h-[3rem]`}
                 style={{ overflowY: 'hidden', resize: 'vertical' }}
             />
         );
     };
 
     return (
-        <div className="mt-8 pt-6 border-t-2 border-dashed border-gray-200 print-break-inside-avoid">
-            <div className="flex justify-between items-center mb-4">
-                <h2 id={sectionId} className="text-xl font-bold text-gray-700">{title}</h2>
-                <button onClick={handleAddEntry} className="no-print inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-gray-200 dark:border-slate-800 print-break-inside-avoid">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 id={sectionId} className="text-xl font-bold text-gray-800 dark:text-white">{title}</h2>
+                <button
+                    onClick={handleAddEntry}
+                    className="no-print w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-bold rounded-xl shadow-lg shadow-blue-500/20 text-white bg-blue-600 hover:bg-blue-700 transition-all active:scale-95"
+                >
                     <PlusIcon className="w-5 h-5 mr-2" />
                     Add Entry
                 </button>
             </div>
 
             {entries.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left border-collapse table-fixed">
-                        <thead>
-                            <tr className="bg-gray-100">
-                                {columns.map(col => <th key={col} className={`p-2 border border-gray-200 font-bold text-gray-700 uppercase text-[10px] tracking-tight ${widths[col] || ''}`}>{col}</th>)}
-                                <th className="p-2 border border-gray-200 w-12 no-print"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {entries.map((entry) => (
-                                <tr key={entry.id} className="hover:bg-gray-50">
-                                    {Object.keys(getEmptyEntry(entryType)).filter(key => key !== 'id').map(key => (
-                                        <td key={key} className="p-1 border border-gray-200 align-top">
-                                            {renderInput(entry, key)}
-                                        </td>
-                                    ))}
-                                    <td className="p-1 border border-gray-200 text-center align-middle no-print">
-                                        <button onClick={() => handleRemoveEntry(entry.id)} className="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-100 transition-colors">
-                                            <TrashIcon className="w-5 h-5" />
-                                        </button>
-                                    </td>
+                <>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-sm text-left border-collapse table-fixed">
+                            <thead>
+                                <tr className="bg-gray-50 dark:bg-slate-800/50">
+                                    {columns.map(col => <th key={col} className={`p-2 border border-gray-200 dark:border-slate-700 font-black text-gray-400 dark:text-slate-500 uppercase text-[10px] tracking-tight ${widths[col] || ''}`}>{col}</th>)}
+                                    <th className="p-2 border border-gray-200 dark:border-slate-700 w-12 no-print"></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {entries.map((entry) => (
+                                    <tr key={entry.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30">
+                                        {Object.keys(getEmptyEntry(entryType)).filter(key => key !== 'id').map(key => (
+                                            <td key={key} className="p-1 border border-gray-200 dark:border-slate-700 align-top">
+                                                {renderInput(entry, key)}
+                                            </td>
+                                        ))}
+                                        <td className="p-1 border border-gray-200 dark:border-slate-700 text-center align-middle no-print">
+                                            <button
+                                                onClick={() => handleRemoveEntry(entry.id)}
+                                                className="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                                                aria-label="Remove entry"
+                                            >
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {entries.map((entry) => (
+                            <div key={entry.id} className="p-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-4 relative">
+                                <button
+                                    onClick={() => handleRemoveEntry(entry.id)}
+                                    className="absolute top-2 right-2 text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors no-print"
+                                    aria-label="Remove entry"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                                {Object.keys(getEmptyEntry(entryType)).filter(key => key !== 'id').map((key, idx) => (
+                                    <div key={key} className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest block">
+                                            {columns[idx]}
+                                        </label>
+                                        <div className="w-full">
+                                            {renderInput(entry, key)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </>
             ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                    <p className="text-gray-500">No entries added yet. Click "Add Entry" to start logging.</p>
+                <div className="text-center py-10 bg-gray-50 dark:bg-slate-800/30 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700">
+                    <p className="text-gray-500 dark:text-slate-400 text-sm">No entries added yet. Click "Add Entry" to start logging.</p>
                 </div>
             )}
 
-            <div className="mt-4 bg-gray-50 p-4 rounded-md text-sm">
-                <h4 className="font-semibold text-gray-700 mb-2">Summary of {title.split('. ')[1]}:</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="mt-6 bg-blue-50 dark:bg-blue-900/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/20 text-sm">
+                <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-3 uppercase tracking-wider text-xs">Summary of {title.split('. ')[1]}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {summaryItems.map(item => (
-                    <div key={item.label}>
-                        <span className="text-gray-600">{item.label}:</span>
-                        <span className="font-bold ml-2 text-gray-800">{item.value}</span>
+                    <div key={item.label} className="flex flex-col">
+                        <span className="text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-tight">{item.label}</span>
+                        <span className="font-black text-lg text-blue-900 dark:text-blue-100">{item.value}</span>
                     </div>
                 ))}
                 </div>
