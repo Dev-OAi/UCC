@@ -20,17 +20,23 @@ def generate_manifest():
 
     for root, dirs, files in os.walk(base_dir):
         for file in files:
+            filepath = os.path.join(root, file)
+            # Relative path from public/
+            relative_path = os.path.relpath(filepath, 'public')
+            
+            # Relative to Data/ base to extract Type and Zip
+            rel_to_base = os.path.relpath(root, base_dir)
+            parts = rel_to_base.split(os.sep)
+
             if file.endswith('.csv'):
-                filepath = os.path.join(root, file)
-                # Relative path from public/
-                relative_path = os.path.relpath(filepath, 'public')
-
-                # Try to extract info from path
-                # public/Data/<Type>/<Zip>/<Filename>
-                rel_to_base = os.path.relpath(root, base_dir)
-                parts = rel_to_base.split(os.sep)
-
-                data_type = parts[0] if len(parts) > 0 and parts[0] != '.' else ("YP" if file.startswith("YP ") else "General")
+                # Resolve data_type: use directory name, or "YP" if file starts with it, else "General"
+                if len(parts) > 0 and parts[0] != '.':
+                    data_type = parts[0]
+                elif file.startswith("YP "):
+                    data_type = "YP"
+                else:
+                    data_type = "General"
+                
                 zip_code = parts[1] if len(parts) > 1 else ""
 
                 # Extract location from filename if possible
@@ -48,10 +54,8 @@ def generate_manifest():
                     "location": location,
                     "filename": file
                 })
-            elif file.endswith('.pdf'):
-                filepath = os.path.join(root, file)
-                relative_path = os.path.relpath(filepath, 'public')
 
+            elif file.endswith('.pdf'):
                 # Assume category is the filename without extension
                 category = file.replace('.pdf', '')
 

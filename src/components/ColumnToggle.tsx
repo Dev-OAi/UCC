@@ -14,10 +14,11 @@ export const ColumnToggle: React.FC<ColumnToggleProps> = ({ columns, visibleColu
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        // Included ARIA attributes from main for accessibility
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="Toggle column visibility"
-        className="flex items-center space-x-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center space-x-2 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
       >
         <Settings2 className="w-3.5 h-3.5" />
         <span>Columns</span>
@@ -25,16 +26,20 @@ export const ColumnToggle: React.FC<ColumnToggleProps> = ({ columns, visibleColu
 
       {isOpen && (
         <>
+          {/* Background overlay to close the dropdown when clicking outside */}
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-20 py-2 max-h-96 overflow-y-auto">
+          
+          <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl z-20 py-2 max-h-96 overflow-y-auto">
             {columns.map(col => (
               <button
                 key={col}
                 onClick={() => onChange(col)}
-                className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+                className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
               >
-                <div className={`w-4 h-4 border rounded mr-3 flex items-center justify-center ${
-                  visibleColumns.includes(col) ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'
+                <div className={`w-4 h-4 border rounded mr-3 flex items-center justify-center transition-colors ${
+                  visibleColumns.includes(col) 
+                    ? 'bg-blue-500 border-blue-500' 
+                    : 'bg-white border-gray-300 dark:bg-slate-900 dark:border-slate-600'
                 }`}>
                   {visibleColumns.includes(col) && <Check className="w-3 h-3 text-white" />}
                 </div>

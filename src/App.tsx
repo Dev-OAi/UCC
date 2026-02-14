@@ -17,43 +17,38 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // State Management (Unified from main)
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
-  // Dark Mode Logic
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('darkMode') === 'true';
-  });
+  // Dark Mode
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (isDarkMode) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
     localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
 
+  // Data Loading
   useEffect(() => {
     async function init() {
       try {
         const m = await fetchManifest();
         setManifest(m);
-
+        // Exclude PDFs from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF');
         const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
@@ -61,13 +56,14 @@ function App() {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError('Failed to load data. Please make sure manifest.json exists.');
+        setError('Failed to load data. Please check manifest.json.');
         setLoading(false);
       }
     }
     init();
   }, []);
 
+  // Column Management
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -85,23 +81,19 @@ function App() {
 
   useEffect(() => {
     if (allData.length === 0) return;
-
-    if (activeTab === 'Home' || activeTab === 'All' || activeTab === 'Insights') {
+    if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
-        const keys = Object.keys(sample)
-          .filter(key => !key.startsWith('_') && key !== 'Zip' && key !== 'Location');
+        const keys = Object.keys(sample).filter(k => !k.startsWith('_') && k !== 'Zip' && k !== 'Location');
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
   }, [activeTab, allColumns, allData]);
 
   const toggleColumn = (col: string) => {
-    setVisibleColumns(prev =>
-      prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
-    );
+    setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
   };
 
   const clearFilters = () => {
@@ -111,265 +103,141 @@ function App() {
     setActiveTab('Home');
   };
 
-  const isFiltered = searchTerm !== '' || 
-    Object.values(columnFilters).some(v => v.length > 0) || 
-    (activeTab !== 'All' && activeTab !== 'Home' && activeTab !== 'Insights');
+  const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  const types = useMemo(() => {
-    const t = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.type));
-    return ['All', ...Array.from(t).sort()];
-  }, [manifest]);
+  // Filters setup
+  const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.type))).sort()], [manifest]);
+  const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
+  const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  const zips = useMemo(() => {
-    const z = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[]);
-    return ['All', ...Array.from(z).sort()];
-  }, [manifest]);
+  // High-performance filtering logic
+  const filteredData = useMemo(() => {
+    const categoryData = (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') 
+      ? allData 
+      : allData.filter(row => row._type === activeTab);
 
-  const locations = useMemo(() => {
-    const l = new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[]);
-    return ['All', ...Array.from(l).sort()];
-  }, [manifest]);
-
-  const categoryData = useMemo(() => {
-    if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') return allData;
-    return allData.filter(row => row._type === activeTab);
-  }, [allData, activeTab]);
-
-  // Base filtered data: separate filtering from sorting to avoid re-filtering 1M+ rows on sort changes
-  const baseFilteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
 
-    // If no search term and no active filters, return the category data as is
-    if (!s && activeFilters.length === 0) return categoryData;
-
-    return categoryData.filter(row => {
-      // 1. Column Filters - Use simple for loop for speed
+    let data = categoryData.filter(row => {
       for (let i = 0; i < activeFilters.length; i++) {
         const [col, values] = activeFilters[i];
         const rowValue = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
         if (!values.includes(String(rowValue || ''))) return false;
       }
-
       if (!s) return true;
-
-      // 2. Global Search - Optimized to avoid Object.entries/keys inside the loop
       for (const key in row) {
-        if (key[0] === '_') continue; // Skip internal fields starting with _
-        const val = row[key];
-        if (val && String(val).toLowerCase().includes(s)) return true;
+        if (key[0] === '_') continue;
+        if (String(row[key] || '').toLowerCase().includes(s)) return true;
       }
-
-      // Also search in virtual columns (location/zip)
-      if (row._location && String(row._location).toLowerCase().includes(s)) return true;
-      if (row._zip && String(row._zip).toLowerCase().includes(s)) return true;
-
-      return false;
+      return String(row._location || '').toLowerCase().includes(s) || String(row._zip || '').toLowerCase().includes(s);
     });
-  }, [categoryData, debouncedSearchTerm, columnFilters]);
 
-  // Final filtered and sorted data
-  const filteredData = useMemo(() => {
-    if (!sortConfig) return baseFilteredData;
-
-    const { key, direction } = sortConfig;
-    return [...baseFilteredData].sort((a, b) => {
-      const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
-      const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
-
-      if (aVal === bVal) return 0;
-      if (aVal === null || aVal === undefined) return 1;
-      if (bVal === null || bVal === undefined) return -1;
-
-      // localeCompare with numeric:true is expensive but necessary for correct string sorting
-      const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
-      return direction === 'asc' ? comparison : -comparison;
-    });
-  }, [baseFilteredData, sortConfig]);
+    if (sortConfig) {
+      const { key, direction } = sortConfig;
+      data = [...data].sort((a, b) => {
+        const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
+        const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
+        const comp = String(aVal || '').localeCompare(String(bVal || ''), undefined, { numeric: true });
+        return direction === 'asc' ? comp : -comp;
+      });
+    }
+    return data;
+  }, [allData, activeTab, debouncedSearchTerm, columnFilters, sortConfig]);
 
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
       const exportRow: any = {};
       visibleColumns.forEach(col => {
-        if (col === 'Location') exportRow[col] = row._location;
-        else if (col === 'Zip') exportRow[col] = row._zip;
-        else exportRow[col] = row[col];
+        exportRow[col] = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
       });
       return exportRow;
     });
-
     const csv = Papa.unparse(dataToExport);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `data_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
+    link.href = URL.createObjectURL(blob);
+    link.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    document.body.removeChild(link);
   };
 
-  if (error) {
-    return <div className="p-8 text-red-500 dark:text-red-400">{error}</div>;
-  }
+  if (error) return <div className="p-8 text-red-500">{error}</div>;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 transition-colors duration-200">
-      <Header
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        isDarkMode={isDarkMode}
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
+      <Header 
+        searchTerm={searchTerm} 
+        onSearchChange={setSearchTerm} 
+        isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
-      <div className="flex-1 flex overflow-hidden relative">
-        <Sidebar
-          types={types}
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-            setIsMobileMenuOpen(false);
-          }}
-          zips={zips}
-          selectedZip={columnFilters['Zip']?.[0] || 'All'}
-          setSelectedZip={(zip) => {
-            setColumnFilters(prev => ({
-              ...prev,
-              Zip: zip === 'All' ? [] : [zip]
-            }));
-          }}
-          locations={locations}
-          selectedLocation={columnFilters['Location']?.[0] || 'All'}
-          setSelectedLocation={(loc) => {
-            setColumnFilters(prev => ({
-              ...prev,
-              Location: loc === 'All' ? [] : [loc]
-            }));
-          }}
-          onGoHome={() => {
-            setActiveTab('Home');
-            setIsMobileMenuOpen(false);
-          }}
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
+      <div className="flex-1 flex overflow-hidden">
+        <Sidebar 
+          types={types} activeTab={activeTab} setActiveTab={setActiveTab}
+          zips={zips} selectedZip={columnFilters['Zip']?.[0] || 'All'}
+          setSelectedZip={(z) => setColumnFilters(p => ({...p, Zip: z === 'All' ? [] : [z]}))}
+          locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
+          setSelectedLocation={(l) => setColumnFilters(p => ({...p, Location: l === 'All' ? [] : [l]}))}
+          isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}
+          onGoHome={() => setActiveTab('Home')}
         />
 
-        <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:shadow-inner md:rounded-tl-2xl border-l border-t border-gray-200 dark:border-slate-800 md:ml-[-1px]">
+        <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
           {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-              <div className="relative">
-                <div className="w-12 h-12 border-4 border-blue-100 dark:border-slate-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
-              </div>
-              <p className="text-gray-500 dark:text-slate-400 font-medium animate-pulse">Initializing data streams...</p>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="w-12 h-12 border-4 border-t-blue-600 rounded-full animate-spin"></div>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
-            <Dashboard
-              types={types}
-              onSelectCategory={setActiveTab}
-              rowCount={allData.length}
-            />
+            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
           ) : activeTab === 'Insights' ? (
             <Insights data={allData} types={types} />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
-                      {activeTab === 'Home' ? 'Search Results' : `${activeTab} Data Hub`}
-                    </h2>
-                    <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 font-medium">
-                      <span>{filteredData.length.toLocaleString()} records found</span>
-                      <span className="mx-2 text-gray-300 dark:text-slate-700">•</span>
-                      <MapPin className="w-3 h-3 mr-1 text-gray-400 dark:text-slate-500" />
-                      <span>{columnFilters['Location']?.[0] || 'Global View'}</span>
-                    </div>
-                  </div>
+              {/* Feature Branch Specific: The Retail Banking Header */}
+              {activeTab === 'Products' && (
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
+                  <h2 className="text-2xl font-serif text-gray-800 dark:text-gray-100">Retail Banking - Point Grid</h2>
+                  <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">Gross Deposits</div>
                 </div>
+              )}
 
+              <div className="px-6 py-4 flex items-center justify-between shrink-0">
+                <div>
+                  <h2 className="text-lg font-bold">{activeTab} Hub</h2>
+                  <p className="text-xs text-gray-500">{filteredData.length.toLocaleString()} records found</p>
+                </div>
                 <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => setIsSecurityModalOpen(true)}
-                    disabled={loading || filteredData.length === 0}
-                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 dark:bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors shadow-sm text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Download CSV"
-                  >
+                  <button onClick={() => setIsSecurityModalOpen(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-semibold">
                     <Download className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">Download CSV</span>
+                    <span>Download</span>
                   </button>
-
-                  <ColumnToggle
-                    columns={allColumns}
-                    visibleColumns={visibleColumns}
-                    onChange={toggleColumn}
-                  />
+                  <ColumnToggle columns={allColumns} visibleColumns={visibleColumns} onChange={toggleColumn} />
                   {isFiltered && (
-                    <button
-                      onClick={clearFilters}
-                      className="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors border border-transparent hover:border-red-100 dark:hover:border-red-900/50"
-                    >
-                      <FilterX className="w-3.5 h-3.5 mr-1.5" />
-                      Clear Filters
+                    <button onClick={clearFilters} className="text-xs font-semibold text-red-600 flex items-center">
+                      <FilterX className="w-3.5 h-3.5 mr-1" /> Clear
                     </button>
                   )}
                 </div>
               </div>
 
-              <div className="flex-1 overflow-hidden relative group/table">
-                {filteredData.length > 0 ? (
-                  <Table
-                    data={filteredData}
-                    allData={categoryData}
-                    visibleColumns={visibleColumns}
-                    selectedRow={selectedRow}
-                    onRowSelect={setSelectedRow}
-                    columnFilters={columnFilters}
-                    onFilterChange={(col, values) => {
-                      setColumnFilters(prev => ({ ...prev, [col]: values }));
-                    }}
-                    sortConfig={sortConfig}
-                    onSortChange={setSortConfig}
-                  />
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-500 h-full">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl mb-6 text-blue-500 dark:text-blue-400">
-                      <FilterX className="w-12 h-12" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No records found</h3>
-                    <p className="text-gray-500 dark:text-slate-400 max-w-xs mb-8 leading-relaxed">
-                      We couldn't find anything matching your search. Try adjusting your filters or search terms.
-                    </p>
-                    <button
-                      onClick={clearFilters}
-                      className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-blue-200 dark:shadow-none active:scale-95"
-                    >
-                      <FilterX className="w-4 h-4 mr-2" />
-                      Clear All Filters
-                    </button>
-                  </div>
-                )}
+              <div className="flex-1 overflow-hidden">
+                <Table 
+                  data={filteredData} allData={allData} visibleColumns={visibleColumns} 
+                  selectedRow={selectedRow} onRowSelect={setSelectedRow}
+                  columnFilters={columnFilters} onFilterChange={(col, val) => setColumnFilters(p => ({...p, [col]: val}))}
+                  sortConfig={sortConfig} onSortChange={setSortConfig}
+                />
               </div>
             </div>
           )}
         </main>
 
-        <RightSidebar
-          selectedRow={selectedRow}
-          onClose={() => setSelectedRow(null)}
-          manifest={manifest}
-        />
+        <RightSidebar selectedRow={selectedRow} onClose={() => setSelectedRow(null)} manifest={manifest} />
       </div>
 
-      <DownloadSecurityModal
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-        onSuccess={() => {
-          setIsSecurityModalOpen(false);
-          downloadCSV();
-        }}
-      />
+      <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
     </div>
   );
 }
