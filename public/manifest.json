@@ -21,6 +21,27 @@
     "filename": "YP Phone Number Lookup PGA - Sheet1.csv"
   },
   {
+    "path": "Data/YP Phone Number Lookup Vero Beach - Sheet1.csv",
+    "type": "YP",
+    "zip": "",
+    "location": "Vero Beach",
+    "filename": "YP Phone Number Lookup Vero Beach - Sheet1.csv"
+  },
+  {
+    "path": "Data/YP Phone Number Lookup Barefoot Bay - Sheet1.csv",
+    "type": "YP",
+    "zip": "",
+    "location": "Barefoot Bay",
+    "filename": "YP Phone Number Lookup Barefoot Bay - Sheet1.csv"
+  },
+  {
+    "path": "Data/YP Phone Number Lookup Pembroke Pines - Sheet1.csv",
+    "type": "YP",
+    "zip": "",
+    "location": "Pembroke Pines",
+    "filename": "YP Phone Number Lookup Pembroke Pines - Sheet1.csv"
+  },
+  {
     "path": "Data/YP Phone Number Lookup - Sheet1_part01.csv",
     "type": "YP",
     "zip": "",
@@ -54,6 +75,11 @@
     "zip": "",
     "location": "Boca Raton",
     "filename": "YP Phone Number Lookup Boca Raton - Sheet1.csv"
+  },
+  {
+    "path": "Data/ProductsGuide/initial.json",
+    "type": "JSON",
+    "filename": "initial.json"
   },
   {
     "path": "Data/SB/33480/UCC Search 33480 Palm Beach.csv",

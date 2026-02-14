@@ -36,3 +36,22 @@ export interface Metric {
   number: number | string;
   comments: string;
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  summary: string;
+  details: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  products: Product[];
+}
+
+export interface ProductGuide {
+  id: string;
+  longTitle: string;
+  categories: ProductCategory[];
+}

@@ -7,12 +7,14 @@ import {
 import { DataRow, FileManifest } from '../lib/dataService';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { productData } from '../lib/productData';
+import { ProductGuide } from '../types';
 
 interface RightSidebarProps {
   selectedRow: DataRow | null;
   onClose: () => void;
   manifest?: FileManifest[];
   activeTab?: string;
+  productGuide?: ProductGuide;
 }
 
 const FIELD_INFO: Record<string, { icon: any, color: string, description: string }> = {
@@ -26,8 +28,34 @@ const FIELD_INFO: Record<string, { icon: any, color: string, description: string
   'Sunbiz Link': { icon: ExternalLink, color: 'text-cyan-500', description: 'Direct link to the official state business registry.' },
 };
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [], activeTab }) => {
+export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [], activeTab, productGuide }) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
+  const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (activeTab !== 'Product Guide' || !productGuide) {
+      setActiveSectionId(null);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSectionId(entry.target.id);
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: '-10% 0px -60% 0px' }
+    );
+
+    productGuide.categories.forEach((cat) => {
+      const el = document.getElementById(cat.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activeTab, productGuide]);
 
   const scrollToSection = (index: number) => {
     const sections = document.querySelectorAll('h2');
@@ -36,6 +64,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
     const sectionElement = Array.from(sections).find(h => h.textContent === targetTitle);
     if (sectionElement) {
         sectionElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToId = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -88,7 +123,44 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
       `}>
       {!selectedRow ? (
         <div className="flex-1 flex flex-col p-5 overflow-y-auto">
-          {activeTab === 'Products' ? (
+          {activeTab === 'Product Guide' && productGuide ? (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                <Activity className="w-4 h-4" />
+                <h3 className="text-[11px] font-bold uppercase tracking-widest">On This Page</h3>
+              </div>
+              <nav className="space-y-1">
+                {productGuide.categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => scrollToId(category.id)}
+                    className={`w-full text-left p-3 rounded-xl text-xs font-semibold transition-all border group ${
+                      activeSectionId === category.id
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                        : 'text-gray-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border-transparent hover:border-blue-100 dark:hover:border-blue-900/30'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{category.name}</span>
+                      <ChevronRight className={`w-3.5 h-3.5 transition-all ${activeSectionId === category.id ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'}`} />
+                    </div>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+                 <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 border border-blue-100 dark:border-blue-900/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                        <Lightbulb className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-[10px] font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wider">Product Guide Tip</h4>
+                    </div>
+                    <p className="text-[10px] text-blue-700/70 dark:text-blue-400/70 leading-relaxed">
+                        Use this guide to reference your favorite products. You can add, edit, or delete items directly from the main view.
+                    </p>
+                 </div>
+              </div>
+            </div>
+          ) : activeTab === 'Products' ? (
             <div className="space-y-6">
               <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                 <Activity className="w-4 h-4" />
