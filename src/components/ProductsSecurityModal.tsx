@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, ShieldAlert, Timer, X, ArrowRight } from 'lucide-react';
+import { Lock, ShieldAlert, Timer, X, ArrowRight, Package } from 'lucide-react';
 
-interface DownloadSecurityModalProps {
+interface ProductsSecurityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const DownloadSecurityModal: React.FC<DownloadSecurityModalProps> = ({
+export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
@@ -19,7 +19,7 @@ export const DownloadSecurityModal: React.FC<DownloadSecurityModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const CORRECT_PASSCODE = import.meta.env.VITE_DOWNLOAD_PASSCODE || 'ABCD';
+  const CORRECT_PASSCODE = import.meta.env.VITE_PRODUCTS_PASSCODE || 'VLY';
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -96,17 +96,17 @@ export const DownloadSecurityModal: React.FC<DownloadSecurityModalProps> = ({
 
           <div className="flex flex-col items-center text-center space-y-4">
             <div className={`p-4 rounded-full ${lockoutUntil ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}>
-              {lockoutUntil ? <ShieldAlert className="w-8 h-8" /> : <Lock className="w-8 h-8" />}
+              {lockoutUntil ? <ShieldAlert className="w-8 h-8" /> : <Package className="w-8 h-8" />}
             </div>
 
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                {lockoutUntil ? 'Access Temporarily Locked' : 'Secure Data Export'}
+                {lockoutUntil ? 'Access Temporarily Locked' : 'Secure Products Tool'}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                 {lockoutUntil
                   ? 'For security reasons, your access has been temporarily restricted.'
-                  : 'Please enter the authorization code to proceed with the CSV download.'
+                  : 'Please enter the authorization code to unlock the Products & Services tool.'
                 }
               </p>
             </div>
@@ -148,7 +148,7 @@ export const DownloadSecurityModal: React.FC<DownloadSecurityModalProps> = ({
                     type="submit"
                     className="w-full flex items-center justify-center space-x-2 py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
                   >
-                    <span>Unlock & Download</span>
+                    <span>Unlock Products</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </button>
                 </div>
