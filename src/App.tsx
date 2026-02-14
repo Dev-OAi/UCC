@@ -10,10 +10,11 @@ import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
+import { Products } from './components/Products';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'treasury-guide' | string;
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Products' | 'treasury-guide' | string;
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -199,18 +200,12 @@ function App() {
             <Insights data={allData} types={types} />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
+          ) : activeTab === 'Products' ? (
+            <Products />
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Feature Branch Specific: The Retail Banking Header */}
-              {activeTab === 'Products' && (
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
-                  <h2 className="text-2xl font-serif text-gray-800 dark:text-gray-100">Retail Banking - Point Grid</h2>
-                  <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">Gross Deposits</div>
-                </div>
-              )}
-
               <div className="px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
                   <h2 className="text-lg font-bold">{activeTab} Hub</h2>
