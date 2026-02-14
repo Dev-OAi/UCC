@@ -3,8 +3,9 @@ import Papa from 'papaparse';
 export interface FileManifest {
   path: string;
   type: string;
-  zip: string;
-  location: string;
+  zip?: string;
+  location?: string;
+  category?: string;
   filename: string;
 }
 
@@ -26,7 +27,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
       download: true,
-      header: false, // We will detect headers manually
+      header: false, // Detecting headers manually for flexibility
       skipEmptyLines: 'greedy',
       complete: (results) => {
         const data = results.data as string[][];
@@ -38,40 +39,68 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let headers: string[] = [];
         let startIndex = 0;
 
-        // Simple header detection
-        const firstRow = data[0];
-        const secondRow = data[1];
+        // 1. Skip leading empty rows (from main)
+        while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
+          startIndex++;
+        }
 
+        if (startIndex >= data.length) {
+          resolve([]);
+          return;
+        }
+
+        // 2. Enhanced Header Detection (Combined Logic)
+        const firstRow = data[startIndex];
         const isHeader = (row: string[]) => {
           if (!row) return false;
-          // If any cell contains "(772)" or "http", it's probably data, not header
-          return !row.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
+          // Check for data patterns (Phone numbers, URLs, or long numeric IDs)
+          return !row.some(cell => 
+            /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
+            (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
+          );
         };
 
-        if (isHeader(firstRow) && firstRow.some(c => c.trim() !== '')) {
+        if (isHeader(firstRow) && firstRow.some(c => c && c.trim() !== '')) {
           headers = firstRow.map(h => h.trim() || 'Untitled');
-          startIndex = 1;
+          startIndex++;
         } else {
-          // No header found, generate default ones based on type if possible
-          if (file.type === 'YP') {
+          // Generate default headers based on known schemas
+          if (file.type === 'YP' || file.filename.startsWith('YP ')) {
             headers = ['Category', 'Page-Ref', 'Business Name', 'Phone', 'Website'];
+          } else if (file.type === 'SB') {
+            headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
           } else {
             headers = firstRow.map((_, i) => `Column ${i + 1}`);
           }
-          startIndex = 0;
         }
 
-        const rows: DataRow[] = data.slice(startIndex).map(row => {
+        // 3. Row Mapping with Metadata Fallbacks
+        let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
             obj[h] = row[i];
           });
+          
           obj._source = file.filename;
           obj._type = file.type;
-          obj._zip = file.zip;
-          obj._location = file.location;
+          
+          // Hybrid metadata logic: prefer row data, fallback to manifest
+          obj._zip = file.zip || obj['Zip'] || obj['ZIP'] || '';
+          obj._location = file.location || obj['Location'] || '';
+          
           return obj;
         });
+
+        // 4. Post-processing for specific business data (from main)
+        if (file.type === 'SB') {
+          rows = rows.filter(row => {
+            const name = row['Entity Name'];
+            const regNo = row['Registration Number'];
+            const link = row['Sunbiz Link'];
+            // Ensures we only keep valid corporate records
+            return name && regNo && link && /^[A-Z]\d+/.test(regNo) && link.includes('sunbiz.org');
+          });
+        }
 
         resolve(rows);
       },

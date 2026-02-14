@@ -19,5 +19,44 @@
     "zip": "32960",
     "location": "Vero Beach",
     "filename": "YP Phone Number Lookup Vero Beach - Sheet1.csv"
+  },
+  {
+    "path": "Data/SB/UCC Search 33480 Palm Beach.csv",
+    "type": "SB",
+    "zip": "",
+    "location": "UCC Search 33480 Palm Beach",
+    "filename": "UCC Search 33480 Palm Beach.csv"
+  },
+  {
+    "path": "Data/YP Phone Number Lookup - Sheet1_part00.csv",
+    "type": "YP",
+    "zip": "",
+    "location": "- Sheet1_part00",
+    "filename": "YP Phone Number Lookup - Sheet1_part00.csv"
+  },
+  {
+    "path": "Data/YP Phone Number Lookup Boca Raton - Sheet1.csv",
+    "type": "YP",
+    "zip": "",
+    "location": "Boca Raton",
+    "filename": "YP Phone Number Lookup Boca Raton - Sheet1.csv"
+  },
+  {
+    "path": "Data/PDFs/Commercial Printing.pdf",
+    "type": "PDF",
+    "category": "Commercial Printing",
+    "filename": "Commercial Printing.pdf"
+  },
+  {
+    "path": "Data/PDFs/Acupuncturists.pdf",
+    "type": "PDF",
+    "category": "Acupuncturists",
+    "filename": "Acupuncturists.pdf"
+  },
+  {
+    "path": "Data/PDFs/Abrasive Product Manufacturers.pdf",
+    "type": "PDF",
+    "category": "Abrasive Product Manufacturers",
+    "filename": "Abrasive Product Manufacturers.pdf"
   }
 ]
