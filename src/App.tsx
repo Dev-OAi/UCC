@@ -30,6 +30,7 @@ function App() {
   });
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
 
   // State Management
@@ -113,10 +114,21 @@ function App() {
 
         // Exclude PDFs and JSON from CSV loading to resolve merge conflict
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
-        const dataPromises = csvFiles.map(file => loadCsv(file));
-        const results = await Promise.all(dataPromises);
-        setAllData(results.flat());
-        setLoading(false);
+        setLoadProgress({ current: 0, total: csvFiles.length });
+        setLoading(false); // Enable immediate interaction
+
+        // Load incrementally in small batches to improve TTI (Time to Interactive)
+        const batchSize = 2;
+        for (let i = 0; i < csvFiles.length; i += batchSize) {
+          try {
+            const batch = csvFiles.slice(i, i + batchSize);
+            const batchResults = await Promise.all(batch.map(file => loadCsv(file)));
+            setAllData(prev => [...prev, ...batchResults.flat()]);
+            setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
+          } catch (err) {
+            console.warn(`Failed to load a batch starting at index ${i}`, err);
+          }
+        }
       } catch (err) {
         console.error(err);
         setError('Failed to load data. Please check manifest.json.');
@@ -302,6 +314,24 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
+      {loadProgress.current < loadProgress.total && (
+        <div className="w-full shrink-0">
+          <div className="h-1 bg-blue-100 dark:bg-blue-900/30 w-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 transition-all duration-500 ease-out"
+              style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }}
+            />
+          </div>
+          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-0.5 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
+            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
+              Syncing data streams: {loadProgress.current} of {loadProgress.total} ready
+            </span>
+            <span className="text-[9px] text-blue-400 dark:text-blue-500 animate-pulse font-bold tracking-tighter uppercase">
+              Background Optimization Active
+            </span>
+          </div>
+        </div>
+      )}
       <Header 
         searchTerm={searchTerm} 
         onSearchChange={setSearchTerm} 
