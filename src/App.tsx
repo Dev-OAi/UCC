@@ -8,8 +8,12 @@ import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { Insights } from './components/Insights';
+import { SmbCheckingSelector } from './components/SmbCheckingSelector';
+import { TreasuryGuide } from './components/TreasuryGuide';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
+
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'treasury-guide' | string;
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -272,6 +276,10 @@ function App() {
             />
           ) : activeTab === 'Insights' ? (
             <Insights data={allData} types={types} />
+          ) : activeTab === 'SMB Selector' ? (
+            <SmbCheckingSelector setActivePage={setActiveTab} />
+          ) : activeTab === 'treasury-guide' ? (
+            <TreasuryGuide />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
