@@ -2,6 +2,20 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { productData } from '../lib/productData';
 
+// --- Interfaces ---
+
+export interface Tier {
+  tier: string;
+  points: number | string;
+}
+
+export interface Product {
+  name: string;
+  points?: number | string;
+  minBalance?: string;
+  tiers?: Tier[];
+}
+
 interface ProductsProps {
   highlightedProductId?: string | null;
 }
@@ -9,21 +23,20 @@ interface ProductsProps {
 export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Sync hovered state with highlighted prop for external control
+  // Sync scroll position when a product is highlighted from search
   useEffect(() => {
     if (highlightedProductId) {
-        // Clear internal search to make sure the highlighted product is visible
-        setSearchTerm('');
+      // Clear search to ensure the product isn't filtered out
+      setSearchTerm('');
 
-        // Use a small timeout to allow the DOM to update after clearing search
-        setTimeout(() => {
-            const element = document.getElementById(`product-${highlightedProductId}`);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
+      // Timeout allows the DOM to render without filters before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(`product-${highlightedProductId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
   }, [highlightedProductId]);
 
@@ -112,7 +125,6 @@ export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
                                                         const hasTiers = product.tiers && product.tiers.length > 0;
                                                         const rowSpan = hasTiers ? product.tiers!.length : 1;
                                                         const productId = `${sIdx}-${cIdx}-${subIdx}-${pIdx}`;
-                                                        const isHovered = hoveredProductId === productId;
 
                                                         return (
                                                             <React.Fragment key={pIdx}>

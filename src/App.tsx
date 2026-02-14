@@ -11,8 +11,10 @@ import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
+// Resolved Import
 import { SearchModal, SearchResult } from './components/SearchModal';
 import { productData } from './lib/productData';
+
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -24,7 +26,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State Management (Unified from main)
+  // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -58,7 +60,6 @@ function App() {
       try {
         const m = await fetchManifest();
         setManifest(m);
-        // Exclude PDFs from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF');
         const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
@@ -120,7 +121,7 @@ function App() {
   const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
   const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  // High-performance filtering logic
+  // Filtering logic
   const filteredData = useMemo(() => {
     const categoryData = (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') 
       ? allData 
@@ -185,8 +186,6 @@ function App() {
     setHighlightedProductId(result.id);
     setIsSearchOpen(false);
     setSearchModalQuery('');
-
-    // Reset highlight after a delay so it can be re-triggered
     setTimeout(() => setHighlightedProductId(null), 3000);
   };
 
@@ -251,6 +250,7 @@ function App() {
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Products' ? (
+            // Resolved Component Prop
             <Products highlightedProductId={highlightedProductId} />
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
