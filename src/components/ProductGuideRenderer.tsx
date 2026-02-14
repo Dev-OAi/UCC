@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProductGuide, ProductCategory, Product } from '../types';
-import { Card, Button, Modal, Input, Textarea, PencilIcon, TrashIcon, CloseIcon, PlusIcon } from './ui';
+import { Card, Button, Modal, Input, Textarea, PencilIcon, TrashIcon, CloseIcon, PlusIcon, ChevronUpIcon, ChevronDownIcon } from './ui';
 
 const EMPTY_PRODUCT: Omit<Product, 'id'> = { name: '', summary: '', details: '' };
 
@@ -8,16 +8,22 @@ const ProductRenderer: React.FC<{
     product: Product;
     onEdit: () => void;
     onDelete: () => void;
-}> = ({ product, onEdit, onDelete }) => (
-    <Card className="mb-6 product-card">
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    isFirst: boolean;
+    isLast: boolean;
+}> = ({ product, onEdit, onDelete, onMoveUp, onMoveDown, isFirst, isLast }) => (
+    <Card className="mb-6 product-card group">
         <div className="flex justify-between items-start">
             <div>
                 <h3 id={product.id} className="text-xl font-bold text-[var(--color-text-primary)] mb-2">{product.name}</h3>
                 <p className="text-[var(--color-text-secondary)] italic mb-4">{product.summary}</p>
             </div>
             <div className="flex gap-1 flex-shrink-0 ml-4">
-                <Button variant="ghost" size="sm" onClick={onEdit} aria-label={`Edit ${product.name}`}><PencilIcon className="w-4 h-4"/></Button>
-                <Button variant="ghost" size="sm" onClick={onDelete} aria-label={`Delete ${product.name}`} className="text-red-500 hover:bg-red-500/10 hover:text-red-500"><TrashIcon className="w-4 h-4"/></Button>
+                <Button variant="ghost" size="sm" onClick={onMoveUp} disabled={isFirst} className="management-button" aria-label={`Move ${product.name} up`}><ChevronUpIcon className="w-4 h-4"/></Button>
+                <Button variant="ghost" size="sm" onClick={onMoveDown} disabled={isLast} className="management-button" aria-label={`Move ${product.name} down`}><ChevronDownIcon className="w-4 h-4"/></Button>
+                <Button variant="ghost" size="sm" onClick={onEdit} className="management-button" aria-label={`Edit ${product.name}`}><PencilIcon className="w-4 h-4"/></Button>
+                <Button variant="ghost" size="sm" onClick={onDelete} className="management-button text-red-500 hover:bg-red-500/10 hover:text-red-500" aria-label={`Delete ${product.name}`}><TrashIcon className="w-4 h-4"/></Button>
             </div>
         </div>
         <div
@@ -34,24 +40,35 @@ const ProductCategoryRenderer: React.FC<{
     onAddProduct: (categoryId: string) => void;
     onEditCategory: (category: ProductCategory) => void;
     onDeleteCategory: (categoryId: string) => void;
-}> = ({ category, onEditProduct, onDeleteProduct, onAddProduct, onEditCategory, onDeleteCategory }) => (
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    onMoveProduct: (productId: string, direction: 'up' | 'down') => void;
+    isFirst: boolean;
+    isLast: boolean;
+}> = ({ category, onEditProduct, onDeleteProduct, onAddProduct, onEditCategory, onDeleteCategory, onMoveUp, onMoveDown, onMoveProduct, isFirst, isLast }) => (
     <div className="mb-10">
-        <div className="flex justify-between items-center mb-4 pb-2 border-b" style={{borderColor: 'var(--color-border-light)'}}>
+        <div className="flex justify-between items-center mb-4 pb-2 border-b category-header group" style={{borderColor: 'var(--color-border-light)'}}>
             <div className="flex items-center gap-3">
                 <h2 id={category.id} className="text-2xl font-bold text-[var(--color-text-primary)]">{category.name}</h2>
                 <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => onEditCategory(category)} aria-label={`Edit Category ${category.name}`}><PencilIcon className="w-3 h-3 text-blue-500"/></Button>
-                    <Button variant="ghost" size="sm" onClick={() => onDeleteCategory(category.id)} aria-label={`Delete Category ${category.name}`} className="text-red-500 hover:bg-red-500/10 hover:text-red-500"><TrashIcon className="w-3 h-3"/></Button>
+                    <Button variant="ghost" size="sm" onClick={onMoveUp} disabled={isFirst} className="management-button" aria-label={`Move Category ${category.name} up`}><ChevronUpIcon className="w-3.5 h-3.5 text-blue-500"/></Button>
+                    <Button variant="ghost" size="sm" onClick={onMoveDown} disabled={isLast} className="management-button" aria-label={`Move Category ${category.name} down`}><ChevronDownIcon className="w-3.5 h-3.5 text-blue-500"/></Button>
+                    <Button variant="ghost" size="sm" onClick={() => onEditCategory(category)} className="management-button" aria-label={`Edit Category ${category.name}`}><PencilIcon className="w-3.5 h-3.5 text-blue-500"/></Button>
+                    <Button variant="ghost" size="sm" onClick={() => onDeleteCategory(category.id)} className="management-button text-red-500 hover:bg-red-500/10 hover:text-red-500" aria-label={`Delete Category ${category.name}`}><TrashIcon className="w-3.5 h-3.5"/></Button>
                 </div>
             </div>
             <Button size="sm" onClick={() => onAddProduct(category.id)}>Add Product</Button>
         </div>
-        {category.products.map(product =>
+        {category.products.map((product, idx) =>
             <ProductRenderer
                 key={product.id}
                 product={product}
                 onEdit={() => onEditProduct(product, category.id)}
                 onDelete={() => onDeleteProduct(product.id)}
+                onMoveUp={() => onMoveProduct(product.id, 'up')}
+                onMoveDown={() => onMoveProduct(product.id, 'down')}
+                isFirst={idx === 0}
+                isLast={idx === category.products.length - 1}
             />
         )}
     </div>
@@ -113,11 +130,11 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                     if (cat.id !== targetCategoryId) return cat;
 
                     let newProducts;
-                    if (editingProduct) { // Editing existing product
+                    if (editingProduct) {
                         newProducts = cat.products.map(p =>
                             p.id === editingProduct.id ? { ...p, ...productFormData } : p
                         );
-                    } else { // Adding new product
+                    } else {
                         const newProduct: Product = {
                             id: `prod-${Date.now()}`,
                             ...productFormData
@@ -146,6 +163,27 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                 return { ...g, categories: newCategories };
             }));
         }
+    };
+
+    const handleMoveProduct = (productId: string, direction: 'up' | 'down') => {
+        setProductGuides(prevGuides => prevGuides.map(g => {
+            if (g.id !== guide.id) return g;
+
+            const newCategories = g.categories.map(cat => {
+                const index = cat.products.findIndex(p => p.id === productId);
+                if (index === -1) return cat;
+
+                const newProducts = [...cat.products];
+                if (direction === 'up' && index > 0) {
+                    [newProducts[index], newProducts[index - 1]] = [newProducts[index - 1], newProducts[index]];
+                } else if (direction === 'down' && index < newProducts.length - 1) {
+                    [newProducts[index], newProducts[index + 1]] = [newProducts[index + 1], newProducts[index]];
+                }
+                return { ...cat, products: newProducts };
+            });
+
+            return { ...g, categories: newCategories };
+        }));
     };
 
     // --- Category Handlers ---
@@ -201,6 +239,24 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
         }
     };
 
+    const handleMoveCategory = (categoryId: string, direction: 'up' | 'down') => {
+        setProductGuides(prevGuides => prevGuides.map(g => {
+            if (g.id !== guide.id) return g;
+
+            const index = g.categories.findIndex(cat => cat.id === categoryId);
+            if (index === -1) return g;
+
+            const newCategories = [...g.categories];
+            if (direction === 'up' && index > 0) {
+                [newCategories[index], newCategories[index - 1]] = [newCategories[index - 1], newCategories[index]];
+            } else if (direction === 'down' && index < newCategories.length - 1) {
+                [newCategories[index], newCategories[index + 1]] = [newCategories[index + 1], newCategories[index]];
+            }
+
+            return { ...g, categories: newCategories };
+        }));
+    };
+
     // --- Guide Handlers ---
     const handleOpenGuideModal = () => {
         setGuideTitle(guide.longTitle);
@@ -227,14 +283,14 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
         <div className="flex-1 overflow-auto p-6 md:p-10 scroll-smooth">
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 group">
                         <h1 id={guide.id} className="text-4xl font-bold text-[var(--color-text-primary)] leading-tight">{guide.longTitle}</h1>
-                        <Button variant="ghost" size="sm" onClick={handleOpenGuideModal} aria-label="Edit Guide Title"><PencilIcon className="w-5 h-5 text-blue-500"/></Button>
+                        <Button variant="ghost" size="sm" onClick={handleOpenGuideModal} className="management-button" aria-label="Edit Guide Title"><PencilIcon className="w-5 h-5 text-blue-500"/></Button>
                     </div>
-                    <Button onClick={handleOpenAddCategoryModal}>Add Category</Button>
+                    <Button variant="ghost" size="sm" onClick={handleOpenAddCategoryModal}>Add Category</Button>
                 </div>
                 <hr className="my-8" style={{borderColor: 'var(--color-border-light)'}} />
-                {guide.categories.map((category) => (
+                {guide.categories.map((category, idx) => (
                     <ProductCategoryRenderer
                         key={category.id}
                         category={category}
@@ -243,6 +299,11 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                         onDeleteProduct={handleDeleteProduct}
                         onEditCategory={handleOpenEditCategoryModal}
                         onDeleteCategory={handleDeleteCategory}
+                        onMoveUp={() => handleMoveCategory(category.id, 'up')}
+                        onMoveDown={() => handleMoveCategory(category.id, 'down')}
+                        onMoveProduct={handleMoveProduct}
+                        isFirst={idx === 0}
+                        isLast={idx === guide.categories.length - 1}
                     />
                 ))}
             </div>
@@ -339,6 +400,16 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
             .prose p { margin-bottom: 0.5rem; }
             .prose ul { list-style: disc; padding-left: 20px; }
             .prose b { color: var(--color-text-primary); }
+            .management-button {
+                opacity: 0.3;
+                transition: opacity 0.2s;
+            }
+            .management-button:hover {
+                opacity: 1 !important;
+            }
+            .group:hover .management-button {
+                opacity: 1;
+            }
         `}</style>
     </>
     );
