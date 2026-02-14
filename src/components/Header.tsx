@@ -4,6 +4,7 @@ import { Search, Database, Bell, Settings, Menu, Sun, Moon } from 'lucide-react'
 interface HeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  onSearchClick?: () => void;
   onToggleMobileMenu?: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -12,6 +13,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   searchTerm,
   onSearchChange,
+  onSearchClick,
   onToggleMobileMenu,
   isDarkMode,
   onToggleDarkMode
@@ -30,14 +32,15 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex-1 max-w-2xl px-2 md:px-4">
-        <div className="relative group">
+        <div className="relative group" onClick={onSearchClick}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
           <input
             type="text"
             placeholder="Search products and services..."
-            className="w-full pl-10 pr-4 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-md transition-all outline-none text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-md transition-all outline-none text-sm text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 cursor-pointer"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
+            readOnly={!!onSearchClick}
           />
         </div>
       </div>
