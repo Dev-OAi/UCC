@@ -13,15 +13,21 @@ import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
 import { ActivityLog } from './components/ActivityLog';
+import ProductGuideRenderer from './components/ProductGuideRenderer';
+import { ProductGuide } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
+  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
+    const saved = localStorage.getItem('productGuides');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +74,12 @@ function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
+    if (productGuides.length > 0) {
+      localStorage.setItem('productGuides', JSON.stringify(productGuides));
+    }
+  }, [productGuides]);
+
+  useEffect(() => {
     setSelectedRow(null);
   }, [activeTab]);
 
@@ -77,8 +89,22 @@ function App() {
       try {
         const m = await fetchManifest();
         setManifest(m);
-        // Exclude PDFs from CSV loading
-        const csvFiles = m.filter(f => f.type !== 'PDF');
+
+        // Load Product Guide if not in localStorage
+        const savedGuides = localStorage.getItem('productGuides');
+        if (!savedGuides) {
+          const guideFile = m.find(f => f.path.includes('initial.json'));
+          if (guideFile) {
+            const response = await fetch(`./${guideFile.path}`);
+            if (response.ok) {
+              const initialGuides = await response.json();
+              setProductGuides(initialGuides);
+            }
+          }
+        }
+
+        // Exclude PDFs and JSON from CSV loading
+        const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
         setAllData(results.flat());
@@ -135,9 +161,9 @@ function App() {
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
   // Filters setup
-  const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.type))).sort()], [manifest]);
-  const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
-  const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
+  const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type))).sort()], [manifest]);
+  const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
+  const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
   // High-performance filtering logic
   const filteredData = useMemo(() => {
@@ -314,6 +340,17 @@ function App() {
             <Insights data={allData} types={types} />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
+          ) : activeTab === 'Product Guide' ? (
+            productGuides.length > 0 ? (
+              <ProductGuideRenderer
+                guide={productGuides[0]}
+                setProductGuides={setProductGuides}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-t-blue-600 rounded-full animate-spin"></div>
+              </div>
+            )
           ) : activeTab === 'Products' ? (
             isProductsUnlocked ? (
               <Products highlightedProductId={highlightedProductId} />
@@ -378,6 +415,7 @@ function App() {
           onClose={() => setSelectedRow(null)}
           manifest={manifest}
           activeTab={activeTab}
+          productGuide={productGuides[0]}
         />
       </div>
 

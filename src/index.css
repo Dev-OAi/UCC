@@ -7,3 +7,89 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+:root {
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-border-light: #e5e7eb;
+}
+
+.dark {
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #9ca3af;
+  --color-border-light: #1f2937;
+}
+
+@layer components {
+  .custom-card {
+    @apply bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl p-6 shadow-sm;
+  }
+
+  .form-control {
+    @apply w-full px-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-[100];
+  }
+
+  .modal {
+    @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[101] flex flex-col max-h-[90vh];
+  }
+
+  .modal-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800;
+  }
+
+  .modal-title-text {
+    @apply text-xl font-bold text-gray-900 dark:text-white;
+  }
+
+  .modal-close-btn {
+    @apply p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors;
+  }
+
+  .modal-body {
+    @apply p-6 overflow-y-auto;
+  }
+
+  .modal-footer {
+    @apply p-6 border-t border-gray-100 dark:border-slate-800 flex justify-end gap-3;
+  }
+
+  .progress-bar-container {
+    @apply w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-blue-600 transition-all duration-500;
+  }
+
+  .progress-ring-bg {
+    @apply stroke-gray-100 dark:stroke-slate-800;
+  }
+
+  .progress-ring-fg {
+    @apply stroke-blue-600 transition-all duration-500;
+  }
+
+  .product-card {
+    @apply transition-all duration-300 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900/50;
+  }
+}
