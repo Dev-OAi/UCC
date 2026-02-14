@@ -1,0 +1,44 @@
+[
+  {
+    "id": "guide-treasury",
+    "longTitle": "Product Guide: Treasury Management Solutions",
+    "categories": [
+      {
+        "id": "cat-payables",
+        "name": "Payables & Disbursements",
+        "products": [
+          {
+            "id": "prod-ach-wire",
+            "name": "ACH & Wire Transfers",
+            "summary": "Efficiently send and receive electronic payments.",
+            "details": "<ul><li><b>Automated Clearing House (ACH):</b> Ideal for direct deposit, vendor payments, and tax payments. Lower cost than wires.</li><li><b>Wire Transfers:</b> For high-value, time-sensitive domestic and international payments.</li></ul>"
+          },
+          {
+            "id": "prod-comm-card",
+            "name": "Commercial Card",
+            "summary": "Streamline purchasing and payables with a robust card program.",
+            "details": "<p>Our commercial card solutions help you manage employee spending, earn rebates, and improve cash flow by extending payment terms.</p>"
+          }
+        ]
+      },
+      {
+        "id": "cat-receivables",
+        "name": "Receivables & Collections",
+        "products": [
+          {
+            "id": "prod-rdc",
+            "name": "Remote Deposit Capture",
+            "summary": "Deposit checks from your office, anytime.",
+            "details": "<p>Scan and deposit checks electronically without visiting a branch. Improves cash flow and employee efficiency.</p>"
+          },
+          {
+            "id": "prod-lockbox",
+            "name": "Lockbox Services",
+            "summary": "Accelerate the collection of paper-based payments.",
+            "details": "<p>Redirect customer payments to a dedicated PO Box. We collect, process, and deposit them for you, providing detailed reporting.</p>"
+          }
+        ]
+      }
+    ]
+  }
+]

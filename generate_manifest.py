@@ -55,6 +55,13 @@ def generate_manifest():
                     "filename": file
                 })
 
+            elif file.endswith('.json'):
+                manifest.append({
+                    "path": relative_path,
+                    "type": "JSON",
+                    "filename": file
+                })
+
             elif file.endswith('.pdf'):
                 # Assume category is the filename without extension
                 category = file.replace('.pdf', '')
