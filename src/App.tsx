@@ -19,8 +19,16 @@ function App() {
 
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -127,38 +135,57 @@ function App() {
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
-  const filteredData = useMemo(() => {
-    let filtered = categoryData.filter(row => {
-      const matchesColumnFilters = Object.entries(columnFilters).every(([col, values]) => {
-        if (!values || values.length === 0) return true;
+  // Base filtered data: separate filtering from sorting to avoid re-filtering 1M+ rows on sort changes
+  const baseFilteredData = useMemo(() => {
+    const s = debouncedSearchTerm.toLowerCase();
+    const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
+
+    // If no search term and no active filters, return the category data as is
+    if (!s && activeFilters.length === 0) return categoryData;
+
+    return categoryData.filter(row => {
+      // 1. Column Filters - Use simple for loop for speed
+      for (let i = 0; i < activeFilters.length; i++) {
+        const [col, values] = activeFilters[i];
         const rowValue = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
-        return values.includes(String(rowValue || ''));
-      });
-      if (!matchesColumnFilters) return false;
+        if (!values.includes(String(rowValue || ''))) return false;
+      }
 
-      if (!searchTerm) return true;
-      const s = searchTerm.toLowerCase();
-      return Object.entries(row).some(([key, val]) =>
-        !key.startsWith('_') && val && String(val).toLowerCase().includes(s)
-      );
+      if (!s) return true;
+
+      // 2. Global Search - Optimized to avoid Object.entries/keys inside the loop
+      for (const key in row) {
+        if (key[0] === '_') continue; // Skip internal fields starting with _
+        const val = row[key];
+        if (val && String(val).toLowerCase().includes(s)) return true;
+      }
+
+      // Also search in virtual columns (location/zip)
+      if (row._location && String(row._location).toLowerCase().includes(s)) return true;
+      if (row._zip && String(row._zip).toLowerCase().includes(s)) return true;
+
+      return false;
     });
+  }, [categoryData, debouncedSearchTerm, columnFilters]);
 
-    if (sortConfig) {
-      filtered = [...filtered].sort((a, b) => {
-        const aVal = sortConfig.key === 'Location' ? a._location : sortConfig.key === 'Zip' ? a._zip : a[sortConfig.key];
-        const bVal = sortConfig.key === 'Location' ? b._location : sortConfig.key === 'Zip' ? b._zip : b[sortConfig.key];
+  // Final filtered and sorted data
+  const filteredData = useMemo(() => {
+    if (!sortConfig) return baseFilteredData;
 
-        if (aVal === bVal) return 0;
-        if (aVal === null || aVal === undefined) return 1;
-        if (bVal === null || bVal === undefined) return -1;
+    const { key, direction } = sortConfig;
+    return [...baseFilteredData].sort((a, b) => {
+      const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
+      const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
 
-        const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
-        return sortConfig.direction === 'asc' ? comparison : -comparison;
-      });
-    }
+      if (aVal === bVal) return 0;
+      if (aVal === null || aVal === undefined) return 1;
+      if (bVal === null || bVal === undefined) return -1;
 
-    return filtered;
-  }, [categoryData, searchTerm, columnFilters, sortConfig]);
+      // localeCompare with numeric:true is expensive but necessary for correct string sorting
+      const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true, sensitivity: 'base' });
+      return direction === 'asc' ? comparison : -comparison;
+    });
+  }, [baseFilteredData, sortConfig]);
 
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
