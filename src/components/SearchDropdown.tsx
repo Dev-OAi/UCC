@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Search, ChevronRight, Zap } from 'lucide-react';
+import { Search, ChevronRight, Zap, Lock } from 'lucide-react';
 import { productData } from '../lib/productData';
 
 export interface SearchResult {
@@ -16,6 +16,7 @@ interface SearchDropdownProps {
     results: SearchResult[];
     onResultClick: (result: SearchResult) => void;
     onQuickLinkClick: (id: string) => void;
+    isProductsUnlocked?: boolean;
 }
 
 export const SearchDropdown: React.FC<SearchDropdownProps> = ({
@@ -24,7 +25,8 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
     query,
     results,
     onResultClick,
-    onQuickLinkClick
+    onQuickLinkClick,
+    isProductsUnlocked = false
 }) => {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -67,9 +69,12 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
                                     onClick={() => onQuickLinkClick(section.title)}
                                     className="flex items-center justify-between w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 group transition-colors"
                                 >
-                                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                        {section.title}
-                                    </span>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                            {section.title}
+                                        </span>
+                                        {!isProductsUnlocked && <Lock className="w-3 h-3 text-gray-400" />}
+                                    </div>
                                     <ChevronRight className="w-4 h-4 text-gray-300 dark:text-slate-700 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0" />
                                 </button>
                             ))}
@@ -83,7 +88,12 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
                                     onClick={() => onResultClick(result)}
                                     className="w-full text-left p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:outline-none group"
                                 >
-                                    <p className="font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{result.name}</p>
+                                    <div className="flex items-center space-x-2">
+                                        <p className="font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {result.page === 'Products' && !isProductsUnlocked ? `${result.name} (Locked)` : result.name}
+                                        </p>
+                                        {result.page === 'Products' && !isProductsUnlocked && <Lock className="w-3 h-3 text-amber-500" />}
+                                    </div>
                                     <p className="text-xs text-gray-500 dark:text-slate-500 mt-1 uppercase tracking-wider font-medium">{result.context}</p>
                                 </button>
                             </li>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList } from 'lucide-react';
+import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock } from 'lucide-react';
 
 interface SidebarProps {
   types: string[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  isProductsUnlocked?: boolean;
+  onToggleProductsLock?: () => void;
   zips: string[];
   selectedZip: string;
   setSelectedZip: (zip: string) => void;
@@ -20,6 +22,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   types,
   activeTab,
   setActiveTab,
+  isProductsUnlocked = false,
+  onToggleProductsLock,
   zips,
   selectedZip,
   setSelectedZip,
@@ -97,19 +101,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-sm font-medium">SMB Selector</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('Products')}
-            role="tab"
-            aria-selected={activeTab === 'Products'}
-            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-              activeTab === 'Products'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
-            }`}
-          >
-            <ClipboardList className="w-4 h-4" />
-            <span className="text-sm font-medium">Products</span>
-          </button>
+          <div className="relative group">
+            <button
+              onClick={() => setActiveTab('Products')}
+              role="tab"
+              aria-selected={activeTab === 'Products'}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                activeTab === 'Products'
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <ClipboardList className="w-4 h-4" />
+                <span className="text-sm font-medium">Products</span>
+              </div>
+              {isProductsUnlocked ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleProductsLock?.();
+                  }}
+                  className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
+                  aria-label="Lock Products tool"
+                >
+                  <Unlock className="w-3 h-3 text-blue-500" />
+                </button>
+              ) : (
+                <Lock className="w-3 h-3 text-gray-400" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div>

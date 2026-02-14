@@ -10,6 +10,7 @@ interface HeaderProps {
   searchResults: SearchResult[];
   onResultClick: (result: SearchResult) => void;
   onQuickLinkClick: (title: string) => void;
+  isProductsUnlocked?: boolean;
   onToggleMobileMenu?: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   searchResults,
   onResultClick,
   onQuickLinkClick,
+  isProductsUnlocked = false,
   onToggleMobileMenu,
   isDarkMode,
   onToggleDarkMode
@@ -73,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
             results={searchResults}
             onResultClick={onResultClick}
             onQuickLinkClick={onQuickLinkClick}
+            isProductsUnlocked={isProductsUnlocked}
           />
         </div>
       </div>

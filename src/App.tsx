@@ -7,6 +7,7 @@ import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
+import { ProductsSecurityModal } from './components/ProductsSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
@@ -36,6 +37,20 @@ function App() {
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
+  const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+
+  // Auto-lock Products after 1 minute
+  useEffect(() => {
+    let timer: any;
+    if (isProductsUnlocked) {
+      timer = setTimeout(() => {
+        setIsProductsUnlocked(false);
+      }, 60000); // 1 minute
+    }
+    return () => clearTimeout(timer);
+  }, [isProductsUnlocked]);
 
   // Dark Mode
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
@@ -184,27 +199,54 @@ function App() {
   }, [searchTerm]);
 
   const handleResultClick = (result: SearchResult) => {
-    setActiveTab(result.page);
-    setHighlightedProductId(result.id);
-    setIsSearchOpen(false);
-    setSearchTerm('');
+    const action = () => {
+      setActiveTab(result.page);
+      setHighlightedProductId(result.id);
+      setIsSearchOpen(false);
+      setSearchTerm('');
 
-    // Reset highlight after a delay so it can be re-triggered
-    setTimeout(() => setHighlightedProductId(null), 3000);
+      // Reset highlight after a delay so it can be re-triggered
+      setTimeout(() => setHighlightedProductId(null), 3000);
+    };
+
+    if (result.page === 'Products' && !isProductsUnlocked) {
+      setPendingSearchAction(() => action);
+      setIsProductsModalOpen(true);
+    } else {
+      action();
+    }
   };
 
   const handleQuickLinkClick = (sectionTitle: string) => {
-    setActiveTab('Products');
-    setIsSearchOpen(false);
-    setSearchTerm('');
+    const action = () => {
+      setActiveTab('Products');
+      setIsSearchOpen(false);
+      setSearchTerm('');
 
-    setTimeout(() => {
+      setTimeout(() => {
         const sections = document.querySelectorAll('h2');
         const sectionElement = Array.from(sections).find(h => h.textContent === sectionTitle);
         if (sectionElement) {
-            sectionElement.scrollIntoView({ behavior: 'smooth' });
+          sectionElement.scrollIntoView({ behavior: 'smooth' });
         }
-    }, 100);
+      }, 100);
+    };
+
+    if (!isProductsUnlocked) {
+      setPendingSearchAction(() => action);
+      setIsProductsModalOpen(true);
+    } else {
+      action();
+    }
+  };
+
+  const handleProductsUnlockSuccess = () => {
+    setIsProductsUnlocked(true);
+    setIsProductsModalOpen(false);
+    if (pendingSearchAction) {
+      pendingSearchAction();
+      setPendingSearchAction(null);
+    }
   };
 
   const downloadCSV = () => {
@@ -235,6 +277,7 @@ function App() {
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
+        isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -242,7 +285,15 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar 
-          types={types} activeTab={activeTab} setActiveTab={setActiveTab}
+          types={types} activeTab={activeTab} setActiveTab={(tab) => {
+            if (tab === 'Products' && !isProductsUnlocked) {
+              setIsProductsModalOpen(true);
+            } else {
+              setActiveTab(tab);
+            }
+          }}
+          isProductsUnlocked={isProductsUnlocked}
+          onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
           zips={zips} selectedZip={columnFilters['Zip']?.[0] || 'All'}
           setSelectedZip={(z) => setColumnFilters(p => ({...p, Zip: z === 'All' ? [] : [z]}))}
           locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
@@ -263,7 +314,27 @@ function App() {
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Products' ? (
-            <Products highlightedProductId={highlightedProductId} />
+            isProductsUnlocked ? (
+              <Products highlightedProductId={highlightedProductId} />
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-4">
+                <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-full text-blue-600 dark:text-blue-400">
+                  <Database className="w-12 h-12" />
+                </div>
+                <div className="max-w-md space-y-2">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Products Tool Locked</h2>
+                  <p className="text-gray-500 dark:text-slate-400">
+                    This section contains sensitive product and service data. Please use the authorization code to gain access.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsProductsModalOpen(true)}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-blue-500/20"
+                >
+                  Unlock Access
+                </button>
+              </div>
+            )
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
           ) : (
@@ -308,6 +379,7 @@ function App() {
       </div>
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
+      <ProductsSecurityModal isOpen={isProductsModalOpen} onClose={() => setIsProductsModalOpen(false)} onSuccess={handleProductsUnlockSuccess} />
     </div>
   );
 }
