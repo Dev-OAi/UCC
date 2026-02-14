@@ -11,10 +11,8 @@ import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
-// Resolved Import
-import { SearchModal, SearchResult } from './components/SearchModal';
+import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
-
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -26,11 +24,10 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State Management
+  // State Management (Unified from main)
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchModalQuery, setSearchModalQuery] = useState('');
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
@@ -54,12 +51,17 @@ function App() {
     localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
 
+  useEffect(() => {
+    setSelectedRow(null);
+  }, [activeTab]);
+
   // Data Loading
   useEffect(() => {
     async function init() {
       try {
         const m = await fetchManifest();
         setManifest(m);
+        // Exclude PDFs from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF');
         const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
@@ -121,7 +123,7 @@ function App() {
   const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
   const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => m.type !== 'PDF').map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  // Filtering logic
+  // High-performance filtering logic
   const filteredData = useMemo(() => {
     const categoryData = (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') 
       ? allData 
@@ -157,8 +159,8 @@ function App() {
   }, [allData, activeTab, debouncedSearchTerm, columnFilters, sortConfig]);
 
   const searchResults = useMemo(() => {
-    if (!searchModalQuery.trim()) return [];
-    const query = searchModalQuery.toLowerCase();
+    if (!searchTerm.trim()) return [];
+    const query = searchTerm.toLowerCase();
     const results: SearchResult[] = [];
 
     productData.forEach((section, sIdx) => {
@@ -179,14 +181,30 @@ function App() {
     });
 
     return results.slice(0, 10);
-  }, [searchModalQuery]);
+  }, [searchTerm]);
 
   const handleResultClick = (result: SearchResult) => {
     setActiveTab(result.page);
     setHighlightedProductId(result.id);
     setIsSearchOpen(false);
-    setSearchModalQuery('');
+    setSearchTerm('');
+
+    // Reset highlight after a delay so it can be re-triggered
     setTimeout(() => setHighlightedProductId(null), 3000);
+  };
+
+  const handleQuickLinkClick = (sectionTitle: string) => {
+    setActiveTab('Products');
+    setIsSearchOpen(false);
+    setSearchTerm('');
+
+    setTimeout(() => {
+        const sections = document.querySelectorAll('h2');
+        const sectionElement = Array.from(sections).find(h => h.textContent === sectionTitle);
+        if (sectionElement) {
+            sectionElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 100);
   };
 
   const downloadCSV = () => {
@@ -212,19 +230,14 @@ function App() {
       <Header 
         searchTerm={searchTerm} 
         onSearchChange={setSearchTerm} 
-        onSearchClick={() => setIsSearchOpen(true)}
+        isSearchOpen={isSearchOpen}
+        setIsSearchOpen={setIsSearchOpen}
+        searchResults={searchResults}
+        onResultClick={handleResultClick}
+        onQuickLinkClick={handleQuickLinkClick}
         isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
-
-      <SearchModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        query={searchModalQuery}
-        setQuery={setSearchModalQuery}
-        results={searchResults}
-        onResultClick={handleResultClick}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -250,7 +263,6 @@ function App() {
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Products' ? (
-            // Resolved Component Prop
             <Products highlightedProductId={highlightedProductId} />
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />

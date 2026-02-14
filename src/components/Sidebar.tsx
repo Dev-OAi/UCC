@@ -57,6 +57,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="space-y-1">
           <button
             onClick={onGoHome}
+            role="tab"
+            aria-selected={activeTab === 'Home'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
               activeTab === 'Home'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
@@ -69,6 +71,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setActiveTab('Insights')}
+            role="tab"
+            aria-selected={activeTab === 'Insights'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
               activeTab === 'Insights'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
@@ -81,6 +85,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setActiveTab('SMB Selector')}
+            role="tab"
+            aria-selected={activeTab === 'SMB Selector'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
               activeTab === 'SMB Selector'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
@@ -93,6 +99,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setActiveTab('Products')}
+            role="tab"
+            aria-selected={activeTab === 'Products'}
             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
               activeTab === 'Products'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
@@ -118,6 +126,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={type}
                   onClick={() => setActiveTab(type)}
+                  role="tab"
+                  aria-selected={activeTab === type}
                   className={`w-full flex items-center px-3 py-1.5 rounded-md text-sm transition-colors ${
                     activeTab === type
                       ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
