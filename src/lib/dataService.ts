@@ -17,10 +17,36 @@ export interface DataRow {
   _location?: string;
 }
 
+export function scrubValue(value: any): any {
+  if (typeof value !== 'string') return value;
+
+  const lowerValue = value.toLowerCase();
+
+  // URL/Domain detection - if it contains valley and looks like a link or domain
+  if (lowerValue.includes('valley') && (lowerValue.includes('http') || lowerValue.includes('www.') || lowerValue.includes('.com') || lowerValue.includes('.org') || lowerValue.includes('.net'))) {
+    return 'https://www.google.com';
+  }
+
+  // Remove "Valley" (case-insensitive)
+  let newValue = value.replace(/valley/gi, '');
+
+  // Clean up spaces: remove double spaces, trim leading/trailing
+  newValue = newValue.replace(/\s\s+/g, ' ').trim();
+
+  return newValue;
+}
+
 export async function fetchManifest(): Promise<FileManifest[]> {
   const response = await fetch('./manifest.json');
   if (!response.ok) throw new Error('Failed to fetch manifest');
-  return response.json();
+  const manifest: FileManifest[] = await response.json();
+  return manifest.map(m => ({
+    ...m,
+    type: scrubValue(m.type),
+    location: scrubValue(m.location),
+    zip: scrubValue(m.zip),
+    category: scrubValue(m.category)
+  }));
 }
 
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
@@ -78,15 +104,15 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
-            obj[h] = row[i];
+            obj[h] = scrubValue(row[i]);
           });
           
           obj._source = file.filename;
           obj._type = file.type;
           
           // Hybrid metadata logic: prefer row data, fallback to manifest
-          obj._zip = file.zip || obj['Zip'] || obj['ZIP'] || '';
-          obj._location = file.location || obj['Location'] || '';
+          obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
+          obj._location = scrubValue(file.location || obj['Location'] || '');
           
           return obj;
         });
