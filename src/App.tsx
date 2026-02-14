@@ -32,7 +32,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State Management (Unified from main)
+  // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -103,7 +103,7 @@ function App() {
           }
         }
 
-        // Exclude PDFs and JSON from CSV loading
+        // Exclude PDFs and JSON from CSV loading to resolve merge conflict
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         const dataPromises = csvFiles.map(file => loadCsv(file));
         const results = await Promise.all(dataPromises);
@@ -231,8 +231,6 @@ function App() {
       setHighlightedProductId(result.id);
       setIsSearchOpen(false);
       setSearchTerm('');
-
-      // Reset highlight after a delay so it can be re-triggered
       setTimeout(() => setHighlightedProductId(null), 3000);
     };
 

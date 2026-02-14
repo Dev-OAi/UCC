@@ -130,11 +130,11 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                     if (cat.id !== targetCategoryId) return cat;
 
                     let newProducts;
-                    if (editingProduct) { // Editing existing product
+                    if (editingProduct) {
                         newProducts = cat.products.map(p =>
                             p.id === editingProduct.id ? { ...p, ...productFormData } : p
                         );
-                    } else { // Adding new product
+                    } else {
                         const newProduct: Product = {
                             id: `prod-${Date.now()}`,
                             ...productFormData
