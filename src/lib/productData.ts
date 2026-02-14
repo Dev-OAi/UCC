@@ -84,7 +84,7 @@ export const productData: MainSection[] = [
                         products: [
                             { name: 'All Access Checking', points: 'N/A', minBalance: '$250', tiers: consumerCheckingTiers },
                             { name: 'My Teen Checking', points: 'N/A', minBalance: '$250', tiers: consumerCheckingTiers },
-                            { name: 'Valley Journey Checking', points: 'N/A', minBalance: '$250', tiers: consumerCheckingTiers },
+                            { name: 'Journey Checking', points: 'N/A', minBalance: '$250', tiers: consumerCheckingTiers },
                             { name: 'Milestone Checking', points: 'N/A', minBalance: '$250', tiers: consumerCheckingTiers },
                         ]
                     },
@@ -114,7 +114,7 @@ export const productData: MainSection[] = [
                             { name: 'Jumbo Multiple Maturity - Personal CD', points: 'N/A', minBalance: '$500', tiers: cdIraTiers },
                             { name: 'Multiple Maturity - Personal CD', points: 'N/A', minBalance: '$500', tiers: cdIraTiers },
                             { name: 'IRA CDs', points: 'N/A', minBalance: '$500', tiers: cdIraTiers },
-                            { name: 'Valley IRA Savings', points: 'N/A', minBalance: '$500', tiers: cdIraTiers },
+                            { name: 'IRA Savings', points: 'N/A', minBalance: '$500', tiers: cdIraTiers },
                         ]
                     }
                 ]
@@ -232,8 +232,8 @@ export const productData: MainSection[] = [
             { title: 'REVENUE GENERATING PRODUCTS/SERVICES', subCategories: [{ title: '', products: [
                 { name: 'ADP', points: 25 },
                 { name: 'Fiserv', points: 25 },
-                { name: 'Valley National Title Service', points: 25 },
-                { name: 'Valley Insurance Services', points: 25 },
+                { name: 'National Title Service', points: 25 },
+                { name: 'Insurance Services', points: 25 },
             ]}]},
             { title: 'DEPOSIT/LOANS ACCOUNT REFERRALS', subCategories: [{ title: '', products: [
                 { name: 'International', points: 25 },
