@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Database, Bell, Settings, Menu, Sun, Moon, X } from 'lucide-react';
+import { Search, Database, Bell, Settings, Menu, Sun, Moon, X, PanelRight } from 'lucide-react';
 import { SearchDropdown, SearchResult } from './SearchDropdown';
 
 interface HeaderProps {
@@ -11,7 +11,9 @@ interface HeaderProps {
   onResultClick: (result: SearchResult) => void;
   onQuickLinkClick: (title: string) => void;
   isProductsUnlocked?: boolean;
-  onToggleMobileMenu?: () => void;
+  onToggleLeftSidebar: () => void;
+  onToggleRightSidebar: () => void;
+  isRightSidebarOpen: boolean;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
 }
@@ -25,7 +27,9 @@ export const Header: React.FC<HeaderProps> = ({
   onResultClick,
   onQuickLinkClick,
   isProductsUnlocked = false,
-  onToggleMobileMenu,
+  onToggleLeftSidebar,
+  onToggleRightSidebar,
+  isRightSidebarOpen,
   isDarkMode,
   onToggleDarkMode
 }) => {
@@ -33,9 +37,9 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-30 transition-colors duration-200">
       <div className="flex items-center space-x-2 w-auto md:w-64 shrink-0">
         <button
-          onClick={onToggleMobileMenu}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg md:hidden text-gray-500 dark:text-slate-400 mr-1"
-          aria-label="Open mobile menu"
+          onClick={onToggleLeftSidebar}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400 mr-1"
+          aria-label="Toggle left sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -96,9 +100,16 @@ export const Header: React.FC<HeaderProps> = ({
         <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
           <Settings className="w-5 h-5" />
         </button>
-        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold text-xs border border-blue-200 dark:border-blue-800 shrink-0">
-          JD
-        </div>
+
+        <button
+          onClick={onToggleRightSidebar}
+          className={`p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all active:scale-95 ${
+            isRightSidebarOpen ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 dark:text-slate-400'
+          }`}
+          aria-label="Toggle right sidebar"
+        >
+          <PanelRight className="w-5 h-5" />
+        </button>
       </div>
     </header>
   );

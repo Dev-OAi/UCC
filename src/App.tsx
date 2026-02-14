@@ -42,7 +42,8 @@ function App() {
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -82,6 +83,13 @@ function App() {
   useEffect(() => {
     setSelectedRow(null);
   }, [activeTab]);
+
+  // Auto-open right sidebar on selection
+  useEffect(() => {
+    if (selectedRow) {
+      setIsRightSidebarOpen(true);
+    }
+  }, [selectedRow]);
 
   // Data Loading
   useEffect(() => {
@@ -305,7 +313,9 @@ function App() {
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+        onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        isRightSidebarOpen={isRightSidebarOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -323,7 +333,7 @@ function App() {
           setSelectedZip={(z) => setColumnFilters(p => ({...p, Zip: z === 'All' ? [] : [z]}))}
           locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
           setSelectedLocation={(l) => setColumnFilters(p => ({...p, Location: l === 'All' ? [] : [l]}))}
-          isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}
+          isOpen={isLeftSidebarOpen} onClose={() => setIsLeftSidebarOpen(false)}
           onGoHome={() => setActiveTab('Home')}
         />
 
@@ -410,10 +420,14 @@ function App() {
 
         <RightSidebar
           selectedRow={selectedRow}
-          onClose={() => setSelectedRow(null)}
+          onClose={() => {
+            setSelectedRow(null);
+            if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+          }}
           manifest={manifest}
           activeTab={activeTab}
           productGuide={productGuides[0]}
+          isOpen={isRightSidebarOpen}
         />
       </div>
 
