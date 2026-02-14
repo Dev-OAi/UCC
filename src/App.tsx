@@ -339,8 +339,12 @@ function App() {
 
         <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
               <div className="w-12 h-12 border-4 border-t-blue-600 rounded-full animate-spin"></div>
+              <div className="text-center">
+                <p className="text-gray-600 dark:text-slate-400 font-medium">Please wait while we load the data streams...</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Preparing your business intelligence workspace</p>
+              </div>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
             <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
