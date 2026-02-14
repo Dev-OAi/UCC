@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < 1024) {
       onClose?.();
     }
   };
@@ -55,21 +55,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside className={`
-        fixed md:static inset-y-0 left-0 w-64 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto shrink-0 z-50 transition-all duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        fixed lg:static inset-y-0 left-0 bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto shrink-0 z-50 transition-all duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0 w-64 opacity-100 border-r border-gray-200 dark:border-slate-800' : '-translate-x-full lg:translate-x-0 w-0 opacity-0 pointer-events-none border-none'}
       `}>
       <nav className="p-4 space-y-6">
         <div className="space-y-1">
           <button
             onClick={() => {
               onGoHome();
-              if (window.innerWidth < 768) onClose?.();
+              if (window.innerWidth < 1024) onClose?.();
             }}
             role="tab"
             aria-selected={activeTab === 'Home'}
