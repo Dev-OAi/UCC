@@ -10,10 +10,13 @@ import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
+import { Products } from './components/Products';
+import { SearchModal, SearchResult } from './components/SearchModal';
+import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'treasury-guide' | string;
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Products' | 'treasury-guide' | string;
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -24,6 +27,9 @@ function App() {
   // State Management (Unified from main)
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchModalQuery, setSearchModalQuery] = useState('');
+  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
@@ -149,6 +155,41 @@ function App() {
     return data;
   }, [allData, activeTab, debouncedSearchTerm, columnFilters, sortConfig]);
 
+  const searchResults = useMemo(() => {
+    if (!searchModalQuery.trim()) return [];
+    const query = searchModalQuery.toLowerCase();
+    const results: SearchResult[] = [];
+
+    productData.forEach((section, sIdx) => {
+      section.categories.forEach((category, cIdx) => {
+        category.subCategories.forEach((sub, subIdx) => {
+          sub.products.forEach((product, pIdx) => {
+            if (product.name.toLowerCase().includes(query)) {
+              results.push({
+                id: `${sIdx}-${cIdx}-${subIdx}-${pIdx}`,
+                name: product.name,
+                context: `${section.title} > ${category.title}${sub.title ? ` > ${sub.title}` : ''}`,
+                page: 'Products'
+              });
+            }
+          });
+        });
+      });
+    });
+
+    return results.slice(0, 10);
+  }, [searchModalQuery]);
+
+  const handleResultClick = (result: SearchResult) => {
+    setActiveTab(result.page);
+    setHighlightedProductId(result.id);
+    setIsSearchOpen(false);
+    setSearchModalQuery('');
+
+    // Reset highlight after a delay so it can be re-triggered
+    setTimeout(() => setHighlightedProductId(null), 3000);
+  };
+
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
       const exportRow: any = {};
@@ -172,9 +213,19 @@ function App() {
       <Header 
         searchTerm={searchTerm} 
         onSearchChange={setSearchTerm} 
+        onSearchClick={() => setIsSearchOpen(true)}
         isDarkMode={isDarkMode} 
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      />
+
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        query={searchModalQuery}
+        setQuery={setSearchModalQuery}
+        results={searchResults}
+        onResultClick={handleResultClick}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -199,18 +250,12 @@ function App() {
             <Insights data={allData} types={types} />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
+          ) : activeTab === 'Products' ? (
+            <Products highlightedProductId={highlightedProductId} />
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Feature Branch Specific: The Retail Banking Header */}
-              {activeTab === 'Products' && (
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
-                  <h2 className="text-2xl font-serif text-gray-800 dark:text-gray-100">Retail Banking - Point Grid</h2>
-                  <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">Gross Deposits</div>
-                </div>
-              )}
-
               <div className="px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
                   <h2 className="text-lg font-bold">{activeTab} Hub</h2>
@@ -242,7 +287,12 @@ function App() {
           )}
         </main>
 
-        <RightSidebar selectedRow={selectedRow} onClose={() => setSelectedRow(null)} manifest={manifest} />
+        <RightSidebar
+          selectedRow={selectedRow}
+          onClose={() => setSelectedRow(null)}
+          manifest={manifest}
+          activeTab={activeTab}
+        />
       </div>
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />

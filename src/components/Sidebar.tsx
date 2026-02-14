@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package } from 'lucide-react';
+import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList } from 'lucide-react';
 
 interface SidebarProps {
   types: string[];
@@ -89,6 +89,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Package className="w-4 h-4" />
             <span className="text-sm font-medium">SMB Selector</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('Products')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+              activeTab === 'Products'
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+          >
+            <ClipboardList className="w-4 h-4" />
+            <span className="text-sm font-medium">Products</span>
           </button>
         </div>
 

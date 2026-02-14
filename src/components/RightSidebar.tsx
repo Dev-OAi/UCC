@@ -6,11 +6,13 @@ import {
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
 import { getInsightForCategory } from '../lib/industryKnowledge';
+import { productData } from '../lib/productData';
 
 interface RightSidebarProps {
   selectedRow: DataRow | null;
   onClose: () => void;
   manifest?: FileManifest[];
+  activeTab?: string;
 }
 
 const FIELD_INFO: Record<string, { icon: any, color: string, description: string }> = {
@@ -24,8 +26,18 @@ const FIELD_INFO: Record<string, { icon: any, color: string, description: string
   'Sunbiz Link': { icon: ExternalLink, color: 'text-cyan-500', description: 'Direct link to the official state business registry.' },
 };
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [] }) => {
+export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [], activeTab }) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
+
+  const scrollToSection = (index: number) => {
+    const sections = document.querySelectorAll('h2');
+    // Find the section that matches the title
+    const targetTitle = productData[index].title;
+    const sectionElement = Array.from(sections).find(h => h.textContent === targetTitle);
+    if (sectionElement) {
+        sectionElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const category = selectedRow ? (selectedRow['Category'] || selectedRow['Category '] || selectedRow['_type'] || '') : '';
   const insight = getInsightForCategory(category);
@@ -75,14 +87,51 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
         ${selectedRow ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
       `}>
       {!selectedRow ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 dark:bg-slate-950/20">
-          <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 text-gray-300 dark:text-slate-600 shadow-sm border border-gray-100 dark:border-slate-800">
-            <Info className="w-6 h-6" />
-          </div>
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">Detailed Inspector</h3>
-          <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed max-w-[200px]">
-            Select any record from the table to view comprehensive details and metadata.
-          </p>
+        <div className="flex-1 flex flex-col p-5 overflow-y-auto">
+          {activeTab === 'Products' ? (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                <Activity className="w-4 h-4" />
+                <h3 className="text-[11px] font-bold uppercase tracking-widest">On This Page</h3>
+              </div>
+              <nav className="space-y-1">
+                {productData.map((section, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => scrollToSection(idx)}
+                    className="w-full text-left p-3 rounded-xl text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{section.title}</span>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                    </div>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+                 <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 border border-blue-100 dark:border-blue-900/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                        <Lightbulb className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-[10px] font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wider">Navigation Tip</h4>
+                    </div>
+                    <p className="text-[10px] text-blue-700/70 dark:text-blue-400/70 leading-relaxed">
+                        Click on any section above to quickly jump to its product listing. Use the search bar in the header for specific products.
+                    </p>
+                 </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 dark:bg-slate-950/20">
+              <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 text-gray-300 dark:text-slate-600 shadow-sm border border-gray-100 dark:border-slate-800">
+                <Info className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">Detailed Inspector</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed max-w-[200px]">
+                Select any record from the table to view comprehensive details and metadata.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col h-full transition-all duration-300">
