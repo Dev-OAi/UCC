@@ -12,12 +12,13 @@ import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
+import { ActivityLog } from './components/ActivityLog';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Products' | 'treasury-guide' | string;
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -337,6 +338,8 @@ function App() {
             )
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
+          ) : activeTab === 'Activity Log' ? (
+            <ActivityLog />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="px-6 py-4 flex items-center justify-between shrink-0">
