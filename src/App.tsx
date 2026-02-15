@@ -22,8 +22,6 @@ import Papa from 'papaparse';
 
 export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
   const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
@@ -87,6 +85,24 @@ function App() {
     setSelectedRow(null);
   }, [activeTab]);
 
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setSelectedRow(null);
+        if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+      }
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="Search products"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Auto-open right sidebar on selection
   useEffect(() => {
     if (selectedRow) {
@@ -140,29 +156,21 @@ function App() {
     init();
   }, []);
 
-  // Column Management - Optimized to iterate once and find samples for each type
+  // Column Management
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
-    const samples = new Map<string, DataRow>();
-    const expectedTypesCount = new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type)).size;
-
-    for (let i = 0; i < allData.length; i++) {
-      const row = allData[i];
-      if (row._type && !samples.has(row._type)) {
-        samples.set(row._type, row);
-        if (samples.size === expectedTypesCount) break;
+    const types = Array.from(new Set(allData.slice(0, 1000).map(d => d._type)));
+    types.forEach(t => {
+      const sample = allData.find(d => d._type === t);
+      if (sample) {
+        Object.keys(sample).forEach(key => {
+          if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location') keys.add(key);
+        });
       }
-    }
-
-    samples.forEach(sample => {
-      Object.keys(sample).forEach(key => {
-        if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location') keys.add(key);
-      });
     });
-
     return [...Array.from(keys), 'Location', 'Zip'];
-  }, [allData, manifest]);
+  }, [allData]);
 
   useEffect(() => {
     if (allData.length === 0) return;
@@ -197,16 +205,12 @@ function App() {
   const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
   const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
-  const categoryData = useMemo(() => {
-    if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') {
-      return allData;
-    }
-    return allData.filter(row => row._type === activeTab);
-  }, [allData, activeTab]);
-
   // High-performance filtering logic
   const filteredData = useMemo(() => {
+    const categoryData = (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights')
+      ? allData
+      : allData.filter(row => row._type === activeTab);
+
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
 
@@ -229,12 +233,12 @@ function App() {
       data = [...data].sort((a, b) => {
         const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
         const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
-        const comp = collator.compare(String(aVal || ''), String(bVal || ''));
+        const comp = String(aVal || '').localeCompare(String(bVal || ''), undefined, { numeric: true });
         return direction === 'asc' ? comp : -comp;
       });
     }
     return data;
-  }, [categoryData, debouncedSearchTerm, columnFilters, sortConfig]);
+  }, [allData, activeTab, debouncedSearchTerm, columnFilters, sortConfig]);
 
   const searchResults = useMemo(() => {
     if (!searchTerm.trim()) return [];
