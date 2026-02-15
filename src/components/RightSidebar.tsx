@@ -69,7 +69,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
 
   const scrollToSection = (index: number) => {
     const sections = document.querySelectorAll('h2');
-    // Find the section that matches the title
     const targetTitle = productData[index].title;
     const sectionElement = Array.from(sections).find(h => h.textContent === targetTitle);
     if (sectionElement) {
@@ -119,7 +118,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
 
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"

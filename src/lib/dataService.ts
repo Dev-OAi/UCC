@@ -91,10 +91,13 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           startIndex++;
         } else {
           // Generate default headers based on known schemas
-          if (file.type === 'YP' || file.filename.startsWith('YP ')) {
+          if (file.type.includes('YP') || file.filename.startsWith('YP ')) {
             headers = ['Category', 'Page-Ref', 'Business Name', 'Phone', 'Website'];
-          } else if (file.type === 'SB') {
+          } else if (file.type.includes('SB')) {
             headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
+          } else if (file.type === '3. UCC') {
+            const m: Record<number, string> = { 0: 'Business Name', 1: 'Industry', 4: 'Phone Number', 5: "Company's website" };
+            headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
           } else {
             headers = firstRow.map((_, i) => `Column ${i + 1}`);
           }

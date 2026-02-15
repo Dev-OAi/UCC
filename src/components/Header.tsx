@@ -101,6 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Bell className="w-5 h-5" />
         </button>
+        
         <button
           className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block"
           aria-label="Settings"
