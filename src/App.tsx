@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
 import { Table } from './components/Table';
 import { Header } from './components/Header';
@@ -51,6 +51,23 @@ function App() {
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsRightSidebarOpen(false);
+        setSelectedRow(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
@@ -349,19 +366,14 @@ function App() {
         </div>
       )}
       <Header 
-        searchTerm={searchTerm} 
-        onSearchChange={setSearchTerm} 
-        isSearchOpen={isSearchOpen}
-        setIsSearchOpen={setIsSearchOpen}
-        searchResults={searchResults}
-        onResultClick={handleResultClick}
-        onQuickLinkClick={handleQuickLinkClick}
-        isProductsUnlocked={isProductsUnlocked}
-        isDarkMode={isDarkMode} 
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        searchTerm={searchTerm} onSearchChange={setSearchTerm}
+        isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen}
+        searchResults={searchResults} onResultClick={handleResultClick}
+        onQuickLinkClick={handleQuickLinkClick} isProductsUnlocked={isProductsUnlocked}
+        isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-        isRightSidebarOpen={isRightSidebarOpen}
+        isRightSidebarOpen={isRightSidebarOpen} searchRef={searchRef}
       />
 
       <div className="flex-1 flex overflow-hidden">

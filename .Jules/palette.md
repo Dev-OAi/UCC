@@ -13,3 +13,7 @@
 ## 2025-05-15 - [Icon-Only Buttons and Copy-to-Clipboard Utility]
 **Learning:** Icon-only buttons MUST have 'aria-label' for screen readers. A "Copy to Clipboard" utility in data-heavy sidebars provides significant "micro-delight" and utility. For these utilities, use 'focus-visible' and 'group-hover' for clean UI that remains accessible to keyboard users. Always ensure valid values like '0' are copyable by checking for 'null'/'undefined' instead of falsy.
 **Action:** When implementing detail views for data records, include a hoverable/focusable copy button for each field with clear visual success feedback.
+
+## 2025-05-16 - [Keyboard Shortcut Hints and Accessibility Foundations]
+**Learning:** Visual hints for keyboard shortcuts (e.g., adding "[/]" to a placeholder) significantly improve discoverability for power users. Additionally, ensuring that form labels are programmatically associated with their inputs (using 'htmlFor' and 'id') is a non-negotiable accessibility foundation that prevents screen reader confusion in filter-heavy sidebars.
+**Action:** When implementing global shortcuts, always provide a subtle visual cue in the UI. For all sidebar filters, verify that every label has a matching input ID.

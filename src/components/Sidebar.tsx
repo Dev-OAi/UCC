@@ -217,11 +217,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {expanded.filters && (
             <div className="px-3 space-y-4 pt-1 animate-in fade-in duration-200">
               <div className="space-y-1.5">
-                <label className="flex items-center text-[11px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-tight">
+                <label htmlFor="zip-filter" className="flex items-center text-[11px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-tight">
                   <Hash className="w-3 h-3 mr-1" />
                   ZIP Code
                 </label>
                 <select
+                  id="zip-filter"
                   value={selectedZip}
                   onChange={(e) => setSelectedZip(e.target.value)}
                   className="w-full text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 dark:text-slate-200 rounded-md py-1.5 px-2 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all cursor-pointer"
@@ -231,11 +232,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="flex items-center text-[11px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-tight">
+                <label htmlFor="location-filter" className="flex items-center text-[11px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-tight">
                   <MapPin className="w-3 h-3 mr-1" />
                   Location
                 </label>
                 <select
+                  id="location-filter"
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
                   className="w-full text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 dark:text-slate-200 rounded-md py-1.5 px-2 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all cursor-pointer"

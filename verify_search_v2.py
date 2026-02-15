@@ -9,12 +9,12 @@ def run():
         page.goto('http://localhost:5173')
 
         # Click search box
-        page.click('input[placeholder="Search products and services..."]')
+        page.click('input[type="text"]')
         time.sleep(1)
         page.screenshot(path='dropdown_empty.png')
 
         # Type something
-        page.fill('input[placeholder="Search products and services..."]', 'Checking')
+        page.fill('input[type="text"]', 'Checking')
         time.sleep(1)
         page.screenshot(path='dropdown_results.png')
 
