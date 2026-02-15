@@ -158,6 +158,8 @@ function App() {
     if (allData.length === 0) return;
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
+    } else if (activeTab === '3. UCC') {
+      setVisibleColumns(['Business Name', 'Industry', 'Phone Number', "Company's website", 'Column 39', 'Column 40', 'Column 41', 'Column 42', 'Column 43', 'Column 44', 'Column 45', 'Column 46', 'Column 47', 'Column 50', 'Column 54', 'Location', 'Zip']);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {

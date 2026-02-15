@@ -68,6 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
                 setIsSearchOpen(false);
               }}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full text-gray-400 transition-colors"
+              aria-label="Clear search"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -94,10 +95,10 @@ export const Header: React.FC<HeaderProps> = ({
           {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
         </button>
 
-        <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
+        <button aria-label="Notifications" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
           <Bell className="w-5 h-5" />
         </button>
-        <button className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
+        <button aria-label="Settings" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
           <Settings className="w-5 h-5" />
         </button>
 
