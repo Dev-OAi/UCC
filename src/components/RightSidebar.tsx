@@ -2,7 +2,8 @@ import React from 'react';
 import {
   Info, X, Share2, Edit3, ChevronUp, Phone, Globe, MapPin,
   Fingerprint, Calendar, Activity, ShieldCheck, HelpCircle,
-  ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight
+  ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight,
+  Copy, Check
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
 import { getInsightForCategory } from '../lib/industryKnowledge';
@@ -32,6 +33,14 @@ const FIELD_INFO: Record<string, { icon: any, color: string, description: string
 export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [], activeTab, productGuide, isOpen }) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
   const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+
+  const handleCopy = (key: string, value: any) => {
+    if (value === null || value === undefined) return;
+    navigator.clipboard.writeText(String(value));
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
 
   React.useEffect(() => {
     if (activeTab !== 'Product Guide' || !productGuide) {
@@ -246,8 +255,24 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
                           </div>
                        </div>
                     </div>
-                    <div className="text-sm text-gray-800 dark:text-slate-200 font-semibold break-words bg-gray-50 dark:bg-slate-800/50 p-3 rounded-lg border border-gray-100/50 dark:border-slate-800 transition-colors">
-                      {renderValue(key, value)}
+                    <div className="relative group/value">
+                      <div className="text-sm text-gray-800 dark:text-slate-200 font-semibold break-words bg-gray-50 dark:bg-slate-800/50 p-3 rounded-lg border border-gray-100/50 dark:border-slate-800 transition-colors pr-10">
+                        {renderValue(key, value)}
+                      </div>
+                      {(value !== null && value !== undefined) && (
+                        <button
+                          onClick={() => handleCopy(key, value)}
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-all ${
+                            copiedKey === key
+                              ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 opacity-100'
+                              : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 opacity-0 group-hover/value:opacity-100 focus-visible:opacity-100 outline-none ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900 focus-visible:ring-opacity-100'
+                          }`}
+                          aria-label={`Copy ${key} to clipboard`}
+                          title={`Copy ${key}`}
+                        >
+                          {copiedKey === key ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

@@ -9,3 +9,7 @@
 - **Dark Mode Persistence:** Persistence via `localStorage` is crucial for theme preference. Using Tailwind's `dark:` class strategy allows for precise control over contrast in complex components like zebra-striped tables and data charts.
 - **Data Visualization Utility:** Charts (Recharts) provide an essential bird's-eye view of large datasets (1M+ rows). A Pie chart is ideal for Status distribution, while a horizontal Bar chart effectively compares counts across Categories.
 - **Security UX:** Passcode protection for data exports should include a lockout mechanism with visual feedback (timer) to prevent brute-force attacks while maintaining a user-friendly interface.
+
+## 2025-05-15 - [Icon-Only Buttons and Copy-to-Clipboard Utility]
+**Learning:** Icon-only buttons MUST have 'aria-label' for screen readers. A "Copy to Clipboard" utility in data-heavy sidebars provides significant "micro-delight" and utility. For these utilities, use 'focus-visible' and 'group-hover' for clean UI that remains accessible to keyboard users. Always ensure valid values like '0' are copyable by checking for 'null'/'undefined' instead of falsy.
+**Action:** When implementing detail views for data records, include a hoverable/focusable copy button for each field with clear visual success feedback.
