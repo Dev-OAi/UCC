@@ -95,10 +95,17 @@ export const Header: React.FC<HeaderProps> = ({
           {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
         </button>
 
-        <button aria-label="Notifications" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
+        <button
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block"
+          aria-label="Notifications"
+        >
           <Bell className="w-5 h-5" />
         </button>
-        <button aria-label="Settings" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block">
+        
+        <button
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block"
+          aria-label="Settings"
+        >
           <Settings className="w-5 h-5" />
         </button>
 
