@@ -63,16 +63,17 @@ function App() {
     // Add the SB Hub configuration here
     '1. SB': [
       "Document Number",
-      "businessName",
-      "Column 7",
-      "Column 14",
-      "Column 10",
+      "businessName",           // Business Name
+      "Column 14",              // SB Status
+      "Column 10",              // FEI/EIN Number
+      "Column 7",               // Entity Type
       "Sunbiz Link",
-      "Location",
-      "Status",
       "Entity Type",           // Matches your Florida logic in dataService
-     "FEI/EIN Number",        // Matches m[9] in dataService
+      "FEI/EIN Number",        // Matches m[9] in dataService
+      "Location",
+      "Status",      
       "Column 41",
+      "Date Filed",
       "Expires",
       "Filings Completed Through",
       "Summary For Filing",
