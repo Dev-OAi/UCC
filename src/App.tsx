@@ -48,6 +48,7 @@ function App() {
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
     "businessName", 
+    "Phone",         // Add this here
     "Sunbiz Link", 
     "Florida UCC Link", 
     "Location", 
