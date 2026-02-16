@@ -144,9 +144,9 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             0: 'businessName'
           };
 
-          // Scan the first 25 columns to find where the data is hiding
+          // Increased scan range to find data in the higher column indexes
           firstRow.forEach((cell, idx) => {
-            if (idx > 0 && idx < 25) {
+            if (idx > 0) {
               const val = String(cell || '').trim();
               if (!val) return;
 
@@ -154,23 +154,27 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
               if (val.toLowerCase().includes('sunbiz.org')) {
                 m[idx] = 'Sunbiz Link';
               } 
-              // 2. Document Number (Letter + 6+ digits)
+              // 2. FEI/EIN Number (9 digits, optional dash: XX-XXXXXXX or XXXXXXXXX)
+              else if (/^\d{2}-?\d{7}$/.test(val)) {
+                m[idx] = 'FEI/EIN Number';
+              }
+              // 3. Document Number (Letter + 6+ digits)
               else if (/^[A-Za-z]\d{6,}/.test(val)) {
                 m[idx] = 'Document Number';
               }
-              // 3. Status (Active, Inactive, etc.)
+              // 4. Status (Active, Inactive, etc.)
               else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
                 m[idx] = 'Status';
               }
-              // 4. Zip Code (Exactly 5 digits)
+              // 5. Zip Code (Exactly 5 digits)
               else if (/^\d{5}$/.test(val)) {
                 m[idx] = 'Zip';
               }
-              // 5. Date Filed (Pattern: 00/00/0000)
+              // 6. Date Filed (Pattern: 00/00/0000)
               else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
                 m[idx] = 'Date Filed';
               }
-              // 6. Phone Number
+              // 7. Phone Number
               else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
                 m[idx] = 'Phone';
               }
