@@ -54,18 +54,20 @@ export const Table: React.FC<TableProps> = ({
     return row[col];
   };
 
-  const renderCell = (value: any) => {
-    if (typeof value === 'string' && (value.startsWith('http') || value.startsWith('www.'))) {
-      const url = value.startsWith('http') ? value : `http://${value}`;
+  const renderCell = (value: any, col: string) => {
+    const isUccLink = col === 'Florida UCC Link';
+    if (isUccLink || (typeof value === 'string' && (value.startsWith('http') || value.startsWith('www.')))) {
+      if (!value) return value;
+      const url = String(value).startsWith('http') ? String(value) : `http://${value}`;
       return (
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 dark:text-blue-400 hover:underline flex items-center inline-flex"
+          className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center"
         >
-          {value}
-          <ExternalLink className="w-3 h-3 ml-1" />
+          <span className="truncate">{value}</span>
+          <ExternalLink className="w-3 h-3 ml-1 shrink-0" />
         </a>
       );
     }
@@ -132,7 +134,7 @@ export const Table: React.FC<TableProps> = ({
                   } whitespace-nowrap max-w-[250px] truncate group`}
                   title={String(value || '')}
                 >
-                  {renderCell(value)}
+                  {renderCell(value, col)}
                 </td>
               );
             })}

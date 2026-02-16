@@ -21,7 +21,7 @@ describe('dataService', () => {
   it('should load CSV and augment with metadata', async () => {
     const file = {
       path: 'test.csv',
-      type: 'YP',
+      type: 'Generic',
       zip: '33101',
       location: 'Miami',
       filename: 'test.csv'
@@ -34,7 +34,7 @@ describe('dataService', () => {
       'Name': 'John Doe',
       'Phone': '555-1234',
       'Website': 'http://example.com',
-      '_type': 'YP',
+      '_type': 'Generic',
       '_zip': '33101',
       '_location': 'Miami'
     });
