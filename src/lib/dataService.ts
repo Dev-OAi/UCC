@@ -17,6 +17,15 @@ export interface DataRow {
   _location?: string;
 }
 
+export function isZipCode(val: string): boolean {
+  return /^\d{5}(-\d{4})?$/.test(val.trim());
+}
+
+export function isPhoneNumber(val: string): boolean {
+  // Matches (555) 555-5555 or 555-555-5555
+  return /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val.trim());
+}
+
 export function scrubValue(value: any): any {
   if (typeof value !== 'string') return value;
 
@@ -93,15 +102,21 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           // UCC Schema
           const m: Record<number, string> = {
             0: 'businessName',
-            3: 'Phone',                    // Mapping phone to index 3
-            4: 'Sunbiz Link',               // Mapping link to index 4 (Adjust if needed)
-            41: 'Status',                   // Column AP
-            42: 'Date Filed',               // Column AQ
-            43: 'Expires',                  // Column AR
-            44: 'Filings Completed Through', // Column AS
-            45: 'Summary For Filing',       // Column AT
-            55: 'Florida UCC Link'          // Column BD
+            41: 'Status',
+            42: 'Date Filed',
+            43: 'Expires',
+            44: 'Filings Completed Through',
+            45: 'Summary For Filing',
+            55: 'Florida UCC Link'
           };
+
+          // Smart detection for the early columns
+          [1, 2, 3, 4, 5].forEach(idx => {
+            const val = firstRow[idx] || '';
+            if (val.includes('http')) m[idx] = 'Sunbiz Link';
+            else if (isPhoneNumber(val)) m[idx] = 'Phone';
+            else if (isZipCode(val)) m[idx] = 'Zip';
+          });
           // Scrub both mapped names and default Column X labels
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
