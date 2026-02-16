@@ -99,7 +99,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
 
         // 2. Tri-Schema Detection & Mapping with Scrubbed Headers
         if (colCount >= 50) {
-          // UCC Schema
+          // 1. Set the "Unmovable" columns first
           const m: Record<number, string> = {
             0: 'businessName',
             41: 'Status',
@@ -110,30 +110,33 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             55: 'Florida UCC Link'
           };
 
-          // Smart "Left-Side" Detection for Columns B through G
+          // 2. Loop through the "messy" columns (B through G) to sort them by content
+          // This fixes the shift between Palm Beach and Ft Lauderdale sheets
           firstRow.forEach((cell, idx) => {
-            if (idx > 0 && idx < 10) { 
+            if (idx > 0 && idx < 10) {
               const val = String(cell || '').trim();
               if (!val) return;
-              
-              if (val.includes('http')) {
+
+              // Rule 1: If it's a website
+              if (val.toLowerCase().includes('http')) {
                 m[idx] = 'Sunbiz Link';
               } 
-              // Rule: Zip is ONLY 5 digits
+              // Rule 2: If it's a Zip Code (Exactly 5 digits)
               else if (/^\d{5}$/.test(val)) {
                 m[idx] = 'Zip';
               }
-              // Rule: Phone MUST have at least 10 digits and symbols like ( ) or -
-              else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
-                m[idx] = 'Phone';
-              } 
-              // Rule: Document Number starts with a letter (L, P, N) followed by digits
-              else if (/^[A-Z]\d{5,}/i.test(val)) {
+              // Rule 3: If it's a Document Number (Starts with a Letter, then numbers)
+              // This targets those L14000... numbers in your screenshots
+              else if (/^[A-Z]\d+$/i.test(val)) {
                 m[idx] = 'Document Number';
+              }
+              // Rule 4: If it's a Phone Number (Has dashes, dots, or parentheses)
+              else if (/\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
+                m[idx] = 'Phone';
               }
             }
           });
-          // Scrub both mapped names and default Column X labels
+          // 3. Finalize headers
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
         else if (colCount >= 30) {
