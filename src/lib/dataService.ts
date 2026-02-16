@@ -96,10 +96,10 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             4: 'Sunbiz Link',
             41: 'Status',                    // Column AP
             42: 'Date Filed',               // Column AQ
-            43: 'Expires',                  // Column AR
+            43: 'Expiration Date',          // Column AR
             44: 'Filings Completed Through', // Column AS
             45: 'Summary For Filing',       // Column AT
-            55: 'Florida UCC Link'
+            55: 'Florida UCC Link'          // Column BD
           };
           // Scrub both mapped names and default Column X labels
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
