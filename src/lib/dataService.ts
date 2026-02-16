@@ -88,7 +88,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const firstRow = data[startIndex];
         const colCount = firstRow.length;
 
-        // 2. Tri-Schema Detection & Mapping
+        // 2. Tri-Schema Detection & Mapping with Scrubbed Headers
         if (colCount >= 50) {
           // UCC Schema
           const m: Record<number, string> = {
@@ -97,7 +97,8 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             42: 'Expiration Date',
             55: 'Florida UCC Link'
           };
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+          // Scrub both mapped names and default Column X labels
+          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
         else if (colCount >= 30) {
           // SB Schema
@@ -109,7 +110,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             12: 'Date Filed',
             15: 'Principal Address'
           };
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
         else if (colCount >= 5) {
           // YP Schema
@@ -119,14 +120,15 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             3: 'Phone',
             4: 'Website'
           };
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
 
           // Check if first row is headers or data for YP
           const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
           if (isHeader) startIndex++;
         }
         else {
-          headers = firstRow.map((h, i) => (h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
+          // Generic CSV: Scrub the actual text from the header row
+          headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
           const isHeader = !firstRow.some(cell =>
             /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
             (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
@@ -134,31 +136,31 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // 3. Row Mapping with Metadata Fallbacks
+        // 3. Row Mapping
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
-            // Safety: use empty string if row[i] is undefined
+            // All data preserved, indexed by our scrubbed headers
             obj[h] = scrubValue(row[i] || '');
           });
           
           obj._source = file.filename;
           obj._type = file.type;
           
-          // Hybrid metadata logic: prefer row data, fallback to manifest
+          // Hybrid metadata logic
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
           
           return obj;
         });
 
-        // 4. Post-processing for specific business data
+        // 4. Post-processing for Sunbiz
         if (file.type === 'SB') {
           rows = rows.filter(row => {
-            const name = row['Entity Name'];
-            const regNo = row['Registration Number'];
+            const name = row['businessName'] || row['Entity Name'];
             const link = row['Sunbiz Link'];
-            return name && regNo && link && /^[A-Z]\d+/.test(regNo) && link.includes('sunbiz.org');
+            // Basic validation to ensure the row is a valid Sunbiz record
+            return name && link && link.includes('sunbiz.org');
           });
         }
 
