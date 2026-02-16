@@ -141,9 +141,10 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         else if (colCount >= 30) {
          // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',     // Column A
-            1: 'Document Number',  // Column B Force Document Number to Column 2 (Index 1)
-            9: 'FEI/EIN Number'    // Column J Force EIN to Column 10 (Index 9)
+            0: 'businessName',
+            1: 'Document Number',
+            6: 'Entity Type',      // Forces Column 7 to be 'Entity Type'
+            9: 'FEI/EIN Number'    // Forces Column 10 to be 'FEI/EIN Number'
           };
 
           // 2. Scan remaining columns for secondary data
