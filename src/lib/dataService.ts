@@ -94,7 +94,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           const m: Record<number, string> = {
             0: 'businessName',
             4: 'Sunbiz Link',
-            42: 'Expiration Date',
+            41: 'Status',                    // Column AP
+            42: 'Date Filed',               // Column AQ
+            43: 'Expires',                  // Column AR
+            44: 'Filings Completed Through', // Column AS
+            45: 'Summary For Filing',       // Column AT
             55: 'Florida UCC Link'
           };
           // Scrub both mapped names and default Column X labels
