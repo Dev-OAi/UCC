@@ -65,7 +65,6 @@ function App() {
       "Document Number",
       "FEI/EIN Number", 
       "businessName",
-      "Column 3",
       "Status",
       "Sunbiz Link",
       "Location",
