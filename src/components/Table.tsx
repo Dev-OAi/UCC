@@ -57,7 +57,7 @@ export const Table: React.FC<TableProps> = ({
   const renderCell = (value: any, col: string) => {
     const isUccLink = col === 'Florida UCC Link';
     if (isUccLink || (typeof value === 'string' && (value.startsWith('http') || value.startsWith('www.')))) {
-      if (!value) return value;
+      if (!value || value === 'N/A') return value;
       const url = String(value).startsWith('http') ? String(value) : `http://${value}`;
       return (
         <a

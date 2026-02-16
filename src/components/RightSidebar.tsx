@@ -235,6 +235,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
             <div className="space-y-4">
               {Object.entries(selectedRow).map(([key, value]) => {
                 if (key.startsWith('_')) return null;
+
+                // Filter out meaningless columns
+                if (key.startsWith('Column') && (!value || value === 'N/A')) return null;
+
                 const info = FIELD_INFO[key] || { icon: HelpCircle, color: 'text-gray-400', description: 'System data field.' };
                 const Icon = info.icon;
 
