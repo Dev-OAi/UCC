@@ -68,7 +68,7 @@ function App() {
       "Status",
       "Sunbiz Link",
       "Location",
-      "Column 7",
+      "Entity Type",  // Changed from "Column 7"
       "Column 41",
       "Expires",
       "Filings Completed Through",
