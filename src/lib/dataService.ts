@@ -141,40 +141,37 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         else if (colCount >= 30) {
          // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',
-            9: 'FEI/EIN Number' // Hard-mapped Column 10 based on your data images
+            0: 'businessName',     // Column A
+            1: 'Document Number',  // Column B Force Document Number to Column 2 (Index 1)
+            9: 'FEI/EIN Number'    // Column J Force EIN to Column 10 (Index 9)
           };
 
-          // Scan all columns to identify remaining fields
-          firstRow.forEach((cell, idx) => {
-            const val = String(cell || '').trim();
-            if (!val || m[idx]) return; // Skip if empty or already mapped (like index 9)
+          // 2. Scan remaining columns for secondary data
+        firstRow.forEach((cell, idx) => {
+          const val = String(cell || '').trim();
+          if (!val || m[idx]) return; // Skip if empty or already mapped (0, 1, 9)
 
-            // 1. Sunbiz Link
-            if (val.toLowerCase().includes('sunbiz.org')) {
-              m[idx] = 'Sunbiz Link';
-            } 
-            // 2. Document Number (Letter + 6+ digits)
-            else if (/^[A-Za-z]\d{6,}/.test(val)) {
-              m[idx] = 'Document Number';
-            }
-            // 3. Status (Active, Inactive, etc.)
-            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
-              m[idx] = 'Status';
-            }
-            // 4. Zip Code (Exactly 5 digits)
-            else if (/^\d{5}$/.test(val)) {
-              m[idx] = 'Zip';
-            }
-            // 5. Date Filed (Pattern: 00/00/0000)
-            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-              m[idx] = 'Date Filed';
-            }
-            // 6. Phone Number
-            else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
-              m[idx] = 'Phone';
-            }
-          });
+          // Sunbiz Link
+          if (val.toLowerCase().includes('sunbiz.org')) {
+            m[idx] = 'Sunbiz Link';
+          } 
+          // Status (Active, Inactive, etc.)
+          else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+            m[idx] = 'Status';
+          }
+          // Zip Code
+          else if (/^\d{5}$/.test(val)) {
+            m[idx] = 'Zip';
+          }
+          // Date Filed
+          else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+            m[idx] = 'Date Filed';
+          }
+          // Entity Type (Column 7 / Column G)
+          else if (val.includes('Florida') && (val.includes('Limited') || val.includes('Profit'))) {
+            m[idx] = 'Entity Type';
+          }
+        });
           // Fill in the rest as "Column X"
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
