@@ -27,7 +27,7 @@ describe('dataService', () => {
       filename: 'test.csv'
     };
 
-    // Mock 5 columns for YP
+    // Mock 5 columns for YP / Generic processing
     (Papa.parse as any).mockImplementationOnce((path, config) => {
       config.complete({
         data: [
@@ -44,6 +44,7 @@ describe('dataService', () => {
       'businessName': 'John Doe',
       'Phone': '555-1234',
       'Website': 'http://example.com',
+      '_type': 'Generic',
       '_zip': '33101',
       '_location': 'Miami'
     });
