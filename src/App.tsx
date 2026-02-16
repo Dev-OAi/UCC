@@ -47,8 +47,7 @@ function App() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
-      "Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date",
-      "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"
+      "businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
@@ -202,7 +201,7 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
-      setVisibleColumns(["Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date", "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"]);
+      setVisibleColumns(["businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {

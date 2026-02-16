@@ -95,7 +95,7 @@ export const Table: React.FC<TableProps> = ({
                       : ''
                   }`}
                 >
-                  <span className="truncate">{col}</span>
+                  <span className="truncate">{col === 'businessName' ? 'Business Name' : col}</span>
                   <ChevronDown className={`w-3 h-3 shrink-0 transition-transform ${openDropdown === col ? 'rotate-180' : ''}`} />
                   {columnFilters[col]?.length > 0 && (
                     <div className="w-1.5 h-1.5 bg-blue-600 dark:bg-blue-400 rounded-full absolute top-2 right-2"></div>

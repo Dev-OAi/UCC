@@ -20,6 +20,7 @@ interface RightSidebarProps {
 }
 
 const FIELD_INFO: Record<string, { icon: any, color: string, description: string }> = {
+  'businessName': { icon: Activity, color: 'text-blue-600', description: 'The primary name used for this business entity across all datasets.' },
   'Entity Name': { icon: Activity, color: 'text-blue-500', description: 'The legal name of the registered business or organization.' },
   'Registration Number': { icon: Fingerprint, color: 'text-amber-500', description: 'A unique identifier assigned to the entity by regulatory authorities.' },
   'Status': { icon: ShieldCheck, color: 'text-emerald-500', description: 'Current standing of the business (e.g., Active, Inactive).' },
@@ -236,8 +237,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
               {Object.entries(selectedRow).map(([key, value]) => {
                 if (key.startsWith('_')) return null;
 
-                // Filter out meaningless columns
-                if (key.startsWith('Column') && (!value || value === 'N/A')) return null;
+                // Filter out meaningless columns (empty or 'N/A')
+                if (!value || value === 'N/A') return null;
 
                 const info = FIELD_INFO[key] || { icon: HelpCircle, color: 'text-gray-400', description: 'System data field.' };
                 const Icon = info.icon;
@@ -247,7 +248,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
                     <div className="flex items-center justify-between mb-1.5">
                        <div className="flex items-center">
                           <Icon className={`w-3.5 h-3.5 mr-2 ${info.color}`} />
-                          <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{key}</label>
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                             {key === 'businessName' ? 'Business Name' : key}
+                          </label>
                        </div>
 
                        <div className="group relative">

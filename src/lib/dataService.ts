@@ -41,6 +41,7 @@ export function scrubValue(value: any): any {
 
   // Decode common HTML entities
   newValue = newValue.replace(/&amp;/gi, '&');
+  newValue = newValue.replace(/&#39;/g, "'");
 
   return newValue;
 }
@@ -85,36 +86,42 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         }
 
         const firstRow = data[startIndex];
+        const colCount = firstRow.length;
 
-        // 2. Mapping Logic based on Hub Type
-        if (file.type === '3. UCC') {
+        // 2. Tri-Schema Detection & Mapping
+        if (colCount >= 50) {
+          // UCC Schema
           const m: Record<number, string> = {
-            0: 'Industry',
-            1: 'Category',
-            2: 'Page-Ref',
-            3: 'Business Name',
-            4: 'Phone',
-            5: 'Website',
-            7: 'Phone Number',
-            10: "Company's website",
-            38: 'UCC Number',
-            41: 'Filing Status',
-            42: 'Filing Date',
-            43: 'Expiry Date',
-            44: 'Expiration Date',
-            50: 'Full Address',
+            0: 'businessName',
+            4: 'Sunbiz Link',
+            42: 'Expiration Date',
             55: 'Florida UCC Link'
           };
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
-          // Don't skip first row as it contains data for UCC
         }
-        else if (file.type.includes('SB')) {
-          headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
-          // Don't skip first row as it contains data for SB
+        else if (colCount >= 30) {
+          // SB Schema
+          const m: Record<number, string> = {
+            0: 'businessName',
+            2: 'Status',
+            3: 'Zip',
+            5: 'Sunbiz Link',
+            12: 'Date Filed',
+            15: 'Principal Address'
+          };
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
-        else if (file.type.includes('YP') || file.filename.startsWith('YP ')) {
-          headers = ['Category', 'Page-Ref', 'Business Name', 'Phone', 'Website'];
-          // Check if first row is headers or data
+        else if (colCount >= 5) {
+          // YP Schema
+          const m: Record<number, string> = {
+            0: 'Category',
+            2: 'businessName',
+            3: 'Phone',
+            4: 'Website'
+          };
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+
+          // Check if first row is headers or data for YP
           const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
           if (isHeader) startIndex++;
         }
