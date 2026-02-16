@@ -64,10 +64,12 @@ function App() {
     '1. SB': [
       "Document Number",
       "businessName",
+      "Column 7",
       "Column 14",
-      "Status",
+      "Column 10",
       "Sunbiz Link",
       "Location",
+      "Status",
       "Entity Type",           // Matches your Florida logic in dataService
      "FEI/EIN Number",        // Matches m[9] in dataService
       "Column 41",
