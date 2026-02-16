@@ -63,12 +63,13 @@ function App() {
     // Add the SB Hub configuration here
     '1. SB': [
       "Document Number",
-      "FEI/EIN Number", 
       "businessName",
+      "Column 14",
       "Status",
       "Sunbiz Link",
       "Location",
-      "Entity Type",            
+      "Entity Type",             // REPLACED "Column 7"
+      "FEI/EIN Number",          // REPLACED "Column 10"
       "Column 41",
       "Expires",
       "Filings Completed Through",
