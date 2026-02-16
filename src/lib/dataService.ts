@@ -110,12 +110,27 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             55: 'Florida UCC Link'
           };
 
-          // Smart detection for the early columns
-          [1, 2, 3, 4, 5].forEach(idx => {
-            const val = firstRow[idx] || '';
-            if (val.includes('http')) m[idx] = 'Sunbiz Link';
-            else if (isPhoneNumber(val)) m[idx] = 'Phone';
-            else if (isZipCode(val)) m[idx] = 'Zip';
+          // Smart "Left-Side" Detection for Columns B through G
+          firstRow.forEach((cell, idx) => {
+            if (idx > 0 && idx < 10) { // Only check the first few columns
+              const val = String(cell || '').trim();
+              
+              if (val.includes('http')) {
+                m[idx] = 'Sunbiz Link';
+              } 
+              // Check for Phone: (xxx) xxx-xxxx or xxx-xxx-xxxx
+              else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
+                m[idx] = 'Phone';
+              } 
+              // Check for Zip: 5 digits exactly
+              else if (/^\d{5}$/.test(val)) {
+                m[idx] = 'Zip';
+              }
+              // Check for Document Number: Starts with Letter (L, P, N) then numbers
+              else if (/^[A-Z]\d{6,}/i.test(val)) {
+                m[idx] = 'Document Number';
+              }
+            }
           });
           // Scrub both mapped names and default Column X labels
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
