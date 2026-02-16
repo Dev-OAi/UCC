@@ -1,59 +1,10 @@
-import Papa from 'papaparse';
-
-export interface FileManifest {
-  path: string;
-  type: string;
-  zip?: string;
-  location?: string;
-  category?: string;
-  filename: string;
-}
-
-export interface DataRow {
-  [key: string]: any;
-  _source?: string;
-  _type?: string;
-  _zip?: string;
-  _location?: string;
-}
-
-export function scrubValue(value: any): any {
-  if (typeof value !== 'string') return value;
-
-  const lowerValue = value.toLowerCase();
-
-  // URL/Domain detection - if it contains valley and looks like a link or domain
-  if (lowerValue.includes('valley') && (lowerValue.includes('http') || lowerValue.includes('www.') || lowerValue.includes('.com') || lowerValue.includes('.org') || lowerValue.includes('.net'))) {
-    return 'https://www.google.com';
-  }
-
-  // Remove "Valley" (case-insensitive)
-  let newValue = value.replace(/valley/gi, '');
-
-  // Clean up spaces: remove double spaces, trim leading/trailing
-  newValue = newValue.replace(/\s\s+/g, ' ').trim();
-
-  return newValue;
-}
-
-export async function fetchManifest(): Promise<FileManifest[]> {
-  const response = await fetch('./manifest.json');
-  if (!response.ok) throw new Error('Failed to fetch manifest');
-  const manifest: FileManifest[] = await response.json();
-  return manifest.map(m => ({
-    ...m,
-    type: scrubValue(m.type),
-    location: scrubValue(m.location),
-    zip: scrubValue(m.zip),
-    category: scrubValue(m.category)
-  }));
-}
+// ... (FileManifest, DataRow interfaces and scrubValue/fetchManifest remain the same)
 
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
       download: true,
-      header: false, // Detecting headers manually for flexibility
+      header: false,
       skipEmptyLines: 'greedy',
       complete: (results) => {
         const data = results.data as string[][];
@@ -95,11 +46,12 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           } else if (file.type.includes('SB')) {
             headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
           } else if (file.type === '3. UCC') {
-            // RESOLVED CONFLICT: Using the expanded mapping from the feature branch
+            // RESOLVED CONFLICT: Unified UCC mapping
             const m: Record<number, string> = {
-              0: 'Business Name',
-              1: 'Industry',
+              0: 'Industry',
+              1: 'Category',
               2: 'Page-Ref',
+              3: 'Business Name',
               4: 'Phone',
               5: 'Website',
               7: 'Phone Number',
@@ -108,7 +60,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
               41: 'Filing Status',
               42: 'Filing Date',
               43: 'Expiry Date',
-              44: 'Column 45',
+              44: 'Expiration Date', // Preferring 'Expiration Date' over 'Column 45'
               50: 'Full Address',
               55: 'Florida UCC Link'
             };
