@@ -110,28 +110,27 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             55: 'Florida UCC Link'
           };
 
-          // 2. Loop through the "messy" columns (B through G) to sort them by content
-          // This fixes the shift between Palm Beach and Ft Lauderdale sheets
+         // 2. Scan columns 1-10 for specific data patterns
           firstRow.forEach((cell, idx) => {
             if (idx > 0 && idx < 10) {
               const val = String(cell || '').trim();
               if (!val) return;
 
-              // Rule 1: If it's a website
-              if (val.toLowerCase().includes('http')) {
+              // RULE A: Document Number (Must start with a Letter, then at least 5 numbers)
+              // This targets L14000..., P06000..., etc.
+              if (/^[A-Za-z]\d{5,}/.test(val)) {
+                m[idx] = 'Document Number';
+              }
+              // RULE B: Website
+              else if (val.toLowerCase().includes('http')) {
                 m[idx] = 'Sunbiz Link';
               } 
-              // Rule 2: If it's a Zip Code (Exactly 5 digits)
+              // RULE C: Zip Code (Exactly 5 digits only)
               else if (/^\d{5}$/.test(val)) {
                 m[idx] = 'Zip';
               }
-              // Rule 3: If it's a Document Number (Starts with a Letter, then numbers)
-              // This targets those L14000... numbers in your screenshots
-              else if (/^[A-Z]\d+$/i.test(val)) {
-                m[idx] = 'Document Number';
-              }
-              // Rule 4: If it's a Phone Number (Has dashes, dots, or parentheses)
-              else if (/\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
+              // RULE D: Phone Number (Must have 7-10 digits AND symbols like - or ( ) )
+              else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
                 m[idx] = 'Phone';
               }
             }
