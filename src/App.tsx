@@ -68,8 +68,8 @@ function App() {
       "Status",
       "Sunbiz Link",
       "Location",
-      "Entity Type",             // REPLACED "Column 7"
-      "FEI/EIN Number",          // REPLACED "Column 10"
+      "Entity Type",           // Matches your Florida logic in dataService
+     "FEI/EIN Number",        // Matches m[9] in dataService
       "Column 41",
       "Expires",
       "Filings Completed Through",
