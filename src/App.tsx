@@ -201,7 +201,17 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
-      setVisibleColumns(["businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"]);
+      setVisibleColumns([
+        "businessName", 
+        "Status", 
+        "Date Filed", 
+        "Expiration Date", 
+        "Filings Completed Through", 
+        "Summary For Filing", 
+        "Sunbiz Link", 
+        "Florida UCC Link", 
+        "Location", 
+        "Zip"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
