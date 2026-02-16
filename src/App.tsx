@@ -62,15 +62,22 @@ function App() {
     ],
     // Add the SB Hub configuration here
     '1. SB': [
-      "businessName",
       "Document Number",
+      "FEI/EIN Number", // Placed right after Document Number
+      "businessName",
+      "Column 3",
       "Status",
-      "Date Filed",
-      "Phone",
       "Sunbiz Link",
-      "Zip",
-      "Principal Address",
-      "Location"
+      "Location",
+      "Column 7",
+      "Column 10",
+      "Column 41",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing",
+      "Column 54",
+      "Column 55",
+      "Florida UCC Link"
     ],
     // Add the YP Hub configuration here
     '2. YP': [
