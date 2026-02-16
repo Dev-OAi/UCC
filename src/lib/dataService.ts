@@ -93,8 +93,9 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           // UCC Schema
           const m: Record<number, string> = {
             0: 'businessName',
-            4: 'Sunbiz Link',
-            41: 'Status',                    // Column AP
+            3: 'Phone',                    // Mapping phone to index 3
+            4: 'Sunbiz Link',               // Mapping link to index 4 (Adjust if needed)
+            41: 'Status',                   // Column AP
             42: 'Date Filed',               // Column AQ
             43: 'Expires',                  // Column AR
             44: 'Filings Completed Through', // Column AS
@@ -110,7 +111,8 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             0: 'businessName',
             2: 'Status',
             3: 'Zip',
-            5: 'Sunbiz Link',
+            4: 'Phone',                    // Added Phone mapping
+            5: 'Sunbiz Link',               // Link usually follows phone
             12: 'Date Filed',
             15: 'Principal Address'
           };
