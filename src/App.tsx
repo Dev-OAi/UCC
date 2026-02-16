@@ -44,6 +44,8 @@ function App() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+
+  // RESOLVED CONFLICT: Keeping the custom UCC column order from the feature branch
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
       "Category", "Page-Ref", "Business Name", "Filing Status", "Phone", "Website", "Industry", "Column 4", "Phone Number", "Company's website",
@@ -56,6 +58,7 @@ function App() {
       "Sunbiz Link", "Location", "Zip"
     ]
   });
+
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -70,7 +73,7 @@ function App() {
     if (isProductsUnlocked) {
       timer = setTimeout(() => {
         setIsProductsUnlocked(false);
-      }, 60000); // 1 minute
+      }, 60000); 
     }
     return () => clearTimeout(timer);
   }, [isProductsUnlocked]);
@@ -99,7 +102,6 @@ function App() {
     setSelectedRow(null);
   }, [activeTab]);
 
-  // Auto-open right sidebar on selection
   useEffect(() => {
     if (selectedRow) {
       setIsRightSidebarOpen(true);
@@ -113,7 +115,6 @@ function App() {
         const m = await fetchManifest();
         setManifest(m);
 
-        // Load Product Guide if not in localStorage
         const savedGuides = localStorage.getItem('productGuides');
         if (!savedGuides) {
           const guideFile = m.find(f => f.path.includes('initial.json'));
@@ -126,12 +127,10 @@ function App() {
           }
         }
 
-        // Exclude PDFs and JSON from CSV loading to resolve merge conflict
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         setLoadProgress({ current: 0, total: csvFiles.length });
-        setLoading(false); // Enable immediate interaction
+        setLoading(false);
 
-        // Load incrementally in small batches to improve TTI (Time to Interactive)
         const batchSize = 2;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
           try {
@@ -152,7 +151,6 @@ function App() {
     init();
   }, []);
 
-  // Column Management - Optimized to iterate once and find samples for each type
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -195,6 +193,7 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
+      // RESOLVED CONFLICT: Prioritizing the custom visibility list for UCC
       setVisibleColumns(["Business Name", "Filing Status", "Phone", "Website", "Phone Number", "Column 7", "Column 10", "UCC Number", "Filing Date", "Expiry Date", "Column 45", "Full Address", "Florida UCC Link", "Location"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
@@ -241,12 +240,10 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  // Filters setup
   const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type))).sort()], [manifest]);
   const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
   const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
   const categoryData = useMemo(() => {
     if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') {
       return allData;
@@ -254,7 +251,6 @@ function App() {
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
-  // High-performance filtering logic
   const filteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
