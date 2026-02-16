@@ -12,11 +12,32 @@
     "filename": "UCC Pembroke Pines.csv"
   },
   {
+    "path": "Data/3. UCC/UCC Fort Lauderdale.csv",
+    "type": "3. UCC",
+    "zip": "",
+    "location": "UCC Fort Lauderdale",
+    "filename": "UCC Fort Lauderdale.csv"
+  },
+  {
+    "path": "Data/3. UCC/UCC Palm Beach.csv",
+    "type": "3. UCC",
+    "zip": "",
+    "location": "UCC Palm Beach",
+    "filename": "UCC Palm Beach.csv"
+  },
+  {
     "path": "Data/1. SB/SB Palm Beach.csv",
     "type": "1. SB",
     "zip": "",
     "location": "SB Palm Beach",
     "filename": "SB Palm Beach.csv"
+  },
+  {
+    "path": "Data/1. SB/UCC Search 33480 Palm Beach.csv",
+    "type": "1. SB",
+    "zip": "",
+    "location": "UCC Search 33480 Palm Beach",
+    "filename": "UCC Search 33480 Palm Beach.csv"
   },
   {
     "path": "Data/2. YP/YP Phone Number Lookup - Sheet1_part02.csv",
@@ -40,6 +61,13 @@
     "filename": "YP Phone Number Lookup PGA - Sheet1.csv"
   },
   {
+    "path": "Data/2. YP/YP Phone Number Lookup Vero Beach - Sheet1.csv",
+    "type": "2. YP",
+    "zip": "",
+    "location": "Vero Beach",
+    "filename": "YP Phone Number Lookup Vero Beach - Sheet1.csv"
+  },
+  {
     "path": "Data/2. YP/YP Phone Number Lookup Barefoot Bay - Sheet1.csv",
     "type": "2. YP",
     "zip": "",
@@ -59,6 +87,13 @@
     "zip": "",
     "location": "- Sheet1_part01",
     "filename": "YP Phone Number Lookup - Sheet1_part01.csv"
+  },
+  {
+    "path": "Data/2. YP/YP Phone Number Lookup Jupiter - Sheet1.csv",
+    "type": "2. YP",
+    "zip": "",
+    "location": "Jupiter",
+    "filename": "YP Phone Number Lookup Jupiter - Sheet1.csv"
   },
   {
     "path": "Data/2. YP/YP Phone Number Lookup - Sheet1_part05.csv",
