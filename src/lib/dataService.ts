@@ -65,7 +65,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let headers: string[] = [];
         let startIndex = 0;
 
-        // 1. Skip leading empty rows (from main)
+        // 1. Skip leading empty rows
         while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
           startIndex++;
         }
@@ -75,11 +75,10 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           return;
         }
 
-        // 2. Enhanced Header Detection (Combined Logic)
+        // 2. Enhanced Header Detection
         const firstRow = data[startIndex];
         const isHeader = (row: string[]) => {
           if (!row) return false;
-          // Check for data patterns (Phone numbers, URLs, or long numeric IDs)
           return !row.some(cell => 
             /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
             (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
@@ -96,16 +95,20 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           } else if (file.type.includes('SB')) {
             headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
           } else if (file.type === '3. UCC') {
+            // RESOLVED CONFLICT: Using the expanded mapping from the feature branch
             const m: Record<number, string> = {
               0: 'Business Name',
               1: 'Industry',
               2: 'Page-Ref',
-              4: 'Phone Number',
-              5: "Company's website",
+              4: 'Phone',
+              5: 'Website',
+              7: 'Phone Number',
+              10: "Company's website",
               38: 'UCC Number',
               41: 'Filing Status',
               42: 'Filing Date',
               43: 'Expiry Date',
+              44: 'Column 45',
               50: 'Full Address',
               55: 'Florida UCC Link'
             };
@@ -115,7 +118,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           }
         }
 
-        // 3. Row Mapping with Metadata Fallbacks
+        // 3. Row Mapping
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
@@ -125,20 +128,18 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           obj._source = file.filename;
           obj._type = file.type;
           
-          // Hybrid metadata logic: prefer row data, fallback to manifest
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
           
           return obj;
         });
 
-        // 4. Post-processing for specific business data (from main)
+        // 4. Post-processing for Sunbiz data
         if (file.type === 'SB') {
           rows = rows.filter(row => {
             const name = row['Entity Name'];
             const regNo = row['Registration Number'];
             const link = row['Sunbiz Link'];
-            // Ensures we only keep valid corporate records
             return name && regNo && link && /^[A-Z]\d+/.test(regNo) && link.includes('sunbiz.org');
           });
         }

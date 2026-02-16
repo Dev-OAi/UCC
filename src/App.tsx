@@ -44,7 +44,21 @@ function App() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
-  const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({});
+
+  // RESOLVED CONFLICT: Keeping the custom UCC column order from the feature branch
+  const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
+    '3. UCC': [
+      "Category", "Page-Ref", "Business Name", "Filing Status", "Phone", "Website", "Industry", "Column 4", "Phone Number", "Company's website",
+      "Column 7", "Column 8", "Column 9", "Column 10", "Column 11", "Column 12", "Column 13", "Column 14", "Column 15",
+      "Column 16", "Column 17", "Column 18", "Column 19", "Column 20", "Column 21", "Column 22", "Column 23", "Column 24",
+      "Column 25", "Column 26", "Column 27", "Column 28", "Column 29", "Column 30", "Column 31", "Column 32", "Column 33",
+      "Column 34", "Column 35", "Column 36", "Column 37", "Column 38", "UCC Number", "Column 40", "Column 41", "Filing Status",
+      "Filing Date", "Expiry Date", "Column 45", "Column 46", "Column 47", "Column 48", "Column 49", "Column 50", "Full Address",
+      "Column 52", "Column 53", "Column 54", "Column 55", "Florida UCC Link", "Entity Name", "Registration Number", "Status",
+      "Sunbiz Link", "Location", "Zip"
+    ]
+  });
+
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -59,7 +73,7 @@ function App() {
     if (isProductsUnlocked) {
       timer = setTimeout(() => {
         setIsProductsUnlocked(false);
-      }, 60000); // 1 minute
+      }, 60000); 
     }
     return () => clearTimeout(timer);
   }, [isProductsUnlocked]);
@@ -88,7 +102,6 @@ function App() {
     setSelectedRow(null);
   }, [activeTab]);
 
-  // Auto-open right sidebar on selection
   useEffect(() => {
     if (selectedRow) {
       setIsRightSidebarOpen(true);
@@ -102,7 +115,6 @@ function App() {
         const m = await fetchManifest();
         setManifest(m);
 
-        // Load Product Guide if not in localStorage
         const savedGuides = localStorage.getItem('productGuides');
         if (!savedGuides) {
           const guideFile = m.find(f => f.path.includes('initial.json'));
@@ -115,12 +127,10 @@ function App() {
           }
         }
 
-        // Exclude PDFs and JSON from CSV loading to resolve merge conflict
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         setLoadProgress({ current: 0, total: csvFiles.length });
-        setLoading(false); // Enable immediate interaction
+        setLoading(false);
 
-        // Load incrementally in small batches to improve TTI (Time to Interactive)
         const batchSize = 2;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
           try {
@@ -141,7 +151,6 @@ function App() {
     init();
   }, []);
 
-  // Column Management - Optimized to iterate once and find samples for each type
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -184,7 +193,8 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
-      setVisibleColumns(['Business Name', 'Industry', 'Page-Ref', 'Phone Number', "Company's website", 'UCC Number', 'Filing Status', 'Filing Date', 'Expiry Date', 'Full Address', 'Florida UCC Link', 'Location', 'Zip']);
+      // RESOLVED CONFLICT: Prioritizing the custom visibility list for UCC
+      setVisibleColumns(["Business Name", "Filing Status", "Phone", "Website", "Phone Number", "Column 7", "Column 10", "UCC Number", "Filing Date", "Expiry Date", "Column 45", "Full Address", "Florida UCC Link", "Location"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
@@ -230,12 +240,10 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  // Filters setup
   const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type))).sort()], [manifest]);
   const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
   const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
 
-  // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
   const categoryData = useMemo(() => {
     if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') {
       return allData;
@@ -243,7 +251,6 @@ function App() {
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
-  // High-performance filtering logic
   const filteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
