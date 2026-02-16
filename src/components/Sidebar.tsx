@@ -16,6 +16,8 @@ interface SidebarProps {
   onGoHome: () => void;
   isOpen?: boolean;
   onClose?: () => void;
+  allDataCount?: number;
+  isSyncing?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -33,6 +35,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onGoHome,
   isOpen,
   onClose,
+  allDataCount = 0,
+  isSyncing = false,
 }) => {
   const [expanded, setExpanded] = useState({
     categories: true,
@@ -247,6 +251,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
       </nav>
+
+      {allDataCount > 0 && (
+        <div className="px-6 py-4 mt-auto border-t border-gray-100 dark:border-slate-800">
+          <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+            <span>Status</span>
+            {isSyncing ? (
+              <span className="text-blue-500 animate-pulse">Syncing</span>
+            ) : (
+              <span className="text-green-500">Ready</span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 font-medium">
+            {allDataCount.toLocaleString()} records loaded
+          </p>
+        </div>
+      )}
       </aside>
     </>
   );

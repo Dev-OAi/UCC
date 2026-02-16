@@ -31,6 +31,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [allData, setAllData] = useState<DataRow[]>([]);
+  const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +47,7 @@ function App() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
-      "Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date",
-      "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"
+      "businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
@@ -88,6 +88,13 @@ function App() {
       localStorage.setItem('productGuides', JSON.stringify(productGuides));
     }
   }, [productGuides]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAllData(allData);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [allData]);
 
   useEffect(() => {
     setSelectedRow(null);
@@ -194,7 +201,7 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
-      setVisibleColumns(["Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date", "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"]);
+      setVisibleColumns(["businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
@@ -240,10 +247,26 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  // Filters setup
-  const types = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type))).sort()], [manifest]);
-  const zips = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.zip).filter(Boolean) as string[])).sort()], [manifest]);
-  const locations = useMemo(() => ['All', ...Array.from(new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.location).filter(Boolean) as string[])).sort()], [manifest]);
+  // Filters setup - Derived from allData for ground truth
+  // Performance: Use debouncedAllData for these lookups to avoid UI stutter
+  const types = useMemo(() => {
+    const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
+    return ['All', ...discovered];
+  }, [debouncedAllData]);
+
+  const zips = useMemo(() => {
+    const discovered = Array.from(new Set(debouncedAllData.map(d => d._zip).filter(Boolean) as string[])).sort();
+    return ['All', ...discovered];
+  }, [debouncedAllData]);
+
+  const locations = useMemo(() => {
+    const discovered = Array.from(new Set(debouncedAllData.map(d => d._location).filter(Boolean) as string[])).sort();
+    return ['All', ...discovered];
+  }, [debouncedAllData]);
+
+  const onFilterChange = (col: string, val: string[]) => {
+    setColumnFilters(p => ({ ...p, [col]: val }));
+  };
 
   // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
   const categoryData = useMemo(() => {
@@ -438,11 +461,13 @@ function App() {
           isProductsUnlocked={isProductsUnlocked}
           onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
           zips={zips} selectedZip={columnFilters['Zip']?.[0] || 'All'}
-          setSelectedZip={(z) => setColumnFilters(p => ({...p, Zip: z === 'All' ? [] : [z]}))}
+          setSelectedZip={(z) => onFilterChange('Zip', z === 'All' ? [] : [z])}
           locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
-          setSelectedLocation={(l) => setColumnFilters(p => ({...p, Location: l === 'All' ? [] : [l]}))}
+          setSelectedLocation={(l) => onFilterChange('Location', l === 'All' ? [] : [l])}
           isOpen={isLeftSidebarOpen} onClose={() => setIsLeftSidebarOpen(false)}
           onGoHome={() => setActiveTab('Home')}
+          allDataCount={allData.length}
+          isSyncing={loadProgress.current < loadProgress.total}
         />
 
         <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
@@ -536,9 +561,9 @@ function App() {
 
               <div className="flex-1 overflow-hidden">
                 <Table
-                  data={filteredData} allData={allData} visibleColumns={sortedVisibleColumns}
+                  data={filteredData} allData={debouncedAllData} visibleColumns={sortedVisibleColumns}
                   selectedRow={selectedRow} onRowSelect={setSelectedRow}
-                  columnFilters={columnFilters} onFilterChange={(col, val) => setColumnFilters(p => ({...p, [col]: val}))}
+                  columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
                 />
               </div>
