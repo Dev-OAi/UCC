@@ -59,6 +59,27 @@ function App() {
     "Expires",                
     "Filings Completed Through", 
     "Summary For Filing"
+    ],
+    // Add the SB Hub configuration here
+    '1. SB': [
+      "businessName",
+      "Document Number",
+      "Status",
+      "Date Filed",
+      "Phone",
+      "Sunbiz Link",
+      "Zip",
+      "Principal Address",
+      "Location"
+    ],
+    // Add the YP Hub configuration here
+    '2. YP': [
+      "businessName",
+      "Category",
+      "Phone",
+      "Website",
+      "Location",
+      "Zip"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
@@ -211,8 +232,11 @@ function App() {
     if (allData.length === 0) return;
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
-    } else if (activeTab === '3. UCC') {
-      setVisibleColumns(customColumnOrders['3. UCC']);
+    } 
+    // This handles 1. SB, 2. YP, and 3. UCC in one go
+    else if (customColumnOrders[activeTab]) {
+      // This one line now covers UCC, SB, and YP automatically
+      setVisibleColumns(customColumnOrders[activeTab]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
@@ -220,7 +244,8 @@ function App() {
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
-  }, [activeTab, allColumns, allData]);
+  // Added customColumnOrders to dependency array to ensure it updates if you reorder columns
+  }, [activeTab, allColumns, allData, customColumnOrders]);
 
   const toggleColumn = (col: string) => {
     setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
@@ -552,12 +577,12 @@ function App() {
                       onToggle={toggleColumn}
                       onReorder={handleColumnReorder}
                     />
-                    {activeTab === '3. UCC' && (
+                   {['3. UCC', '1. SB', '2. YP'].includes(activeTab) && (
                       <button
-                        onClick={copyLayoutConfig}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                        title="Copy Layout Configuration"
-                      >
+    onClick={copyLayoutConfig}
+    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+    title="Copy Layout Configuration"
+  >
                         <Copy className="w-4 h-4" />
                       </button>
                     )}
