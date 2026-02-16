@@ -96,7 +96,22 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           } else if (file.type.includes('SB')) {
             headers = ['Entity Name', 'Registration Number', 'Status', 'Zip', 'Sunbiz Link'];
           } else if (file.type === '3. UCC') {
-            const m: Record<number, string> = { 0: 'Business Name', 1: 'Industry', 4: 'Phone Number', 5: "Company's website" };
+            const m: Record<number, string> = {
+              0: 'Business Name',
+              1: 'Industry',
+              2: 'Page-Ref',
+              4: 'Phone',
+              5: 'Website',
+              7: 'Phone Number',
+              10: "Company's website",
+              38: 'UCC Number',
+              41: 'Filing Status',
+              42: 'Filing Date',
+              43: 'Expiry Date',
+              44: 'Column 45',
+              50: 'Full Address',
+              55: 'Florida UCC Link'
+            };
             headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
           } else {
             headers = firstRow.map((_, i) => `Column ${i + 1}`);
