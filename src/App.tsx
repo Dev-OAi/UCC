@@ -36,7 +36,7 @@ function App() {
   const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
 
-  // State Management
+  // --- State Management ---
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -45,11 +45,25 @@ function App() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  
+  // Custom Hub Layouts: Defines exact order and visibility for specific tabs
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
-      "businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"
-    ]
+      "businessName", 
+      "Status",                    // From Image: Column AP
+      "Date Filed",                // From Image: Column AQ
+      "Expires",                   // From Image: Column AR
+      "Filings Completed Through", // From Image: Column AS
+      "Summary For Filing",        // From Image: Column AT
+      "Sunbiz Link", 
+      "Florida UCC Link", 
+      "Location", 
+      "Zip"
+    ],
+    'SB Hub': ["businessName", "Location", "Zip"], // Configure these as needed
+    'YP Hub': ["businessName", "Zip", "Location"]
   });
+
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -57,67 +71,62 @@ function App() {
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
-  // Security Lock Logic: 1-minute auto-timeout
+  // --- Effects ---
+
+  // Auto-lock Products
   useEffect(() => {
     let timer: any;
     if (isProductsUnlocked) {
-      timer = setTimeout(() => {
-        setIsProductsUnlocked(false);
-      }, 60000); 
+      timer = setTimeout(() => setIsProductsUnlocked(false), 60000);
     }
     return () => clearTimeout(timer);
   }, [isProductsUnlocked]);
 
-  // Dark Mode Persistence
-  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-
+  // Search Debounce
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Dark Mode
   useEffect(() => {
     if (isDarkMode) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
     localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
 
-  // Sync Product Guides to LocalStorage
+  // LocalStorage Sync
   useEffect(() => {
     if (productGuides.length > 0) {
       localStorage.setItem('productGuides', JSON.stringify(productGuides));
     }
   }, [productGuides]);
 
-  // Performance: Debounce global data to prevent UI lag during mass filtering
+  // Data Debounce for performance
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedAllData(allData);
-    }, 100);
+    const timer = setTimeout(() => setDebouncedAllData(allData), 100);
     return () => clearTimeout(timer);
   }, [allData]);
 
-  // Close Selection on Tab Change
+  // Reset selection on tab change
   useEffect(() => {
     setSelectedRow(null);
   }, [activeTab]);
 
-  // Auto-open right sidebar on selection
+  // Auto-open detail view
   useEffect(() => {
-    if (selectedRow) {
-      setIsRightSidebarOpen(true);
-    }
+    if (selectedRow) setIsRightSidebarOpen(true);
   }, [selectedRow]);
 
-  // CORE DATA INITIALIZATION
+  // Data Loading Lifecycle
   useEffect(() => {
     async function init() {
       try {
         const m = await fetchManifest();
         setManifest(m);
 
-        // Load Product Guide if not in localStorage
         const savedGuides = localStorage.getItem('productGuides');
         if (!savedGuides) {
           const guideFile = m.find(f => f.path.includes('initial.json'));
@@ -132,22 +141,16 @@ function App() {
 
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         setLoadProgress({ current: 0, total: csvFiles.length });
-        setLoading(false); // Enable immediate interaction
+        setLoading(false);
 
-        // Incremental Batch Loading
         const batchSize = 2;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
-          try {
-            const batch = csvFiles.slice(i, i + batchSize);
-            const batchResults = await Promise.all(batch.map(file => loadCsv(file)));
-            setAllData(prev => [...prev, ...batchResults.flat()]);
-            setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
-          } catch (err) {
-            console.warn(`Failed to load a batch starting at index ${i}`, err);
-          }
+          const batch = csvFiles.slice(i, i + batchSize);
+          const batchResults = await Promise.all(batch.map(file => loadCsv(file)));
+          setAllData(prev => [...prev, ...batchResults.flat()]);
+          setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
         }
       } catch (err) {
-        console.error(err);
         setError('Failed to load data. Please check manifest.json.');
         setLoading(false);
       }
@@ -155,7 +158,8 @@ function App() {
     init();
   }, []);
 
-  // COLUMN CALCULATIONS
+  // --- Memos ---
+
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -179,6 +183,22 @@ function App() {
     return [...Array.from(keys), 'Location', 'Zip'];
   }, [allData, manifest]);
 
+  // Set visible columns based on tab selection
+  useEffect(() => {
+    if (allData.length === 0) return;
+    if (['Home', 'All', 'Insights'].includes(activeTab)) {
+      setVisibleColumns(allColumns);
+    } else if (customColumnOrders[activeTab]) {
+      setVisibleColumns(customColumnOrders[activeTab]);
+    } else {
+      const sample = allData.find(d => d._type === activeTab);
+      if (sample) {
+        const keys = Object.keys(sample).filter(k => !k.startsWith('_') && k !== 'Zip' && k !== 'Location');
+        setVisibleColumns([...keys, 'Location', 'Zip']);
+      }
+    }
+  }, [activeTab, allColumns, allData, customColumnOrders]);
+
   const currentColumnOrder = useMemo(() => {
     const customOrder = customColumnOrders[activeTab];
     if (!customOrder) return allColumns;
@@ -190,138 +210,47 @@ function App() {
     return [...visibleColumns].sort((a, b) => {
       const idxA = currentColumnOrder.indexOf(a);
       const idxB = currentColumnOrder.indexOf(b);
-      if (idxA === -1) return 1;
-      if (idxB === -1) return -1;
-      return idxA - idxB;
+      return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
     });
   }, [visibleColumns, currentColumnOrder]);
-
-  // Tab-specific Column Visibility Logic
-  useEffect(() => {
-    if (allData.length === 0) return;
-    if (['Home', 'All', 'Insights'].includes(activeTab)) {
-      setVisibleColumns(allColumns);
-    } else if (activeTab === '3. UCC') {
-      setVisibleColumns(["businessName", "Sunbiz Link", "Florida UCC Link", "Expiration Date", "Location", "Zip"]);
-    } else {
-      const sample = allData.find(d => d._type === activeTab);
-      if (sample) {
-        const keys = Object.keys(sample).filter(k => !k.startsWith('_') && k !== 'Zip' && k !== 'Location');
-        setVisibleColumns([...keys, 'Location', 'Zip']);
-      }
-    }
-  }, [activeTab, allColumns, allData]);
-
-  const toggleColumn = (col: string) => {
-    setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
-  };
-
-  const handleColumnReorder = (col: string, direction: 'up' | 'down') => {
-    const currentOrder = currentColumnOrder;
-    const index = currentOrder.indexOf(col);
-    if (index === -1) return;
-
-    const newOrder = [...currentOrder];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
-
-    [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
-    setCustomColumnOrders(prev => ({ ...prev, [activeTab]: newOrder }));
-  };
-
-  // ACTIONS & TOOLS
-  const copyLayoutConfig = () => {
-    const config = {
-      tab: activeTab,
-      visibleColumns: sortedVisibleColumns,
-      allColumnsOrder: currentColumnOrder
-    };
-    navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    alert('Layout configuration copied to clipboard!');
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setColumnFilters({});
-    setSortConfig(null);
-    setActiveTab('Home');
-  };
-
-  const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
-
-  // Filter Data Lookups
-  const types = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const zips = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._zip).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const locations = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._location).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const onFilterChange = (col: string, val: string[]) => {
-    setColumnFilters(p => ({ ...p, [col]: val }));
-  };
-
-  // FILTERING ENGINE
-  const categoryData = useMemo(() => {
-    if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') return allData;
-    return allData.filter(row => row._type === activeTab);
-  }, [allData, activeTab]);
 
   const filteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
 
+    const categoryData = (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') 
+      ? allData 
+      : allData.filter(row => row._type === activeTab);
+
     let data = categoryData.filter(row => {
-      for (let i = 0; i < activeFilters.length; i++) {
-        const [col, values] = activeFilters[i];
-        const rowValue = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
-        if (!values.includes(String(rowValue || ''))) return false;
+      for (const [col, values] of activeFilters) {
+        const val = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
+        if (!values.includes(String(val || ''))) return false;
       }
       if (!s) return true;
-      for (const key in row) {
-        if (key[0] === '_') continue;
-        if (String(row[key] || '').toLowerCase().includes(s)) return true;
-      }
-      return String(row._location || '').toLowerCase().includes(s) || String(row._zip || '').toLowerCase().includes(s);
+      return Object.entries(row).some(([k, v]) => !k.startsWith('_') && String(v).toLowerCase().includes(s)) ||
+             String(row._location).toLowerCase().includes(s) || String(row._zip).toLowerCase().includes(s);
     });
 
     if (sortConfig) {
       const { key, direction } = sortConfig;
       const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
-
       data = [...data].sort((a, b) => {
-        const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
-        const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
-        const aStr = String(aVal || '');
-        const bStr = String(bVal || '');
-
-        if (dateRegex.test(aStr) && dateRegex.test(bStr)) {
-          const aTime = new Date(aStr).getTime();
-          const bTime = new Date(bStr).getTime();
-          if (!isNaN(aTime) && !isNaN(bTime)) return direction === 'asc' ? aTime - bTime : bTime - aTime;
+        const aVal = String(key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key] || '');
+        const bVal = String(key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key] || '');
+        if (dateRegex.test(aVal) && dateRegex.test(bVal)) {
+          return direction === 'asc' ? new Date(aVal).getTime() - new Date(bVal).getTime() : new Date(bVal).getTime() - new Date(aVal).getTime();
         }
-
-        const comp = collator.compare(aStr, bStr);
-        return direction === 'asc' ? comp : -comp;
+        return direction === 'asc' ? collator.compare(aVal, bVal) : collator.compare(bVal, aVal);
       });
     }
     return data;
-  }, [categoryData, debouncedSearchTerm, columnFilters, sortConfig]);
+  }, [allData, activeTab, debouncedSearchTerm, columnFilters, sortConfig]);
 
-  // SEARCH RESULTS LOGIC
   const searchResults = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const query = searchTerm.toLowerCase();
     const results: SearchResult[] = [];
-
     productData.forEach((section, sIdx) => {
       section.categories.forEach((category, cIdx) => {
         category.subCategories.forEach((sub, subIdx) => {
@@ -330,7 +259,7 @@ function App() {
               results.push({
                 id: `${sIdx}-${cIdx}-${subIdx}-${pIdx}`,
                 name: product.name,
-                context: `${section.title} > ${category.title}${sub.title ? ` > ${sub.title}` : ''}`,
+                context: `${section.title} > ${category.title}`,
                 page: 'Products'
               });
             }
@@ -341,7 +270,8 @@ function App() {
     return results.slice(0, 10);
   }, [searchTerm]);
 
-  // NAVIGATION HANDLERS
+  // --- Handlers ---
+
   const handleResultClick = (result: SearchResult) => {
     const action = () => {
       setActiveTab(result.page);
@@ -350,28 +280,7 @@ function App() {
       setSearchTerm('');
       setTimeout(() => setHighlightedProductId(null), 3000);
     };
-
     if (result.page === 'Products' && !isProductsUnlocked) {
-      setPendingSearchAction(() => action);
-      setIsProductsModalOpen(true);
-    } else {
-      action();
-    }
-  };
-
-  const handleQuickLinkClick = (sectionTitle: string) => {
-    const action = () => {
-      setActiveTab('Products');
-      setIsSearchOpen(false);
-      setSearchTerm('');
-      setTimeout(() => {
-        const sections = document.querySelectorAll('h2');
-        const sectionElement = Array.from(sections).find(h => h.textContent === sectionTitle);
-        if (sectionElement) sectionElement.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    };
-
-    if (!isProductsUnlocked) {
       setPendingSearchAction(() => action);
       setIsProductsModalOpen(true);
     } else {
@@ -397,9 +306,10 @@ function App() {
       return exportRow;
     });
     const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    link.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.download = `${activeTab}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
@@ -407,22 +317,13 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
-      {/* Background Sync Banner */}
       {loadProgress.current < loadProgress.total && (
         <div className="w-full shrink-0">
           <div className="h-1 bg-blue-100 dark:bg-blue-900/30 w-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600 transition-all duration-500 ease-out"
-              style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }}
-            />
+            <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }} />
           </div>
-          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-0.5 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
-            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
-              Syncing streams: {loadProgress.current} of {loadProgress.total} ready
-            </span>
-            <span className="text-[9px] text-blue-400 dark:text-blue-500 animate-pulse font-bold tracking-tighter uppercase">
-              Background Optimization Active
-            </span>
+          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-0.5 flex justify-between items-center border-b border-blue-100/50">
+             <span className="text-[10px] font-medium text-blue-600">Syncing: {loadProgress.current} / {loadProgress.total}</span>
           </div>
         </div>
       )}
@@ -431,78 +332,86 @@ function App() {
         searchTerm={searchTerm} onSearchChange={setSearchTerm}
         isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen}
         searchResults={searchResults} onResultClick={handleResultClick}
-        onQuickLinkClick={handleQuickLinkClick} isProductsUnlocked={isProductsUnlocked}
+        isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode} onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
         isRightSidebarOpen={isRightSidebarOpen}
+        onQuickLinkClick={() => {}}
       />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
-          types={types} activeTab={activeTab} setActiveTab={(tab) => {
-            if (tab === 'Products' && !isProductsUnlocked) setIsProductsModalOpen(true);
-            else setActiveTab(tab);
+          types={Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort()}
+          activeTab={activeTab} setActiveTab={(tab) => {
+             if (tab === 'Products' && !isProductsUnlocked) setIsProductsModalOpen(true);
+             else setActiveTab(tab);
           }}
-          isProductsUnlocked={isProductsUnlocked} onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
-          zips={zips} selectedZip={columnFilters['Zip']?.[0] || 'All'}
+          isProductsUnlocked={isProductsUnlocked}
+          onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
+          zips={Array.from(new Set(debouncedAllData.map(d => d._zip).filter(Boolean) as string[])).sort()}
+          selectedZip={columnFilters['Zip']?.[0] || 'All'}
           setSelectedZip={(z) => onFilterChange('Zip', z === 'All' ? [] : [z])}
-          locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
+          locations={Array.from(new Set(debouncedAllData.map(d => d._location).filter(Boolean) as string[])).sort()}
+          selectedLocation={columnFilters['Location']?.[0] || 'All'}
           setSelectedLocation={(l) => onFilterChange('Location', l === 'All' ? [] : [l])}
           isOpen={isLeftSidebarOpen} onClose={() => setIsLeftSidebarOpen(false)}
-          onGoHome={() => setActiveTab('Home')} allDataCount={allData.length}
+          onGoHome={() => setActiveTab('Home')}
+          allDataCount={allData.length}
           isSyncing={loadProgress.current < loadProgress.total}
         />
 
         <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
           {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+            <div className="flex-1 flex items-center justify-center">
               <div className="w-12 h-12 border-4 border-t-blue-600 rounded-full animate-spin"></div>
-              <p className="text-gray-600 dark:text-slate-400 font-medium uppercase tracking-widest text-xs">Initializing Intelligence Workspace</p>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
-            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
+            <Dashboard types={[]} onSelectCategory={setActiveTab} rowCount={allData.length} />
           ) : activeTab === 'Insights' ? (
-            <Insights data={allData} types={types} />
+            <Insights data={allData} types={[]} />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Product Guide' ? (
-            productGuides.length > 0 ? (
-              <ProductGuideRenderer guide={productGuides[0]} setProductGuides={setProductGuides} />
-            ) : <div className="flex-1 flex items-center justify-center"><div className="w-12 h-12 border-4 border-t-blue-600 rounded-full animate-spin"></div></div>
+            <ProductGuideRenderer guide={productGuides[0]} setProductGuides={setProductGuides} />
           ) : activeTab === 'Products' ? (
-            isProductsUnlocked ? <Products highlightedProductId={highlightedProductId} /> : (
-              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-4">
-                <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-full text-blue-600"><Database className="w-12 h-12" /></div>
-                <h2 className="text-2xl font-bold">Products Tool Locked</h2>
-                <p className="text-gray-500 max-w-md">Authorization required to view internal product specs and pricing modules.</p>
-                <button onClick={() => setIsProductsModalOpen(true)} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow-lg shadow-blue-500/20">Unlock Access</button>
-              </div>
-            )
+            <Products highlightedProductId={highlightedProductId} />
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
           ) : activeTab === 'Activity Log' ? (
             <ActivityLog />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-6 py-4 flex items-center justify-between shrink-0 border-b dark:border-slate-800">
+              <div className="px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                  <h2 className="text-lg font-black tracking-tight">{activeTab} Hub</h2>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{filteredData.length.toLocaleString()} Indexed Entities</p>
+                  <h2 className="text-lg font-bold">{activeTab} Hub</h2>
+                  <p className="text-xs text-gray-500">{filteredData.length.toLocaleString()} records found</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <button onClick={() => setIsSecurityModalOpen(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all">
-                    <Download className="w-3.5 h-3.5" /> <span>Download Hub</span>
+                  <button onClick={() => setIsSecurityModalOpen(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-semibold">
+                    <Download className="w-3.5 h-3.5" /> <span>Download</span>
                   </button>
-                  <ColumnToggle columns={currentColumnOrder} visibleColumns={visibleColumns} onToggle={toggleColumn} onReorder={handleColumnReorder} />
-                  {activeTab === '3. UCC' && (
-                    <button onClick={copyLayoutConfig} className="p-1.5 text-gray-500 hover:text-blue-600 transition-colors"><Copy className="w-4 h-4" /></button>
-                  )}
-                  {isFiltered && (
-                    <button onClick={clearFilters} className="text-xs font-bold text-red-600 flex items-center gap-1"><FilterX className="w-3.5 h-3.5" /> Reset</button>
+                  <ColumnToggle
+                    columns={currentColumnOrder} visibleColumns={visibleColumns}
+                    onToggle={(col) => setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col])}
+                    onReorder={(col, dir) => {
+                      const order = [...currentColumnOrder];
+                      const idx = order.indexOf(col);
+                      const target = dir === 'up' ? idx - 1 : idx + 1;
+                      if (target >= 0 && target < order.length) {
+                        [order[idx], order[target]] = [order[target], order[idx]];
+                        setCustomColumnOrders(prev => ({ ...prev, [activeTab]: order }));
+                      }
+                    }}
+                  />
+                  {(searchTerm || Object.values(columnFilters).some(v => v.length > 0)) && (
+                    <button onClick={() => {setSearchTerm(''); setColumnFilters({});}} className="text-xs font-semibold text-red-600 flex items-center">
+                      <FilterX className="w-3.5 h-3.5 mr-1" /> Clear
+                    </button>
                   )}
                 </div>
               </div>
+
               <div className="flex-1 overflow-hidden">
                 <Table
                   data={filteredData} allData={debouncedAllData} visibleColumns={sortedVisibleColumns}
@@ -517,8 +426,11 @@ function App() {
 
         <RightSidebar
           selectedRow={selectedRow}
-          onClose={() => { setSelectedRow(null); if (window.innerWidth < 1024) setIsRightSidebarOpen(false); }}
-          manifest={manifest} activeTab={activeTab} productGuide={productGuides[0]} isOpen={isRightSidebarOpen}
+          onClose={() => setSelectedRow(null)}
+          manifest={manifest}
+          activeTab={activeTab}
+          productGuide={productGuides[0]}
+          isOpen={isRightSidebarOpen}
         />
       </div>
 
