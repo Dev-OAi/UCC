@@ -139,16 +139,44 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
         else if (colCount >= 30) {
-          // SB Schema
+         // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',
-            2: 'Status',
-            3: 'Zip',
-            4: 'Phone',                    // Added Phone mapping
-            5: 'Sunbiz Link',               // Link usually follows phone
-            12: 'Date Filed',
-            15: 'Principal Address'
+            0: 'businessName'
           };
+
+          // Scan the first 25 columns to find where the data is hiding
+          firstRow.forEach((cell, idx) => {
+            if (idx > 0 && idx < 25) {
+              const val = String(cell || '').trim();
+              if (!val) return;
+
+              // 1. Sunbiz Link
+              if (val.toLowerCase().includes('sunbiz.org')) {
+                m[idx] = 'Sunbiz Link';
+              } 
+              // 2. Document Number (Letter + 6+ digits)
+              else if (/^[A-Za-z]\d{6,}/.test(val)) {
+                m[idx] = 'Document Number';
+              }
+              // 3. Status (Active, Inactive, etc.)
+              else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+                m[idx] = 'Status';
+              }
+              // 4. Zip Code (Exactly 5 digits)
+              else if (/^\d{5}$/.test(val)) {
+                m[idx] = 'Zip';
+              }
+              // 5. Date Filed (Pattern: 00/00/0000)
+              else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+                m[idx] = 'Date Filed';
+              }
+              // 6. Phone Number
+              else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
+                m[idx] = 'Phone';
+              }
+            }
+          });
+          // Fill in the rest as "Column X"
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
         else if (colCount >= 5) {
