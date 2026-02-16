@@ -17,7 +17,7 @@ import ProductGuideRenderer from './components/ProductGuideRenderer';
 import { ProductGuide } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
-import { Search, Filter, Database, MapPin, Download, FilterX } from 'lucide-react';
+import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
 import Papa from 'papaparse';
 
 export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
@@ -44,6 +44,12 @@ function App() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
+    '3. UCC': [
+      "Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date",
+      "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"
+    ]
+  });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
@@ -164,12 +170,31 @@ function App() {
     return [...Array.from(keys), 'Location', 'Zip'];
   }, [allData, manifest]);
 
+  const currentColumnOrder = useMemo(() => {
+    const customOrder = customColumnOrders[activeTab];
+    if (!customOrder) return allColumns;
+
+    // Merge custom order with remaining columns to ensure "all columns" are available
+    const remainingColumns = allColumns.filter(col => !customOrder.includes(col));
+    return [...customOrder, ...remainingColumns];
+  }, [customColumnOrders, activeTab, allColumns]);
+
+  const sortedVisibleColumns = useMemo(() => {
+    return [...visibleColumns].sort((a, b) => {
+      const idxA = currentColumnOrder.indexOf(a);
+      const idxB = currentColumnOrder.indexOf(b);
+      if (idxA === -1) return 1;
+      if (idxB === -1) return -1;
+      return idxA - idxB;
+    });
+  }, [visibleColumns, currentColumnOrder]);
+
   useEffect(() => {
     if (allData.length === 0) return;
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } else if (activeTab === '3. UCC') {
-      setVisibleColumns(['Business Name', 'Industry', 'Phone Number', "Company's website", 'Column 39', 'Column 40', 'Column 41', 'Column 42', 'Column 43', 'Column 44', 'Column 45', 'Column 46', 'Column 47', 'Column 50', 'Column 54', 'Location', 'Zip']);
+      setVisibleColumns(["Industry", "Category", "Page-Ref", "Business Name", "Filing Status", "Filing Date", "Expiry Date", "Expiration Date", "UCC Number", "Phone", "Website", "Phone Number", "Company's website", "Full Address", "Florida UCC Link", "Location", "Zip"]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
@@ -181,6 +206,29 @@ function App() {
 
   const toggleColumn = (col: string) => {
     setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
+  };
+
+  const handleColumnReorder = (col: string, direction: 'up' | 'down') => {
+    const currentOrder = currentColumnOrder;
+    const index = currentOrder.indexOf(col);
+    if (index === -1) return;
+
+    const newOrder = [...currentOrder];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
+
+    [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
+    setCustomColumnOrders(prev => ({ ...prev, [activeTab]: newOrder }));
+  };
+
+  const copyLayoutConfig = () => {
+    const config = {
+      tab: activeTab,
+      visibleColumns: sortedVisibleColumns,
+      allColumnsOrder: currentColumnOrder
+    };
+    navigator.clipboard.writeText(JSON.stringify(config, null, 2));
+    alert('Layout configuration copied to clipboard! Please provide this to the developer to lock it in.');
   };
 
   const clearFilters = () => {
@@ -226,10 +274,24 @@ function App() {
 
     if (sortConfig) {
       const { key, direction } = sortConfig;
+      const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+
       data = [...data].sort((a, b) => {
         const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
         const bVal = key === 'Location' ? b._location : key === 'Zip' ? b._zip : b[key];
-        const comp = collator.compare(String(aVal || ''), String(bVal || ''));
+
+        const aStr = String(aVal || '');
+        const bStr = String(bVal || '');
+
+        if (dateRegex.test(aStr) && dateRegex.test(bStr)) {
+          const aTime = new Date(aStr).getTime();
+          const bTime = new Date(bStr).getTime();
+          if (!isNaN(aTime) && !isNaN(bTime)) {
+            return direction === 'asc' ? aTime - bTime : bTime - aTime;
+          }
+        }
+
+        const comp = collator.compare(aStr, bStr);
         return direction === 'asc' ? comp : -comp;
       });
     }
@@ -447,7 +509,23 @@ function App() {
                     <Download className="w-3.5 h-3.5" />
                     <span>Download</span>
                   </button>
-                  <ColumnToggle columns={allColumns} visibleColumns={visibleColumns} onChange={toggleColumn} />
+                  <div className="flex items-center space-x-2">
+                    <ColumnToggle
+                      columns={currentColumnOrder}
+                      visibleColumns={visibleColumns}
+                      onToggle={toggleColumn}
+                      onReorder={handleColumnReorder}
+                    />
+                    {activeTab === '3. UCC' && (
+                      <button
+                        onClick={copyLayoutConfig}
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        title="Copy Layout Configuration"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   {isFiltered && (
                     <button onClick={clearFilters} className="text-xs font-semibold text-red-600 flex items-center">
                       <FilterX className="w-3.5 h-3.5 mr-1" /> Clear
@@ -458,7 +536,7 @@ function App() {
 
               <div className="flex-1 overflow-hidden">
                 <Table 
-                  data={filteredData} allData={allData} visibleColumns={visibleColumns} 
+                  data={filteredData} allData={allData} visibleColumns={sortedVisibleColumns}
                   selectedRow={selectedRow} onRowSelect={setSelectedRow}
                   columnFilters={columnFilters} onFilterChange={(col, val) => setColumnFilters(p => ({...p, [col]: val}))}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
