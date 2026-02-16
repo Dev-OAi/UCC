@@ -39,6 +39,9 @@ export function scrubValue(value: any): any {
   // Clean up spaces: remove double spaces, trim leading/trailing
   newValue = newValue.replace(/\s\s+/g, ' ').trim();
 
+  // Decode common HTML entities
+  newValue = newValue.replace(/&amp;/gi, '&');
+
   return newValue;
 }
 

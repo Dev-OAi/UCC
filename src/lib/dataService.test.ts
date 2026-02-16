@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { loadCsv } from './dataService';
+import { loadCsv, scrubValue } from './dataService';
 import Papa from 'papaparse';
 
 vi.mock('papaparse', () => ({
@@ -38,6 +38,11 @@ describe('dataService', () => {
       '_zip': '33101',
       '_location': 'Miami'
     });
+  });
+
+  it('should decode HTML entities like &amp;', () => {
+    expect(scrubValue('AT&amp;T')).toBe('AT&T');
+    expect(scrubValue('B&AMP;G')).toBe('B&G');
   });
 
   it('should handle missing headers by providing defaults for YP', async () => {
