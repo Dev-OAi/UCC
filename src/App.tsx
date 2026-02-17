@@ -63,13 +63,14 @@ function App() {
     // Add the SB Hub configuration here
     '1. SB': [
       "businessName",
-      "FEI/EIN Number",         // Successfully mapped from Column 10
       "Document Number",
-      "Entity Type",            // Successfully mapped from Column 7
-      "Status",                 // Successfully mapped from your logic
+      "Column 14",
+      "Column 4",
+      "FEI/EIN Number",
       "Sunbiz Link",
+      "Entity Type",
       "Location",
-      "Column 14",              
+      "Status",
       "Column 41",
       "Date Filed",
       "Expires",
@@ -77,7 +78,10 @@ function App() {
       "Summary For Filing",
       "Column 54",
       "Column 55",
-      "Florida UCC Link"
+      "Florida UCC Link",
+      "Category",
+      "Phone",
+      "Website"
     ],
     // Add the YP Hub configuration here
     '2. YP': [
@@ -475,13 +479,11 @@ function App() {
               style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }}
             />
           </div>
-          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-0.5 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
-            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
-              Syncing data streams: {loadProgress.current} of {loadProgress.total} ready
+          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-1 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
+            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              System Sync: {loadProgress.current} / {loadProgress.total} Data Streams Loaded
             </span>
-            <span className="text-[9px] text-blue-400 dark:text-blue-500 animate-pulse font-bold tracking-tighter uppercase">
-              Background Optimization Active
-            </span>
+            <span className="text-[9px] text-blue-400 animate-pulse font-bold italic">Optimizing Tables...</span>
           </div>
         </div>
       )}
