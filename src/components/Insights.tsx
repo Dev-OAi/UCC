@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
 } from 'recharts';
-import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database } from 'lucide-react';
+import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck } from 'lucide-react';
 
 interface InsightsProps {
   data: any[];
@@ -11,6 +11,7 @@ interface InsightsProps {
 }
 
 export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
+  const [marketShareChartType, setMarketShareChartType] = useState<'bar' | 'pie'>('bar');
   const displayTypes = types.filter(t => t !== 'All' && t !== 'Home');
 
   const statusData = useMemo(() => {
@@ -34,6 +35,29 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
+  }, [data]);
+
+  const marketShareData = useMemo(() => {
+    const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
+    const counts: Record<string, number> = {};
+    last90DaysData.forEach(row => {
+      const name = row['Reverse Name'] || 'Unknown';
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10); // Top 10 entities
+  }, [data]);
+
+  const uniqueReverseNames = useMemo(() => {
+    const names = new Set(
+      data
+        .filter(row => row._type === 'Last 90 Days')
+        .map(row => row['Reverse Name'])
+        .filter(Boolean)
+    );
+    return names.size;
   }, [data]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
@@ -155,6 +179,107 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        </div>
+
+        {/* Market Share Analysis Section */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white">UCC Market Share Analysis</h3>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Top Reverse Entities (Banks/Lenders) from Last 90 Days</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
+                <button
+                  onClick={() => setMarketShareChartType('bar')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                    marketShareChartType === 'bar'
+                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-slate-500 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setMarketShareChartType('pie')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                    marketShareChartType === 'pie'
+                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-slate-500 dark:hover:text-slate-300'
+                  }`}
+                >
+                  <PieIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mr-2">Unique Entities:</span>
+                <span className="text-sm font-black text-blue-700 dark:text-blue-300">{uniqueReverseNames.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              {marketShareChartType === 'bar' ? (
+                <BarChart data={marketShareData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    interval={0}
+                    height={80}
+                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                  />
+                  <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Bar
+                    dataKey="value"
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                    animationBegin={0}
+                    animationDuration={1500}
+                  >
+                    {marketShareData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.9} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              ) : (
+                <PieChart>
+                  <Pie
+                    data={marketShareData}
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={80}
+                    outerRadius={140}
+                    paddingAngle={5}
+                    dataKey="value"
+                    animationBegin={0}
+                    animationDuration={1500}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {marketShareData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    formatter={(value) => <span className="text-[10px] text-gray-600 dark:text-slate-400 font-medium">{value}</span>}
+                  />
+                </PieChart>
+              )}
+            </ResponsiveContainer>
           </div>
         </div>
 
