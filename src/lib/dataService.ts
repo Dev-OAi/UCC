@@ -30,7 +30,6 @@ export function scrubValue(value: any): any {
 
   const lowerValue = value.toLowerCase();
 
-  // URL/Domain detection - if it contains valley and looks like a link or domain
   if (lowerValue.includes('valley') && (
     lowerValue.includes('http') ||
     lowerValue.includes('www.') ||
@@ -41,13 +40,8 @@ export function scrubValue(value: any): any {
     return 'https://www.google.com';
   }
 
-  // Remove "Valley" (case-insensitive)
   let newValue = value.replace(/valley/gi, '');
-
-  // Clean up spaces: remove double spaces, trim leading/trailing
   newValue = newValue.replace(/\s\s+/g, ' ').trim();
-
-  // Decode common HTML entities
   newValue = newValue.replace(/&amp;/gi, '&');
   newValue = newValue.replace(/&#39;/g, "'");
 
@@ -71,7 +65,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
       download: true,
-      header: false, // Detecting headers manually for flexibility
+      header: false, 
       skipEmptyLines: 'greedy',
       complete: (results) => {
         const data = results.data as string[][];
@@ -83,7 +77,6 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let headers: string[] = [];
         let startIndex = 0;
 
-        // 1. Skip leading empty rows
         while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
           startIndex++;
         }
@@ -97,9 +90,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const colCount = firstRow.length;
         const m: Record<number, string> = {};
 
-        // 2. Tri-Schema Detection & Mapping
-        
-        // PRIORITY 1: SUNBIZ (SB) Hub Detection
+        // 1. SB Hub Mapping
         if (file.type.includes('SB')) {
           m[0] = 'businessName';
           m[1] = 'Document Number';
@@ -115,7 +106,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             m[55] = 'Florida UCC Link';
           }
         } 
-        // PRIORITY 2: LARGE UCC EXPORT Detection
+        // 2. UCC Hub Mapping
         else if (file.type.includes('UCC') && colCount >= 50) {
           m[0] = 'businessName';
           m[6] = 'Entity Type';
@@ -125,7 +116,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[43] = 'Expires';
           m[55] = 'Florida UCC Link';
         }
-        // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
+        // 3. Last 90 Days Mapping
         else if (colCount >= 25 && colCount < 30) {
           m[0] = 'Status';
           m[1] = 'Direct Name';
@@ -137,7 +128,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[11] = 'Legal Description';
           startIndex++; 
         }
-        // PRIORITY 4: YELLOW PAGES (YP) Schema
+        // 4. YP Mapping
         else if (colCount >= 5) {
           m[0] = 'Category';
           m[2] = 'businessName';
@@ -146,7 +137,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
           if (isHeader) startIndex++;
         }
-        // FALLBACK: Generic Header Detection
+        // Fallback
         else {
           headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
           const isHeader = !firstRow.some(cell =>
@@ -156,45 +147,33 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date)
+        // Apply Pattern Matching for Links/Dates
         if (Object.keys(m).length > 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
             if (!val || m[idx]) return; 
-
-            if (val.toLowerCase().includes('sunbiz.org')) {
-              m[idx] = 'Sunbiz Link';
-            } 
+            if (val.toLowerCase().includes('sunbiz.org')) m[idx] = 'Sunbiz Link';
             else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-              if (!Object.values(m).includes('Date Filed')) {
-                  m[idx] = 'Date Filed';
-              }
+                if (!Object.values(m).includes('Date Filed')) m[idx] = 'Date Filed';
             }
           });
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
 
-        // 4. Row Mapping
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
             obj[h] = scrubValue(row[i] || '');
           });
-          
           obj._source = file.filename;
           obj._type = file.type;
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
-          
           return obj;
         });
 
-        // 5. Post-processing Filter for Sunbiz
         if (file.type.includes('SB')) {
-          rows = rows.filter(row => {
-            const name = row['businessName'] || row['Document Number'] || row['Column 1'];
-            return !!name; 
-          });
+          rows = rows.filter(row => !!(row['businessName'] || row['Document Number'] || row['Column 1']));
         }
 
         resolve(rows);
