@@ -13,6 +13,14 @@ interface InsightsProps {
 
 export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
   const [marketShareChartType, setMarketShareChartType] = useState<'bar' | 'pie'>('pie');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const displayTypes = types.filter(t => t !== 'All' && t !== 'Home');
 
   const statusData = useMemo(() => {
@@ -153,15 +161,15 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
               </h3>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Entity Status</span>
             </div>
-            <div className="h-[350px] w-full">
+            <div className="h-[450px] md:h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={statusData}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={80}
-                    outerRadius={120}
+                    cy={isMobile ? "40%" : "50%"}
+                    innerRadius={isMobile ? 40 : 80}
+                    outerRadius={isMobile ? 70 : 120}
                     paddingAngle={5}
                     dataKey="value"
                     animationBegin={0}
@@ -174,7 +182,6 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend
                     verticalAlign="bottom"
-                    height={36}
                     iconType="circle"
                     formatter={(value) => <span className="text-xs text-gray-600 dark:text-slate-400 font-medium">{value}</span>}
                   />
@@ -267,18 +274,18 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
             </div>
           </div>
 
-          <div className="h-[400px] w-full">
+          <div className="h-[550px] md:h-[400px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               {marketShareChartType === 'bar' ? (
-                <BarChart data={marketShareData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                <BarChart data={marketShareData} margin={{ top: 20, right: 30, left: 20, bottom: isMobile ? 120 : 60 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                   <XAxis
                     dataKey="name"
                     angle={-45}
                     textAnchor="end"
                     interval={0}
-                    height={80}
-                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                    height={isMobile ? 120 : 80}
+                    tick={{ fill: '#64748b', fontSize: isMobile ? 8 : 10, fontWeight: 500 }}
                   />
                   <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
                   <RechartsTooltip content={<CustomTooltip />} />
@@ -299,14 +306,14 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <Pie
                     data={marketShareData}
                     cx="50%"
-                    cy="45%"
-                    innerRadius={80}
-                    outerRadius={140}
+                    cy={isMobile ? "35%" : "50%"}
+                    innerRadius={isMobile ? 40 : 80}
+                    outerRadius={isMobile ? 70 : 140}
                     paddingAngle={5}
                     dataKey="value"
                     animationBegin={0}
                     animationDuration={1500}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={isMobile ? false : ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {marketShareData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -315,7 +322,6 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend
                     verticalAlign="bottom"
-                    height={36}
                     iconType="circle"
                     formatter={(value) => <span className="text-[10px] text-gray-600 dark:text-slate-400 font-medium">{value}</span>}
                   />
@@ -374,18 +380,18 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
               </h3>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Filing Types</span>
             </div>
-            <div className="h-[300px] w-full">
+            <div className={isMobile ? "h-[350px]" : "h-[300px]"}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={docTypeData} layout="vertical" margin={{ left: 40, right: 20 }}>
+                <BarChart data={docTypeData} layout="vertical" margin={{ left: isMobile ? 10 : 20, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                   <XAxis type="number" hide />
                   <YAxis
                     dataKey="name"
                     type="category"
-                    width={80}
+                    width={isMobile ? 120 : 150}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                    tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 10, fontWeight: 500 }}
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20}>
@@ -407,15 +413,15 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
               </h3>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Entity Types</span>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-[500px] md:h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={entityTypeData}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    cy={isMobile ? "35%" : "50%"}
+                    innerRadius={isMobile ? 40 : 60}
+                    outerRadius={isMobile ? 70 : 100}
                     paddingAngle={5}
                     dataKey="value"
                   >
@@ -426,7 +432,6 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend
                     verticalAlign="bottom"
-                    height={36}
                     iconType="circle"
                     formatter={(value) => <span className="text-[10px] text-gray-600 dark:text-slate-400 font-medium">{value}</span>}
                   />
