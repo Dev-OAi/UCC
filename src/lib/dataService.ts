@@ -28,12 +28,15 @@ export function isPhoneNumber(val: string): boolean {
 export function scrubValue(value: any): any {
   if (typeof value !== 'string') return value;
   const lowerValue = value.toLowerCase();
+  
+  // Custom redirect for "Valley" related links
   if (lowerValue.includes('valley') && (
     lowerValue.includes('http') || lowerValue.includes('www.') ||
     lowerValue.includes('.com') || lowerValue.includes('.org') || lowerValue.includes('.net')
   )) {
     return 'https://www.google.com';
   }
+  
   let newValue = value.replace(/valley/gi, '').replace(/\s\s+/g, ' ').trim();
   return newValue.replace(/&amp;/gi, '&').replace(/&#39;/g, "'");
 }
@@ -61,6 +64,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const data = results.data as string[][];
         if (!data || data.length === 0) return resolve([]);
 
+        // Find the first non-empty row to start parsing
         let startIndex = 0;
         while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
           startIndex++;
@@ -71,9 +75,12 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const colCount = firstRow.length;
         const m: Record<number, string> = {};
 
-        // Mapping Logic
+        // 1. Primary Mapping Logic (Type-based detection)
         if (file.type.includes('SB')) {
-          m[0] = 'businessName'; m[1] = 'Document Number'; m[6] = 'Entity Type'; m[9] = 'FEI/EIN Number';
+          m[0] = 'businessName'; 
+          m[1] = 'Document Number'; 
+          m[6] = 'Entity Type'; 
+          m[9] = 'FEI/EIN Number';
           if (colCount >= 50) {
             m[41] = 'Status'; m[42] = 'Date Filed'; m[43] = 'Expires';
             m[44] = 'Filings Completed Through'; m[45] = 'Summary For Filing'; m[55] = 'Florida UCC Link';
@@ -87,18 +94,25 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           startIndex++;
         } else if (colCount >= 5) {
           m[0] = 'Category'; m[2] = 'businessName'; m[3] = 'Phone'; m[4] = 'Website';
+          // Check if the first row is a header or actual data
           if (!firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell))) startIndex++;
         }
 
-        // Pattern Matcher
+        // 2. Pattern Matcher (Catches dates or links in unmapped columns)
         firstRow.forEach((cell, idx) => {
           const val = String(cell || '').trim();
           if (!val || m[idx]) return;
-          if (val.toLowerCase().includes('sunbiz.org')) m[idx] = 'Sunbiz Link';
-          else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val) && !Object.values(m).includes('Date Filed')) m[idx] = 'Date Filed';
+          if (val.toLowerCase().includes('sunbiz.org')) {
+            m[idx] = 'Sunbiz Link';
+          } else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val) && !Object.values(m).includes('Date Filed')) {
+            m[idx] = 'Date Filed';
+          }
         });
 
+        // 3. Header Generation
         const headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+
+        // 4. Data Conversion
         let rows = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => { obj[h] = scrubValue(row[i] || ''); });
@@ -109,9 +123,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           return obj;
         });
 
+        // 5. Cleanup for SB files (removes empty/trash rows)
         if (file.type.includes('SB')) {
           rows = rows.filter(row => !!(row['businessName'] || row['Document Number'] || row['Column 1']));
         }
+
         resolve(rows);
       },
       error: (err) => reject(err),

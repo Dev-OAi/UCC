@@ -29,6 +29,22 @@ function App() {
   // Progress tracking for the Blue Bar
   const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
 
+  // Jules' Custom Column Configurations
+  const customColumnOrders: Record<string, string[]> = {
+    '3. UCC': [
+      "businessName", "Document Number", "Phone", "Sunbiz Link", "Florida UCC Link", 
+      "Location", "Zip", "Status", "Date Filed", "Expires", "Filings Completed Through", "Summary For Filing"
+    ],
+    '1. SB': [
+      "businessName", "Document Number", "Column 14", "Column 4", "FEI/EIN Number", 
+      "Sunbiz Link", "Entity Type", "Location", "Status", "Column 41", "Date Filed", 
+      "Expires", "Filings Completed Through", "Summary For Filing", "Column 54", 
+      "Column 55", "Florida UCC Link", "Category", "Phone", "Website"
+    ],
+    '2. YP': ["businessName", "Category", "Phone", "Website", "Location", "Zip"],
+    'Last 90 Days': ["Status", "Direct Name", "Reverse Name", "Record Date", "Doc Type", "Instrument Number", "Legal Description"]
+  };
+
   // 1. Load Data with Progress Tracking
   useEffect(() => {
     const initData = async () => {
@@ -53,19 +69,18 @@ function App() {
     initData();
   }, []);
 
-  // 2. Tab & Category Logic
+  // 2. Data Memoization
   const types = useMemo(() => Array.from(new Set(allData.map(d => d._type || 'Unknown'))), [allData]);
   const zips = useMemo(() => Array.from(new Set(allData.map(d => d._zip).filter(Boolean))), [allData]);
   const locations = useMemo(() => Array.from(new Set(allData.map(d => d._location).filter(Boolean))), [allData]);
 
-  // 3. Filtered Data for Table
+  // 3. Filtering Logic
   const filteredData = useMemo(() => {
     let data = allData;
     if (activeTab !== 'Home' && activeTab !== 'Products') {
       data = data.filter(d => d._type === activeTab);
     }
     
-    // Apply column filters (Zip, Location, etc)
     Object.entries(columnFilters).forEach(([col, values]) => {
       if (values.length > 0) {
         data = data.filter(d => values.includes(d[col] || d[`_${col.toLowerCase()}`]));
@@ -74,25 +89,18 @@ function App() {
 
     if (searchTerm) {
       const lowTerm = searchTerm.toLowerCase();
-      data = data.filter(d => 
-        Object.values(d).some(v => String(v).toLowerCase().includes(lowTerm))
-      );
+      data = data.filter(d => Object.values(d).some(v => String(v).toLowerCase().includes(lowTerm)));
     }
     return data;
   }, [allData, activeTab, searchTerm, columnFilters]);
 
-  // 4. Jules' Specific Column Orders per Hub
+  // 4. Helper to find the right column order based on the tab name
   const getColumnsForTab = (tab: string) => {
-    if (tab.includes('SB')) {
-      return ['businessName', 'FEI/EIN Number', 'Document Number', 'Entity Type', 'Status', 'Date Filed', 'Expires', 'Florida UCC Link', '_source'];
-    }
-    if (tab.includes('UCC')) {
-      return ['businessName', 'FEI/EIN Number', 'Status', 'Date Filed', 'Expires', 'Florida UCC Link', '_source'];
-    }
-    if (tab === 'Yellow Pages') {
-      return ['Category', 'businessName', 'Phone', 'Website', '_source'];
-    }
-    return []; // Fallback to auto-detect
+    if (tab.includes('SB')) return customColumnOrders['1. SB'];
+    if (tab.includes('UCC')) return customColumnOrders['3. UCC'];
+    if (tab.includes('YP')) return customColumnOrders['2. YP'];
+    if (tab.includes('90')) return customColumnOrders['Last 90 Days'];
+    return []; 
   };
 
   const handleQuickLinkClick = (type: string) => {
@@ -108,7 +116,7 @@ function App() {
     <div className={`${isDarkMode ? 'dark' : ''} h-screen flex flex-col`}>
       <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
         
-        {/* RESTORED BLUE PROGRESS BAR */}
+        {/* BLUE PROGRESS BAR */}
         {loadProgress.current < loadProgress.total && (
           <div className="w-full shrink-0 z-50">
             <div className="h-1 bg-blue-100 dark:bg-blue-900/30 w-full overflow-hidden">
@@ -121,9 +129,7 @@ function App() {
               <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                 System Sync: {loadProgress.current} / {loadProgress.total} Data Streams Loaded
               </span>
-              <span className="text-[9px] text-blue-400 animate-pulse font-bold italic">
-                Optimizing Tables...
-              </span>
+              <span className="text-[9px] text-blue-400 animate-pulse font-bold italic">Optimizing Tables...</span>
             </div>
           </div>
         )}
@@ -149,11 +155,8 @@ function App() {
             types={types}
             activeTab={activeTab}
             setActiveTab={(tab) => {
-              if (tab === 'Products' && !isProductsUnlocked) {
-                setIsProductsModalOpen(true);
-              } else {
-                setActiveTab(tab);
-              }
+              if (tab === 'Products' && !isProductsUnlocked) setIsProductsModalOpen(true);
+              else setActiveTab(tab);
             }}
             isProductsUnlocked={isProductsUnlocked}
             onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
@@ -174,17 +177,10 @@ function App() {
             {loading ? (
               <div className="flex-1 flex flex-col items-center justify-center space-y-4">
                 <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <div className="text-center">
-                  <p className="text-gray-600 dark:text-slate-400 font-medium">Initializing Workspace...</p>
-                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Loading business datasets</p>
-                </div>
+                <p className="text-gray-600 dark:text-slate-400 font-medium tracking-tight">Initializing Workspace...</p>
               </div>
             ) : activeTab === 'Home' && !searchTerm ? (
-              <Dashboard 
-                types={types} 
-                onSelectCategory={setActiveTab} 
-                rowCount={allData.length} 
-              />
+              <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <DataTable 
