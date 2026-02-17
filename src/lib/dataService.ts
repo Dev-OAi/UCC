@@ -1,66 +1,3 @@
-import Papa from 'papaparse';
-
-export interface FileManifest {
-  path: string;
-  type: string;
-  zip?: string;
-  location?: string;
-  category?: string;
-  filename: string;
-}
-
-export interface DataRow {
-  [key: string]: any;
-  _source?: string;
-  _type?: string;
-  _zip?: string;
-  _location?: string;
-}
-
-export function isZipCode(val: string): boolean {
-  return /^\d{5}(-\d{4})?$/.test(val.trim());
-}
-
-export function isPhoneNumber(val: string): boolean {
-  return /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val.trim());
-}
-
-export function scrubValue(value: any): any {
-  if (typeof value !== 'string') return value;
-
-  const lowerValue = value.toLowerCase();
-
-  if (lowerValue.includes('valley') && (
-    lowerValue.includes('http') ||
-    lowerValue.includes('www.') ||
-    lowerValue.includes('.com') ||
-    lowerValue.includes('.org') ||
-    lowerValue.includes('.net')
-  )) {
-    return 'https://www.google.com';
-  }
-
-  let newValue = value.replace(/valley/gi, '');
-  newValue = newValue.replace(/\s\s+/g, ' ').trim();
-  newValue = newValue.replace(/&amp;/gi, '&');
-  newValue = newValue.replace(/&#39;/g, "'");
-
-  return newValue;
-}
-
-export async function fetchManifest(): Promise<FileManifest[]> {
-  const response = await fetch('./manifest.json');
-  if (!response.ok) throw new Error('Failed to fetch manifest');
-  const manifest: FileManifest[] = await response.json();
-  return manifest.map(m => ({
-    ...m,
-    type: scrubValue(m.type || ''),
-    location: scrubValue(m.location || ''),
-    zip: scrubValue(m.zip || ''),
-    category: scrubValue(m.category || '')
-  }));
-}
-
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
@@ -77,6 +14,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         let headers: string[] = [];
         let startIndex = 0;
 
+        // Skip leading empty rows
         while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
           startIndex++;
         }
@@ -116,7 +54,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[43] = 'Expires';
           m[55] = 'Florida UCC Link';
         }
-        // 3. Last 90 Days Mapping
+        // 3. Last 90 Days Mapping (UCC specific)
         else if (colCount >= 25 && colCount < 30) {
           m[0] = 'Status';
           m[1] = 'Direct Name';
@@ -137,7 +75,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
           if (isHeader) startIndex++;
         }
-        // Fallback
+        // Fallback: Generic Header Detection
         else {
           headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
           const isHeader = !firstRow.some(cell =>
@@ -147,7 +85,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // Apply Pattern Matching for Links/Dates
+        // Apply Pattern Matching for remaining gaps (Links/Dates)
         if (Object.keys(m).length > 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
@@ -160,6 +98,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
 
+        // Final Row Generation
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
@@ -172,6 +111,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           return obj;
         });
 
+        // Filter out empty rows specifically for Sunbiz files
         if (file.type.includes('SB')) {
           rows = rows.filter(row => !!(row['businessName'] || row['Document Number'] || row['Column 1']));
         }
