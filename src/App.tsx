@@ -49,6 +49,7 @@ function App() {
     '3. UCC': [
       "businessName",
       "Document Number",
+      "Category",
       "Phone",
       "Sunbiz Link",
       "Florida UCC Link",
