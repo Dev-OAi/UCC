@@ -75,47 +75,90 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const colCount = firstRow.length;
         const m: Record<number, string> = {};
 
-        // 1. Primary Mapping Logic (Type-based detection)
+        // 2. Tri-Schema Detection & Mapping
+
+        // PRIORITY 1: SUNBIZ (SB) Hub Detection
         if (file.type.includes('SB')) {
-          m[0] = 'businessName'; 
-          m[1] = 'Document Number'; 
-          m[6] = 'Entity Type'; 
+          m[0] = 'businessName';
+          m[1] = 'Document Number';
+          m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
+          
           if (colCount >= 50) {
-            m[41] = 'Status'; m[42] = 'Date Filed'; m[43] = 'Expires';
-            m[44] = 'Filings Completed Through'; m[45] = 'Summary For Filing'; m[55] = 'Florida UCC Link';
+            m[41] = 'Status';
+            m[42] = 'Date Filed';
+            m[43] = 'Expires';
+            m[44] = 'Filings Completed Through';
+            m[45] = 'Summary For Filing';
+            m[55] = 'Florida UCC Link';
           }
-        } else if (file.type.includes('UCC') && colCount >= 50) {
-          m[0] = 'businessName'; m[6] = 'Entity Type'; m[9] = 'FEI/EIN Number';
-          m[41] = 'Status'; m[42] = 'Date Filed'; m[43] = 'Expires'; m[55] = 'Florida UCC Link';
-        } else if (colCount >= 25 && colCount < 30) {
-          m[0] = 'Status'; m[1] = 'Direct Name'; m[2] = 'Reverse Name'; m[3] = 'Record Date';
-          m[4] = 'Location'; m[5] = 'Doc Type'; m[9] = 'Instrument Number'; m[11] = 'Legal Description';
-          startIndex++;
-        } else if (colCount >= 5) {
-          m[0] = 'Category'; m[2] = 'businessName'; m[3] = 'Phone'; m[4] = 'Website';
-          // Check if the first row is a header or actual data
-          if (!firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell))) startIndex++;
+        }
+        // PRIORITY 2: LARGE UCC EXPORT Detection
+        else if (file.type.includes('UCC') && colCount >= 50) {
+          m[0] = 'businessName';
+          m[6] = 'Entity Type';
+          m[9] = 'FEI/EIN Number';
+          m[41] = 'Status';
+          m[42] = 'Date Filed';
+          m[43] = 'Expires';
+          m[55] = 'Florida UCC Link';
+        }
+        // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
+        else if (colCount >= 25 && colCount < 30) {
+          m[0] = 'Status';
+          m[1] = 'Direct Name';
+          m[2] = 'Reverse Name';
+          m[3] = 'Record Date';
+          m[4] = 'Location';
+          m[5] = 'Doc Type';
+          m[9] = 'Instrument Number';
+          m[11] = 'Legal Description';
+          startIndex++; 
+        }
+        // PRIORITY 4: YELLOW PAGES (YP) Schema
+        else if (colCount >= 5) {
+          m[0] = 'Category';
+          m[2] = 'businessName';
+          m[3] = 'Phone';
+          m[4] = 'Website';
+          const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
+          if (isHeader) startIndex++;
+        }
+        // FALLBACK: Generic Header Detection
+        else {
+          headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
+          const isHeader = !firstRow.some(cell =>
+            /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
+            (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
+          );
+          if (isHeader) startIndex++;
         }
 
-        // 2. Pattern Matcher (Catches dates or links in unmapped columns)
-        firstRow.forEach((cell, idx) => {
-          const val = String(cell || '').trim();
-          if (!val || m[idx]) return;
-          if (val.toLowerCase().includes('sunbiz.org')) {
-            m[idx] = 'Sunbiz Link';
-          } else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val) && !Object.values(m).includes('Date Filed')) {
-            m[idx] = 'Date Filed';
-          }
-        });
+        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date)
+        if (Object.keys(m).length > 0) {
+          firstRow.forEach((cell, idx) => {
+            const val = String(cell || '').trim();
+            if (!val || m[idx]) return;
 
-        // 3. Header Generation
-        const headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+            if (val.toLowerCase().includes('sunbiz.org')) {
+              m[idx] = 'Sunbiz Link';
+            }
+            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+              if (!Object.values(m).includes('Date Filed')) {
+                  m[idx] = 'Date Filed';
+              }
+            }
+          });
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+        }
 
-        // 4. Data Conversion
-        let rows = data.slice(startIndex).map(row => {
+        // 4. Row Mapping
+        let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
-          headers.forEach((h, i) => { obj[h] = scrubValue(row[i] || ''); });
+          headers.forEach((h, i) => {
+            obj[h] = scrubValue(row[i] || '');
+          });
+          
           obj._source = file.filename;
           obj._type = file.type;
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
@@ -123,9 +166,12 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           return obj;
         });
 
-        // 5. Cleanup for SB files (removes empty/trash rows)
+        // 5. Post-processing Filter for Sunbiz
         if (file.type.includes('SB')) {
-          rows = rows.filter(row => !!(row['businessName'] || row['Document Number'] || row['Column 1']));
+          rows = rows.filter(row => {
+            const name = row['businessName'] || row['Document Number'] || row['Column 1'];
+            return !!name; 
+          });
         }
 
         resolve(rows);

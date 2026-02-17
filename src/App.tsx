@@ -36,10 +36,26 @@ function App() {
       "Location", "Zip", "Status", "Date Filed", "Expires", "Filings Completed Through", "Summary For Filing"
     ],
     '1. SB': [
-      "businessName", "Document Number", "Column 14", "Column 4", "FEI/EIN Number", 
-      "Sunbiz Link", "Entity Type", "Location", "Status", "Column 41", "Date Filed", 
-      "Expires", "Filings Completed Through", "Summary For Filing", "Column 54", 
-      "Column 55", "Florida UCC Link", "Category", "Phone", "Website"
+      "businessName",
+      "Document Number",
+      "Column 14",
+      "Column 4",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "Entity Type",
+      "Location",
+      "Status",
+      "Column 41",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing",
+      "Column 54",
+      "Column 55",
+      "Florida UCC Link",
+      "Category",
+      "Phone",
+      "Website"
     ],
     '2. YP': ["businessName", "Category", "Phone", "Website", "Location", "Zip"],
     'Last 90 Days': ["Status", "Direct Name", "Reverse Name", "Record Date", "Doc Type", "Instrument Number", "Legal Description"]
