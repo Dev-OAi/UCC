@@ -106,6 +106,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
           
+
           if (colCount >= 50) {
             m[41] = 'Status';
             m[42] = 'Date Filed';
@@ -205,6 +206,73 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
                if (!Object.values(m).includes('Category')) {
                   m[idx] = 'Category';
                }
+            }
+          });
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+        }
+        }
+        // PRIORITY 2: LARGE UCC EXPORT Detection
+        else if (file.type.includes('UCC') && colCount >= 50) {
+          m[0] = 'businessName';
+          m[6] = 'Entity Type';
+          m[9] = 'FEI/EIN Number';
+          m[41] = 'Status';
+          m[42] = 'Date Filed';
+          m[43] = 'Expires';
+          m[55] = 'Florida UCC Link';
+        }
+        // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
+        else if (colCount >= 25 && colCount < 30) {
+          m[0] = 'Status';
+          m[1] = 'Direct Name';
+          m[2] = 'Reverse Name';
+          m[3] = 'Record Date';
+          m[4] = 'Location';
+          m[5] = 'Doc Type';
+          m[9] = 'Instrument Number';
+          m[11] = 'Legal Description';
+          startIndex++;
+        }
+        // PRIORITY 4: YELLOW PAGES (YP) Schema
+        else if (colCount >= 5) {
+          m[0] = 'Category';
+          m[2] = 'businessName';
+          m[3] = 'Phone';
+          m[4] = 'Website';
+          const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
+          if (isHeader) startIndex++;
+        }
+        // FALLBACK: Generic Header Detection
+        else {
+          headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
+          const isHeader = !firstRow.some(cell =>
+            /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
+            (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
+          );
+          if (isHeader) startIndex++;
+        }
+
+        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date & Status)
+        if (Object.keys(m).length > 0) {
+          firstRow.forEach((cell, idx) => {
+            const val = String(cell || '').trim();
+            if (!val || m[idx]) return; 
+
+            // Date Filed
+            if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+              if (!Object.values(m).includes('Date Filed')) {
+                  m[idx] = 'Date Filed';
+              }
+            }
+            // Sunbiz Link
+            else if (val.toLowerCase().includes('sunbiz.org')) {
+              m[idx] = 'Sunbiz Link';
+            }
+            // Status
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+              if (!Object.values(m).includes('Status')) {
+                m[idx] = 'Status';
+              }
             }
           });
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
