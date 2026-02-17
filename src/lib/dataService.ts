@@ -174,7 +174,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           }
         });
           // Fill in the rest as "Column X"
-          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
 
         else if (colCount >= 25 && colCount < 30) {
