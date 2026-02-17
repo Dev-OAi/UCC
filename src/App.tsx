@@ -63,13 +63,14 @@ function App() {
     // Add the SB Hub configuration here
     '1. SB': [
       "businessName",
-      "FEI/EIN Number",         // Successfully mapped from Column 10
       "Document Number",
-      "Entity Type",            // Successfully mapped from Column 7
-      "Status",                 // Successfully mapped from your logic
+      "Column 14",
+      "Column 4",
+      "FEI/EIN Number",
       "Sunbiz Link",
+      "Entity Type",
       "Location",
-      "Column 14",              
+      "Status",
       "Column 41",
       "Date Filed",
       "Expires",
@@ -77,7 +78,10 @@ function App() {
       "Summary For Filing",
       "Column 54",
       "Column 55",
-      "Florida UCC Link"
+      "Florida UCC Link",
+      "Category",
+      "Phone",
+      "Website"
     ],
     // Add the YP Hub configuration here
     '2. YP': [
