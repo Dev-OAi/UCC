@@ -63,15 +63,13 @@ function App() {
     // Add the SB Hub configuration here
     '1. SB': [
       "Document Number",
-      "businessName",           // Business Name
-      "Column 14",              // SB Status
-      "Column 10",              // FEI/EIN Number
-      "Column 7",               // Entity Type
+      "FEI/EIN Number",         // Successfully mapped from Column 10
+      "businessName",
+      "Status",                 // Successfully mapped from your logic
       "Sunbiz Link",
-      "Entity Type",           // Matches your Florida logic in dataService
-      "FEI/EIN Number",        // Matches m[9] in dataService
       "Location",
-      "Status",      
+      "Entity Type",            // Successfully mapped from Column 7
+      "Column 14",              
       "Column 41",
       "Date Filed",
       "Expires",
@@ -89,6 +87,15 @@ function App() {
       "Website",
       "Location",
       "Zip"
+      ],
+      'Last 90 Days': [
+      "Status",
+      "Direct Name",
+      "Reverse Name",
+      "Record Date",
+      "Doc Type",
+      "Instrument Number",
+      "Legal Description"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
