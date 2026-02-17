@@ -1,28 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
-import { Table } from './components/Table';
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
-import { RightSidebar } from './components/RightSidebar';
-import { Dashboard } from './components/Dashboard';
-import { ColumnToggle } from './components/ColumnToggle';
-import { DownloadSecurityModal } from './components/DownloadSecurityModal';
-import { ProductsSecurityModal } from './components/ProductsSecurityModal';
-import { Insights } from './components/Insights';
-import { SmbCheckingSelector } from './components/SmbCheckingSelector';
-import { TreasuryGuide } from './components/TreasuryGuide';
-import { Products } from './components/Products';
-import { ActivityLog } from './components/ActivityLog';
-import ProductGuideRenderer from './components/ProductGuideRenderer';
-import { ProductGuide } from './types';
-import { SearchResult } from './components/SearchDropdown';
-import { productData } from './lib/productData';
-import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
-import Papa from 'papaparse';
-
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
-
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  fetchManifest, 
+  loadCsv, 
+  FileManifest, 
+  DataRow, 
+  isZipCode, 
+  isPhoneNumber 
+} from './lib/dataService';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import DataTable from './components/Table';
+import ProductsModal from './components/ProductsModal';
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);

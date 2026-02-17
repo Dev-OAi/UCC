@@ -98,7 +98,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const m: Record<number, string> = {};
 
         // 2. Tri-Schema Detection & Mapping
-
+        
         // PRIORITY 1: SUNBIZ (SB) Hub Detection
         if (file.type.includes('SB')) {
           m[0] = 'businessName';
@@ -114,7 +114,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             m[45] = 'Summary For Filing';
             m[55] = 'Florida UCC Link';
           }
-        }
+        } 
         // PRIORITY 2: LARGE UCC EXPORT Detection
         else if (file.type.includes('UCC') && colCount >= 50) {
           m[0] = 'businessName';
@@ -160,11 +160,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         if (Object.keys(m).length > 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
-            if (!val || m[idx]) return;
+            if (!val || m[idx]) return; 
 
             if (val.toLowerCase().includes('sunbiz.org')) {
               m[idx] = 'Sunbiz Link';
-            }
+            } 
             else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
               if (!Object.values(m).includes('Date Filed')) {
                   m[idx] = 'Date Filed';
@@ -185,7 +185,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           obj._type = file.type;
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
-
+          
           return obj;
         });
 
