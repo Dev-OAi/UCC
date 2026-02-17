@@ -232,13 +232,23 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           return obj;
         });
 
+        // 4. Post-processing for Sunbiz - this is  here just for backup
+        //  if (file.type === 'SB') {
+        //   rows = rows.filter(row => {
+        //     const name = row['businessName'] || row['Entity Name'];
+        //     const link = row['Sunbiz Link'];
+            // Basic validation to ensure the row is a valid Sunbiz record
+        //    return name && link && link.includes('sunbiz.org');
+        //   });
+        //  }
+
         // 4. Post-processing for Sunbiz
         if (file.type === 'SB') {
           rows = rows.filter(row => {
-            const name = row['businessName'] || row['Entity Name'];
-            const link = row['Sunbiz Link'];
-            // Basic validation to ensure the row is a valid Sunbiz record
-            return name && link && link.includes('sunbiz.org');
+            // We only care if there is a name or a document number.
+            // This prevents the "blank data" issue if the Link column isn't mapped yet.
+            const name = row['businessName'] || row['Document Number'] || row['Column 1'];
+            return !!name; 
           });
         }
 
