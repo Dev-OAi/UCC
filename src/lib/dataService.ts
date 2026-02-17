@@ -22,7 +22,6 @@ export function isZipCode(val: string): boolean {
 }
 
 export function isPhoneNumber(val: string): boolean {
-  // Matches (555) 555-5555 or 555-555-5555
   return /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val.trim());
 }
 
@@ -96,125 +95,57 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
 
         const firstRow = data[startIndex];
         const colCount = firstRow.length;
+        const m: Record<number, string> = {};
 
-        // 2. Tri-Schema Detection & Mapping with Scrubbed Headers
-        if (colCount >= 50) {
-          // 1. Set the "Unmovable" columns first
-          const m: Record<number, string> = {
-            0: 'businessName',
-            41: 'Status',
-            42: 'Date Filed',
-            43: 'Expires',
-            44: 'Filings Completed Through',
-            45: 'Summary For Filing',
-            55: 'Florida UCC Link'
-          };
+        // 2. Tri-Schema Detection & Mapping
 
-         // 2. Scan columns 1-10 for specific data patterns
-          firstRow.forEach((cell, idx) => {
-            if (idx > 0 && idx < 10) {
-              const val = String(cell || '').trim();
-              if (!val) return;
-
-              // RULE A: Document Number (Must start with a Letter, then at least 5 numbers)
-              // This targets L14000..., P06000..., etc.
-              if (/^[A-Za-z]\d{5,}/.test(val)) {
-                m[idx] = 'Document Number';
-              }
-              // RULE B: Website
-              else if (val.toLowerCase().includes('http')) {
-                m[idx] = 'Sunbiz Link';
-              } 
-              // RULE C: Zip Code (Exactly 5 digits only)
-              else if (/^\d{5}$/.test(val)) {
-                m[idx] = 'Zip';
-              }
-              // RULE D: Phone Number (Must have 7-10 digits AND symbols like - or ( ) )
-              else if (/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val)) {
-                m[idx] = 'Phone';
-              }
-            }
-          });
-          // 3. Finalize headers
-          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
-        }
-        else if (colCount >= 30) {
-         // SB Schema - Dynamic Smart Detection
-          const m: Record<number, string> = {
-            0: 'businessName',
-            1: 'Document Number',
-            6: 'Entity Type',
-            9: 'FEI/EIN Number',
-            41: 'Status',
-            42: 'Date Filed',
-            43: 'Expires',
-            44: 'Filings Completed Through',
-            45: 'Summary For Filing',
-            55: 'Florida UCC Link'
-          };
-
-         // 2. SCAN THE REST FOR REMAINING DATA
-          firstRow.forEach((cell, idx) => {
-            const val = String(cell || '').trim();
+        // PRIORITY 1: SUNBIZ (SB) Hub Detection
+        if (file.type.includes('SB')) {
+          m[0] = 'businessName';
+          m[1] = 'Document Number';
+          m[6] = 'Entity Type';
+          m[9] = 'FEI/EIN Number';
           
-            // Skip if empty or already assigned (skips 0, 1, 6, 9)
-            if (!val || m[idx]) return; 
-
-            // Date Filed
-            if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-              m[idx] = 'Date Filed';
-            }
-            // Sunbiz Link
-            else if (val.toLowerCase().includes('sunbiz.org')) {
-              m[idx] = 'Sunbiz Link';
-            }
-            // Status
-            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
-              m[idx] = 'Status';
-            }
-          });
-
-          // IMPORTANT: Do not use scrubValue on the header names here
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+          if (colCount >= 50) {
+            m[41] = 'Status';
+            m[42] = 'Date Filed';
+            m[43] = 'Expires';
+            m[44] = 'Filings Completed Through';
+            m[45] = 'Summary For Filing';
+            m[55] = 'Florida UCC Link';
+          }
         }
-
+        // PRIORITY 2: LARGE UCC EXPORT Detection
+        else if (file.type.includes('UCC') && colCount >= 50) {
+          m[0] = 'businessName';
+          // For UCC, we don't force m[1] because it might be Category in some exports
+          m[6] = 'Entity Type';
+          m[9] = 'FEI/EIN Number';
+          // Note: Status/Date/Expires will be picked up by smart detection
+        }
+        // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
         else if (colCount >= 25 && colCount < 30) {
-          // UCC Last 90 Days Schema (Targets your 26-column CSV)
-          const m: Record<number, string> = {
-            0: 'Status',
-            1: 'Direct Name',    // The Debtor
-            2: 'Reverse Name',   // The Lender/Bank
-            3: 'Record Date',
-            4: 'Location',
-            5: 'Doc Type',
-            9: 'Instrument Number',
-            11: 'Legal Description'
-          };
-
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
-          
-          // Since the first row of your CSV contains "Status,Direct Name..." 
-          // we tell the parser to skip that first row and treat it as headers
+          m[0] = 'Status';
+          m[1] = 'Direct Name';
+          m[2] = 'Reverse Name';
+          m[3] = 'Record Date';
+          m[4] = 'Location';
+          m[5] = 'Doc Type';
+          m[9] = 'Instrument Number';
+          m[11] = 'Legal Description';
           startIndex++; 
         }
-
-          
+        // PRIORITY 4: YELLOW PAGES (YP) Schema
         else if (colCount >= 5) {
-          // YP Schema
-          const m: Record<number, string> = {
-            0: 'Category',
-            2: 'businessName',
-            3: 'Phone',
-            4: 'Website'
-          };
-          headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
-
-          // Check if first row is headers or data for YP
+          m[0] = 'Category';
+          m[2] = 'businessName';
+          m[3] = 'Phone';
+          m[4] = 'Website';
           const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
           if (isHeader) startIndex++;
         }
+        // FALLBACK: Generic Header Detection
         else {
-          // Generic CSV: Scrub the actual text from the header row
           headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
           const isHeader = !firstRow.some(cell =>
             /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
@@ -223,39 +154,80 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // 3. Row Mapping
+        // 3. Dynamic Pattern Matching for remaining gaps (Link, Date, Status, Phone, Document Number)
+        if (Object.keys(m).length > 0) {
+          firstRow.forEach((cell, idx) => {
+            const val = String(cell || '').trim();
+            if (!val || m[idx]) return;
+
+            // Document Number (Starts with Letter + digits, or is 10-12 digits)
+            if (/^([A-Za-z]\d{5,}|\d{10,12})$/.test(val)) {
+              if (!Object.values(m).includes('Document Number')) {
+                m[idx] = 'Document Number';
+              }
+            }
+            // Date Filed / Expires
+            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+              if (!Object.values(m).includes('Date Filed')) {
+                m[idx] = 'Date Filed';
+              } else if (!Object.values(m).includes('Expires')) {
+                m[idx] = 'Expires';
+              }
+            }
+            // Sunbiz Link
+            else if (val.toLowerCase().includes('sunbiz.org')) {
+              m[idx] = 'Sunbiz Link';
+            }
+            // Florida UCC Link
+            else if (val.toLowerCase().includes('floridaucc.com')) {
+              m[idx] = 'Florida UCC Link';
+            }
+            // Status
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA|Filed|Lapsed)/i.test(val)) {
+              if (!Object.values(m).includes('Status')) {
+                m[idx] = 'Status';
+              }
+            }
+            // Phone Number
+            else if (isPhoneNumber(val)) {
+              if (!Object.values(m).includes('Phone')) {
+                m[idx] = 'Phone';
+              }
+            }
+            // Website
+            else if (val.toLowerCase().includes('http') && !val.toLowerCase().includes('sunbiz.org') && !val.toLowerCase().includes('floridaucc.com')) {
+              if (!Object.values(m).includes('Website')) {
+                m[idx] = 'Website';
+              }
+            }
+            // Category detection
+            else if (idx === 1 && val.length > 5 && !/^([A-Za-z]\d{5,}|\d{10,12})$/.test(val)) {
+               if (!Object.values(m).includes('Category')) {
+                  m[idx] = 'Category';
+               }
+            }
+          });
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+        }
+
+        // 4. Row Mapping
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
-            // All data preserved, indexed by our scrubbed headers
             obj[h] = scrubValue(row[i] || '');
           });
           
           obj._source = file.filename;
           obj._type = file.type;
-          
-          // Hybrid metadata logic
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
           
           return obj;
         });
 
-        // 4. Post-processing for Sunbiz - this is  here just for backup
-        //  if (file.type === 'SB') {
-        //   rows = rows.filter(row => {
-        //     const name = row['businessName'] || row['Entity Name'];
-        //     const link = row['Sunbiz Link'];
-            // Basic validation to ensure the row is a valid Sunbiz record
-        //    return name && link && link.includes('sunbiz.org');
-        //   });
-        //  }
-
-        // 4. Post-processing for Sunbiz
-        if (file.type === 'SB') {
+        // 5. Post-processing Filter for Sunbiz
+        if (file.type.includes('SB')) {
           rows = rows.filter(row => {
-            // We only care if there is a name or a document number.
-            // This prevents the "blank data" issue if the Link column isn't mapped yet.
             const name = row['businessName'] || row['Document Number'] || row['Column 1'];
             return !!name; 
           });
