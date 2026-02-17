@@ -141,31 +141,34 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         else if (colCount >= 30) {
          // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',
-            1: 'Document Number',
-            6: 'Entity Type',      // FORCED: Column 7 (index 6) is always Entity Type
-            9: 'FEI/EIN Number'    // FORCED: Column 10 (index 9) is always EIN
+            0: 'businessName',      // Column A
+            1: 'Document Number',   // Column B
+            6: 'Entity Type',      // Column G
+            9: 'FEI/EIN Number'    // Column J
           };
 
-         // We still keep the scan for things that MOVE (like the Link or Date)
+         // 2. SCAN THE REST FOR REMAINING DATA
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
+            
+            // Skip if empty or already assigned (skips 0, 1, 6, 9)
             if (!val || m[idx]) return; 
 
-            if (val.toLowerCase().includes('sunbiz.org')) {
+            // Date Filed
+            if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+              m[idx] = 'Date Filed';
+            }
+            // Sunbiz Link
+            else if (val.toLowerCase().includes('sunbiz.org')) {
               m[idx] = 'Sunbiz Link';
             } 
+            // Status
             else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
               m[idx] = 'Status';
             }
-            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-              m[idx] = 'Date Filed';
-            }
-            // Note: We removed the Zip and Entity Type "guesses" here 
-            // because we hardcoded the Entity Type above for Column 7.
           });
 
-          // Generate headers using our fixed map
+          // IMPORTANT: Do not use scrubValue on the header names here
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
 
