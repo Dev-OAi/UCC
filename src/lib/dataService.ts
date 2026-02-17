@@ -141,10 +141,16 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         else if (colCount >= 30) {
          // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',      // Column A: Business Name
-            1: 'Document Number',   // Column B: Doc #
-            6: 'Entity Type',       // Column G: Entity Type
-            9: 'FEI/EIN Number'     // Column J: EIN
+            0: 'businessName',
+            1: 'Document Number',
+            6: 'Entity Type',
+            9: 'FEI/EIN Number',
+            41: 'Status',
+            42: 'Date Filed',
+            43: 'Expires',
+            44: 'Filings Completed Through',
+            45: 'Summary For Filing',
+            55: 'Florida UCC Link'
           };
 
          // 2. SCAN THE REST FOR REMAINING DATA
