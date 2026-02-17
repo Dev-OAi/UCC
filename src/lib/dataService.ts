@@ -105,7 +105,6 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[1] = 'Document Number';
           m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
-          
 
           if (colCount >= 50) {
             m[41] = 'Status';
@@ -115,101 +114,6 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             m[45] = 'Summary For Filing';
             m[55] = 'Florida UCC Link';
           }
-        }
-        // PRIORITY 2: LARGE UCC EXPORT Detection
-        else if (file.type.includes('UCC') && colCount >= 50) {
-          m[0] = 'businessName';
-          // For UCC, we don't force m[1] because it might be Category in some exports
-          m[6] = 'Entity Type';
-          m[9] = 'FEI/EIN Number';
-          // Note: Status/Date/Expires will be picked up by smart detection
-        }
-        // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
-        else if (colCount >= 25 && colCount < 30) {
-          m[0] = 'Status';
-          m[1] = 'Direct Name';
-          m[2] = 'Reverse Name';
-          m[3] = 'Record Date';
-          m[4] = 'Location';
-          m[5] = 'Doc Type';
-          m[9] = 'Instrument Number';
-          m[11] = 'Legal Description';
-          startIndex++; 
-        }
-        // PRIORITY 4: YELLOW PAGES (YP) Schema
-        else if (colCount >= 5) {
-          m[0] = 'Category';
-          m[2] = 'businessName';
-          m[3] = 'Phone';
-          m[4] = 'Website';
-          const isHeader = !firstRow.some(cell => /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell));
-          if (isHeader) startIndex++;
-        }
-        // FALLBACK: Generic Header Detection
-        else {
-          headers = firstRow.map((h, i) => scrubValue(h && h.trim() !== '' ? h.trim() : `Column ${i + 1}`));
-          const isHeader = !firstRow.some(cell =>
-            /\d{3}\D\d{3}\D\d{4}|http|www\./.test(cell) ||
-            (cell && cell.length > 5 && /^\d+$/.test(cell.trim()))
-          );
-          if (isHeader) startIndex++;
-        }
-
-        // 3. Dynamic Pattern Matching for remaining gaps (Link, Date, Status, Phone, Document Number)
-        if (Object.keys(m).length > 0) {
-          firstRow.forEach((cell, idx) => {
-            const val = String(cell || '').trim();
-            if (!val || m[idx]) return;
-
-            // Document Number (Starts with Letter + digits, or is 10-12 digits)
-            if (/^([A-Za-z]\d{5,}|\d{10,12})$/.test(val)) {
-              if (!Object.values(m).includes('Document Number')) {
-                m[idx] = 'Document Number';
-              }
-            }
-            // Date Filed / Expires
-            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-              if (!Object.values(m).includes('Date Filed')) {
-                m[idx] = 'Date Filed';
-              } else if (!Object.values(m).includes('Expires')) {
-                m[idx] = 'Expires';
-              }
-            }
-            // Sunbiz Link
-            else if (val.toLowerCase().includes('sunbiz.org')) {
-              m[idx] = 'Sunbiz Link';
-            }
-            // Florida UCC Link
-            else if (val.toLowerCase().includes('floridaucc.com')) {
-              m[idx] = 'Florida UCC Link';
-            }
-            // Status
-            else if (/^(ACTIVE|INACT|DISS|DELQ|UA|Filed|Lapsed)/i.test(val)) {
-              if (!Object.values(m).includes('Status')) {
-                m[idx] = 'Status';
-              }
-            }
-            // Phone Number
-            else if (isPhoneNumber(val)) {
-              if (!Object.values(m).includes('Phone')) {
-                m[idx] = 'Phone';
-              }
-            }
-            // Website
-            else if (val.toLowerCase().includes('http') && !val.toLowerCase().includes('sunbiz.org') && !val.toLowerCase().includes('floridaucc.com')) {
-              if (!Object.values(m).includes('Website')) {
-                m[idx] = 'Website';
-              }
-            }
-            // Category detection
-            else if (idx === 1 && val.length > 5 && !/^([A-Za-z]\d{5,}|\d{10,12})$/.test(val)) {
-               if (!Object.values(m).includes('Category')) {
-                  m[idx] = 'Category';
-               }
-            }
-          });
-          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
-        }
         }
         // PRIORITY 2: LARGE UCC EXPORT Detection
         else if (file.type.includes('UCC') && colCount >= 50) {
