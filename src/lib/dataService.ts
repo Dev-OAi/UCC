@@ -27,31 +27,18 @@ export function isPhoneNumber(val: string): boolean {
 
 export function scrubValue(value: any): any {
   if (typeof value !== 'string') return value;
-
   const lowerValue = value.toLowerCase();
-
-  // URL/Domain detection - if it contains valley and looks like a link or domain
+  
+  // Custom redirect for "Valley" related links
   if (lowerValue.includes('valley') && (
-    lowerValue.includes('http') ||
-    lowerValue.includes('www.') ||
-    lowerValue.includes('.com') ||
-    lowerValue.includes('.org') ||
-    lowerValue.includes('.net')
+    lowerValue.includes('http') || lowerValue.includes('www.') ||
+    lowerValue.includes('.com') || lowerValue.includes('.org') || lowerValue.includes('.net')
   )) {
     return 'https://www.google.com';
   }
-
-  // Remove "Valley" (case-insensitive)
-  let newValue = value.replace(/valley/gi, '');
-
-  // Clean up spaces: remove double spaces, trim leading/trailing
-  newValue = newValue.replace(/\s\s+/g, ' ').trim();
-
-  // Decode common HTML entities
-  newValue = newValue.replace(/&amp;/gi, '&');
-  newValue = newValue.replace(/&#39;/g, "'");
-
-  return newValue;
+  
+  let newValue = value.replace(/valley/gi, '').replace(/\s\s+/g, ' ').trim();
+  return newValue.replace(/&amp;/gi, '&').replace(/&#39;/g, "'");
 }
 
 export async function fetchManifest(): Promise<FileManifest[]> {
@@ -71,27 +58,18 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
       download: true,
-      header: false, // Detecting headers manually for flexibility
+      header: false,
       skipEmptyLines: 'greedy',
       complete: (results) => {
         const data = results.data as string[][];
-        if (!data || data.length === 0) {
-          resolve([]);
-          return;
-        }
+        if (!data || data.length === 0) return resolve([]);
 
-        let headers: string[] = [];
+        // Find the first non-empty row to start parsing
         let startIndex = 0;
-
-        // 1. Skip leading empty rows
         while (startIndex < data.length && data[startIndex].every(cell => !cell || cell.trim() === '')) {
           startIndex++;
         }
-
-        if (startIndex >= data.length) {
-          resolve([]);
-          return;
-        }
+        if (startIndex >= data.length) return resolve([]);
 
         const firstRow = data[startIndex];
         const colCount = firstRow.length;
@@ -185,7 +163,6 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           obj._type = file.type;
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
-          
           return obj;
         });
 
