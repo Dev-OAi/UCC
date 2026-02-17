@@ -47,29 +47,29 @@ function App() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
-    "businessName", 
-    "Document Number", // Add this here
-    "Phone",         // Add this here
-    "Sunbiz Link", 
-    "Florida UCC Link", 
-    "Location", 
-    "Zip",
-    "Status", 
-    "Date Filed", 
-    "Expires",                
-    "Filings Completed Through", 
-    "Summary For Filing"
+      "businessName",
+      "Document Number",
+      "Phone",
+      "Sunbiz Link",
+      "Florida UCC Link",
+      "Location",
+      "Zip",
+      "Status",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing"
     ],
-    // Add the SB Hub configuration here
     '1. SB': [
       "businessName",
-      "FEI/EIN Number",         // Successfully mapped from Column 10
       "Document Number",
-      "Entity Type",            // Successfully mapped from Column 7
-      "Status",                 // Successfully mapped from your logic
+      "Column 14",
+      "Column 4",
+      "FEI/EIN Number",
       "Sunbiz Link",
+      "Entity Type",
       "Location",
-      "Column 14",              
+      "Status",
       "Column 41",
       "Date Filed",
       "Expires",
@@ -77,9 +77,11 @@ function App() {
       "Summary For Filing",
       "Column 54",
       "Column 55",
-      "Florida UCC Link"
+      "Florida UCC Link",
+      "Category",
+      "Phone",
+      "Website"
     ],
-    // Add the YP Hub configuration here
     '2. YP': [
       "businessName",
       "Category",
@@ -87,8 +89,8 @@ function App() {
       "Website",
       "Location",
       "Zip"
-      ],
-      'Last 90 Days': [
+    ],
+    'Last 90 Days': [
       "Status",
       "Direct Name",
       "Reverse Name",
@@ -175,12 +177,12 @@ function App() {
           }
         }
 
-        // Exclude PDFs and JSON from CSV loading to resolve merge conflict
+        // Exclude PDFs and JSON from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         setLoadProgress({ current: 0, total: csvFiles.length });
         setLoading(false); // Enable immediate interaction
 
-        // Load incrementally in small batches to improve TTI (Time to Interactive)
+        // Load incrementally in small batches
         const batchSize = 2;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
           try {
@@ -201,7 +203,7 @@ function App() {
     init();
   }, []);
 
-  // Column Management - Optimized to iterate once and find samples for each type
+  // Column Management
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -229,7 +231,6 @@ function App() {
     const customOrder = customColumnOrders[activeTab];
     if (!customOrder) return allColumns;
 
-    // Merge custom order with remaining columns to ensure "all columns" are available
     const remainingColumns = allColumns.filter(col => !customOrder.includes(col));
     return [...customOrder, ...remainingColumns];
   }, [customColumnOrders, activeTab, allColumns]);
@@ -249,9 +250,7 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } 
-    // This handles 1. SB, 2. YP, and 3. UCC in one go
     else if (customColumnOrders[activeTab]) {
-      // This one line now covers UCC, SB, and YP automatically
       setVisibleColumns(customColumnOrders[activeTab]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
@@ -260,7 +259,6 @@ function App() {
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
-  // Added customColumnOrders to dependency array to ensure it updates if you reorder columns
   }, [activeTab, allColumns, allData, customColumnOrders]);
 
   const toggleColumn = (col: string) => {
@@ -287,7 +285,7 @@ function App() {
       allColumnsOrder: currentColumnOrder
     };
     navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    alert('Layout configuration copied to clipboard! Please provide this to the developer to lock it in.');
+    alert('Layout configuration copied to clipboard!');
   };
 
   const clearFilters = () => {
@@ -299,8 +297,6 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  // Filters setup - Derived from allData for ground truth
-  // Performance: Use debouncedAllData for these lookups to avoid UI stutter
   const types = useMemo(() => {
     const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
     return ['All', ...discovered];
@@ -320,7 +316,6 @@ function App() {
     setColumnFilters(p => ({ ...p, [col]: val }));
   };
 
-  // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
   const categoryData = useMemo(() => {
     if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') {
       return allData;
@@ -328,7 +323,6 @@ function App() {
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
-  // High-performance filtering logic
   const filteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
@@ -475,13 +469,11 @@ function App() {
               style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }}
             />
           </div>
-          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-0.5 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
-            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">
-              Syncing data streams: {loadProgress.current} of {loadProgress.total} ready
+          <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-1 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
+            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              System Sync: {loadProgress.current} / {loadProgress.total} Data Streams Loaded
             </span>
-            <span className="text-[9px] text-blue-400 dark:text-blue-500 animate-pulse font-bold tracking-tighter uppercase">
-              Background Optimization Active
-            </span>
+            <span className="text-[9px] text-blue-400 animate-pulse font-bold italic">Optimizing Tables...</span>
           </div>
         </div>
       )}
@@ -595,10 +587,10 @@ function App() {
                     />
                    {['3. UCC', '1. SB', '2. YP'].includes(activeTab) && (
                       <button
-    onClick={copyLayoutConfig}
-    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-    title="Copy Layout Configuration"
-  >
+                        onClick={copyLayoutConfig}
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        title="Copy Layout Configuration"
+                      >
                         <Copy className="w-4 h-4" />
                       </button>
                     )}
