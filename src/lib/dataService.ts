@@ -98,14 +98,14 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const m: Record<number, string> = {};
 
         // 2. Tri-Schema Detection & Mapping
-        
+
         // PRIORITY 1: SUNBIZ (SB) Hub Detection
         if (file.type.includes('SB')) {
           m[0] = 'businessName';
           m[1] = 'Document Number';
           m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
-          
+
           if (colCount >= 50) {
             m[41] = 'Status';
             m[42] = 'Date Filed';
@@ -114,7 +114,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             m[45] = 'Summary For Filing';
             m[55] = 'Florida UCC Link';
           }
-        } 
+        }
         // PRIORITY 2: LARGE UCC EXPORT Detection
         else if (file.type.includes('UCC') && colCount >= 50) {
           m[0] = 'businessName';
@@ -135,7 +135,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[5] = 'Doc Type';
           m[9] = 'Instrument Number';
           m[11] = 'Legal Description';
-          startIndex++; 
+          startIndex++;
         }
         // PRIORITY 4: YELLOW PAGES (YP) Schema
         else if (colCount >= 5) {
@@ -156,18 +156,26 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date)
+        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date & Status)
         if (Object.keys(m).length > 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
             if (!val || m[idx]) return; 
 
-            if (val.toLowerCase().includes('sunbiz.org')) {
-              m[idx] = 'Sunbiz Link';
-            } 
-            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+            // Date Filed
+            if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
               if (!Object.values(m).includes('Date Filed')) {
                   m[idx] = 'Date Filed';
+              }
+            }
+            // Sunbiz Link
+            else if (val.toLowerCase().includes('sunbiz.org')) {
+              m[idx] = 'Sunbiz Link';
+            }
+            // Status
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+              if (!Object.values(m).includes('Status')) {
+                m[idx] = 'Status';
               }
             }
           });

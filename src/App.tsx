@@ -1,17 +1,28 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  fetchManifest, 
-  loadCsv, 
-  FileManifest, 
-  DataRow, 
-  isZipCode, 
-  isPhoneNumber 
-} from './lib/dataService';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import DataTable from './components/Table';
-import ProductsModal from './components/ProductsModal';
+import React, { useState, useEffect, useMemo } from 'react';
+import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
+import { Table } from './components/Table';
+import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { RightSidebar } from './components/RightSidebar';
+import { Dashboard } from './components/Dashboard';
+import { ColumnToggle } from './components/ColumnToggle';
+import { DownloadSecurityModal } from './components/DownloadSecurityModal';
+import { ProductsSecurityModal } from './components/ProductsSecurityModal';
+import { Insights } from './components/Insights';
+import { SmbCheckingSelector } from './components/SmbCheckingSelector';
+import { TreasuryGuide } from './components/TreasuryGuide';
+import { Products } from './components/Products';
+import { ActivityLog } from './components/ActivityLog';
+import ProductGuideRenderer from './components/ProductGuideRenderer';
+import { ProductGuide } from './types';
+import { SearchResult } from './components/SearchDropdown';
+import { productData } from './lib/productData';
+import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
+import Papa from 'papaparse';
+
+export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -36,20 +47,19 @@ function App() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
-    "businessName", 
-    "Document Number", // Add this here
-    "Phone",         // Add this here
-    "Sunbiz Link", 
-    "Florida UCC Link", 
-    "Location", 
-    "Zip",
-    "Status", 
-    "Date Filed", 
-    "Expires",                
-    "Filings Completed Through", 
-    "Summary For Filing"
+      "businessName",
+      "Document Number",
+      "Phone",
+      "Sunbiz Link",
+      "Florida UCC Link",
+      "Location",
+      "Zip",
+      "Status",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing"
     ],
-    // Add the SB Hub configuration here
     '1. SB': [
       "businessName",
       "Document Number",
@@ -72,7 +82,6 @@ function App() {
       "Phone",
       "Website"
     ],
-    // Add the YP Hub configuration here
     '2. YP': [
       "businessName",
       "Category",
@@ -80,8 +89,8 @@ function App() {
       "Website",
       "Location",
       "Zip"
-      ],
-      'Last 90 Days': [
+    ],
+    'Last 90 Days': [
       "Status",
       "Direct Name",
       "Reverse Name",
@@ -168,12 +177,12 @@ function App() {
           }
         }
 
-        // Exclude PDFs and JSON from CSV loading to resolve merge conflict
+        // Exclude PDFs and JSON from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
         setLoadProgress({ current: 0, total: csvFiles.length });
         setLoading(false); // Enable immediate interaction
 
-        // Load incrementally in small batches to improve TTI (Time to Interactive)
+        // Load incrementally in small batches
         const batchSize = 2;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
           try {
@@ -194,7 +203,7 @@ function App() {
     init();
   }, []);
 
-  // Column Management - Optimized to iterate once and find samples for each type
+  // Column Management
   const allColumns = useMemo(() => {
     if (allData.length === 0) return [];
     const keys = new Set<string>();
@@ -222,7 +231,6 @@ function App() {
     const customOrder = customColumnOrders[activeTab];
     if (!customOrder) return allColumns;
 
-    // Merge custom order with remaining columns to ensure "all columns" are available
     const remainingColumns = allColumns.filter(col => !customOrder.includes(col));
     return [...customOrder, ...remainingColumns];
   }, [customColumnOrders, activeTab, allColumns]);
@@ -242,9 +250,7 @@ function App() {
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
       setVisibleColumns(allColumns);
     } 
-    // This handles 1. SB, 2. YP, and 3. UCC in one go
     else if (customColumnOrders[activeTab]) {
-      // This one line now covers UCC, SB, and YP automatically
       setVisibleColumns(customColumnOrders[activeTab]);
     } else {
       const sample = allData.find(d => d._type === activeTab);
@@ -253,7 +259,6 @@ function App() {
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
-  // Added customColumnOrders to dependency array to ensure it updates if you reorder columns
   }, [activeTab, allColumns, allData, customColumnOrders]);
 
   const toggleColumn = (col: string) => {
@@ -280,7 +285,7 @@ function App() {
       allColumnsOrder: currentColumnOrder
     };
     navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    alert('Layout configuration copied to clipboard! Please provide this to the developer to lock it in.');
+    alert('Layout configuration copied to clipboard!');
   };
 
   const clearFilters = () => {
@@ -292,8 +297,6 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  // Filters setup - Derived from allData for ground truth
-  // Performance: Use debouncedAllData for these lookups to avoid UI stutter
   const types = useMemo(() => {
     const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
     return ['All', ...discovered];
@@ -313,7 +316,6 @@ function App() {
     setColumnFilters(p => ({ ...p, [col]: val }));
   };
 
-  // Category-specific data subset (Memoized to prevent re-filtering allData on every keystroke)
   const categoryData = useMemo(() => {
     if (activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights') {
       return allData;
@@ -321,7 +323,6 @@ function App() {
     return allData.filter(row => row._type === activeTab);
   }, [allData, activeTab]);
 
-  // High-performance filtering logic
   const filteredData = useMemo(() => {
     const s = debouncedSearchTerm.toLowerCase();
     const activeFilters = Object.entries(columnFilters).filter(([_, values]) => values && values.length > 0);
@@ -586,10 +587,10 @@ function App() {
                     />
                    {['3. UCC', '1. SB', '2. YP'].includes(activeTab) && (
                       <button
-    onClick={copyLayoutConfig}
-    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-    title="Copy Layout Configuration"
-  >
+                        onClick={copyLayoutConfig}
+                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        title="Copy Layout Configuration"
+                      >
                         <Copy className="w-4 h-4" />
                       </button>
                     )}
