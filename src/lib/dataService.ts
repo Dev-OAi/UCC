@@ -143,37 +143,29 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           const m: Record<number, string> = {
             0: 'businessName',
             1: 'Document Number',
-            6: 'Entity Type',      // Forces Column 7 to be 'Entity Type'
-            9: 'FEI/EIN Number'    // Forces Column 10 to be 'FEI/EIN Number'
+            6: 'Entity Type',      // FORCED: Column 7 (index 6) is always Entity Type
+            9: 'FEI/EIN Number'    // FORCED: Column 10 (index 9) is always EIN
           };
 
-          // 2. Scan remaining columns for secondary data
-        firstRow.forEach((cell, idx) => {
-          const val = String(cell || '').trim();
-          if (!val || m[idx]) return; // Skip if empty or already mapped (0, 1, 9)
+         // We still keep the scan for things that MOVE (like the Link or Date)
+          firstRow.forEach((cell, idx) => {
+            const val = String(cell || '').trim();
+            if (!val || m[idx]) return; 
 
-          // Sunbiz Link
-          if (val.toLowerCase().includes('sunbiz.org')) {
-            m[idx] = 'Sunbiz Link';
-          } 
-          // Status (Active, Inactive, etc.)
-          else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
-            m[idx] = 'Status';
-          }
-          // Zip Code
-          else if (/^\d{5}$/.test(val)) {
-            m[idx] = 'Zip';
-          }
-          // Date Filed
-          else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
-            m[idx] = 'Date Filed';
-          }
-          // Entity Type (Column 7 / Column G)
-          else if (val.includes('Florida') && (val.includes('Limited') || val.includes('Profit'))) {
-            m[idx] = 'Entity Type';
-          }
-        });
-          // Fill in the rest as "Column X"
+            if (val.toLowerCase().includes('sunbiz.org')) {
+              m[idx] = 'Sunbiz Link';
+            } 
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+              m[idx] = 'Status';
+            }
+            else if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
+              m[idx] = 'Date Filed';
+            }
+            // Note: We removed the Zip and Entity Type "guesses" here 
+            // because we hardcoded the Entity Type above for Column 7.
+          });
+
+          // Generate headers using our fixed map
           headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
         }
 
