@@ -141,16 +141,16 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         else if (colCount >= 30) {
          // SB Schema - Dynamic Smart Detection
           const m: Record<number, string> = {
-            0: 'businessName',      // Column A
-            1: 'Document Number',   // Column B
-            6: 'Entity Type',      // Column G
-            9: 'FEI/EIN Number'    // Column J
+            0: 'businessName',      // Column A: Business Name
+            1: 'Document Number',   // Column B: Doc #
+            6: 'Entity Type',       // Column G: Entity Type
+            9: 'FEI/EIN Number'     // Column J: EIN
           };
 
          // 2. SCAN THE REST FOR REMAINING DATA
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
-            
+          
             // Skip if empty or already assigned (skips 0, 1, 6, 9)
             if (!val || m[idx]) return; 
 
@@ -161,7 +161,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             // Sunbiz Link
             else if (val.toLowerCase().includes('sunbiz.org')) {
               m[idx] = 'Sunbiz Link';
-            } 
+            }
             // Status
             else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
               m[idx] = 'Status';
