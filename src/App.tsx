@@ -62,13 +62,13 @@ function App() {
     ],
     // Add the SB Hub configuration here
     '1. SB': [
-      "Document Number",
-      "FEI/EIN Number",         // Successfully mapped from Column 10
       "businessName",
+      "FEI/EIN Number",         // Successfully mapped from Column 10
+      "Document Number",
+      "Entity Type",            // Successfully mapped from Column 7
       "Status",                 // Successfully mapped from your logic
       "Sunbiz Link",
       "Location",
-      "Entity Type",            // Successfully mapped from Column 7
       "Column 14",              
       "Column 41",
       "Date Filed",
