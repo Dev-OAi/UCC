@@ -1,290 +1,210 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
-import { Table } from './components/Table';
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
-import { RightSidebar } from './components/RightSidebar';
-import { Dashboard } from './components/Dashboard';
-import { ColumnToggle } from './components/ColumnToggle';
-import { DownloadSecurityModal } from './components/DownloadSecurityModal';
-import { ProductsSecurityModal } from './components/ProductsSecurityModal';
-import { Insights } from './components/Insights';
-import { SmbCheckingSelector } from './components/SmbCheckingSelector';
-import { TreasuryGuide } from './components/TreasuryGuide';
-import { Products } from './components/Products';
-import { ActivityLog } from './components/ActivityLog';
-import ProductGuideRenderer from './components/ProductGuideRenderer';
-import { ProductGuide } from './types';
-import { SearchResult } from './components/SearchDropdown';
-import { productData } from './lib/productData';
-import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
-import Papa from 'papaparse';
-
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
-
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  fetchManifest, 
+  loadCsv, 
+  FileManifest, 
+  DataRow, 
+  isZipCode, 
+  isPhoneNumber 
+} from './services/dataService';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import DataTable from './components/DataTable';
+import ProductsModal from './components/ProductsModal';
 
 function App() {
-  const [manifest, setManifest] = useState<FileManifest[]>([]);
-  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
-    const saved = localStorage.getItem('productGuides');
-    return saved ? JSON.parse(saved) : [];
-  });
   const [allData, setAllData] = useState<DataRow[]>([]);
-  const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
-  const [error, setError] = useState<string | null>(null);
-
-  const [activeTab, setActiveTab] = useState<string>('Home');
+  const [activeTab, setActiveTab] = useState('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
-  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
-  
-  const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
-    '3. UCC': [
-      "businessName", 
-      "Document Number", 
-      "Phone", 
-      "Sunbiz Link", 
-      "Florida UCC Link", 
-      "Location", 
-      "Zip",
-      "Status", 
-      "Date Filed", 
-      "Expires", 
-      "Filings Completed Through", 
-      "Summary For Filing"
-    ],
-    '1. SB': [
-      "businessName",
-      "Document Number",
-      "Column 14",
-      "Column 4",
-      "FEI/EIN Number",
-      "Sunbiz Link",
-      "Entity Type",
-      "Location",
-      "Status",
-      "Column 41",
-      "Date Filed",
-      "Expires",
-      "Filings Completed Through",
-      "Summary For Filing",
-      "Column 54",
-      "Column 55",
-      "Florida UCC Link",
-      "Category",
-      "Phone",
-      "Website"
-    ],
-    '2. YP': [
-      "businessName",
-      "Category",
-      "Phone",
-      "Website",
-      "Location",
-      "Zip"
-    ],
-    'Last 90 Days': [
-      "Status",
-      "Direct Name",
-      "Reverse Name",
-      "Record Date",
-      "Doc Type",
-      "Instrument Number",
-      "Legal Description"
-    ]
-  });
-
-  const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
-  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
-  const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  
+  // Progress tracking for the Blue Bar
+  const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
 
+  // 1. Load Data with Progress Tracking
   useEffect(() => {
-    let timer: any;
-    if (isProductsUnlocked) {
-      timer = setTimeout(() => setIsProductsUnlocked(false), 60000);
-    }
-    return () => clearTimeout(timer);
-  }, [isProductsUnlocked]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    if (isDarkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-    localStorage.setItem('darkMode', String(isDarkMode));
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedAllData(allData), 100);
-    return () => clearTimeout(timer);
-  }, [allData]);
-
-  useEffect(() => {
-    async function init() {
+    const initData = async () => {
       try {
-        const m = await fetchManifest();
-        setManifest(m);
-
-        const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
-        setLoadProgress({ current: 0, total: csvFiles.length });
-        setLoading(false);
-
-        const batchSize = 2;
-        for (let i = 0; i < csvFiles.length; i += batchSize) {
-          const batch = csvFiles.slice(i, i + batchSize);
-          const batchResults = await Promise.all(batch.map(file => loadCsv(file)));
-          setAllData(prev => [...prev, ...batchResults.flat()]);
-          setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
+        const manifest = await fetchManifest();
+        setLoadProgress({ current: 0, total: manifest.length });
+        
+        const allRows: DataRow[] = [];
+        for (let i = 0; i < manifest.length; i++) {
+          const rows = await loadCsv(manifest[i]);
+          allRows.push(...rows);
+          setLoadProgress(prev => ({ ...prev, current: i + 1 }));
         }
-      } catch (err) {
-        setError('Failed to load data.');
+        
+        setAllData(allRows);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
         setLoading(false);
       }
-    }
-    init();
+    };
+    initData();
   }, []);
 
-  const allColumns = useMemo(() => {
-    if (allData.length === 0) return [];
-    const keys = new Set<string>();
-    allData.slice(0, 100).forEach(row => {
-      Object.keys(row).forEach(k => {
-        if (!k.startsWith('_') && k !== 'Zip' && k !== 'Location') keys.add(k);
-      });
-    });
-    return [...Array.from(keys), 'Location', 'Zip'];
-  }, [allData]);
+  // 2. Tab & Category Logic
+  const types = useMemo(() => Array.from(new Set(allData.map(d => d._type || 'Unknown'))), [allData]);
+  const zips = useMemo(() => Array.from(new Set(allData.map(d => d._zip).filter(Boolean))), [allData]);
+  const locations = useMemo(() => Array.from(new Set(allData.map(d => d._location).filter(Boolean))), [allData]);
 
-  const currentColumnOrder = useMemo(() => {
-    const customOrder = customColumnOrders[activeTab];
-    if (!customOrder) return allColumns;
-    const remaining = allColumns.filter(col => !customOrder.includes(col));
-    return [...customOrder, ...remaining];
-  }, [customColumnOrders, activeTab, allColumns]);
-
-  const sortedVisibleColumns = useMemo(() => {
-    return [...visibleColumns].sort((a, b) => currentColumnOrder.indexOf(a) - currentColumnOrder.indexOf(b));
-  }, [visibleColumns, currentColumnOrder]);
-
-  useEffect(() => {
-    if (allData.length === 0) return;
-    if (['Home', 'All', 'Insights'].includes(activeTab)) {
-      setVisibleColumns(allColumns);
-    } else if (customColumnOrders[activeTab]) {
-      setVisibleColumns(customColumnOrders[activeTab]);
-    } else {
-      const sample = allData.find(d => d._type === activeTab);
-      if (sample) {
-        const keys = Object.keys(sample).filter(k => !k.startsWith('_') && k !== 'Zip' && k !== 'Location');
-        setVisibleColumns([...keys, 'Location', 'Zip']);
-      }
-    }
-  }, [activeTab, allColumns, allData]);
-
-  const toggleColumn = (col: string) => setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
-
-  const handleColumnReorder = (col: string, direction: 'up' | 'down') => {
-    const order = currentColumnOrder;
-    const idx = order.indexOf(col);
-    const target = direction === 'up' ? idx - 1 : idx + 1;
-    if (target < 0 || target >= order.length) return;
-    const newOrder = [...order];
-    [newOrder[idx], newOrder[target]] = [newOrder[target], newOrder[idx]];
-    setCustomColumnOrders(prev => ({ ...prev, [activeTab]: newOrder }));
-  };
-
-  const copyLayoutConfig = () => {
-    navigator.clipboard.writeText(JSON.stringify({ tab: activeTab, visibleColumns: sortedVisibleColumns }, null, 2));
-    alert('Layout copied!');
-  };
-
+  // 3. Filtered Data for Table
   const filteredData = useMemo(() => {
-    let data = activeTab === 'Home' || activeTab === 'All' ? allData : allData.filter(r => r._type === activeTab);
-    const s = debouncedSearchTerm.toLowerCase();
-    
-    if (s) {
-      data = data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(s)));
+    let data = allData;
+    if (activeTab !== 'Home' && activeTab !== 'Products') {
+      data = data.filter(d => d._type === activeTab);
     }
+    
+    // Apply column filters (Zip, Location, etc)
+    Object.entries(columnFilters).forEach(([col, values]) => {
+      if (values.length > 0) {
+        data = data.filter(d => values.includes(d[col] || d[`_${col.toLowerCase()}`]));
+      }
+    });
 
-    if (sortConfig) {
-      data = [...data].sort((a, b) => {
-        const aVal = String(a[sortConfig.key] || '');
-        const bVal = String(b[sortConfig.key] || '');
-        return sortConfig.direction === 'asc' ? collator.compare(aVal, bVal) : collator.compare(bVal, aVal);
-      });
+    if (searchTerm) {
+      const lowTerm = searchTerm.toLowerCase();
+      data = data.filter(d => 
+        Object.values(d).some(v => String(v).toLowerCase().includes(lowTerm))
+      );
     }
     return data;
-  }, [allData, activeTab, debouncedSearchTerm, sortConfig]);
+  }, [allData, activeTab, searchTerm, columnFilters]);
 
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  // 4. Jules' Specific Column Orders per Hub
+  const getColumnsForTab = (tab: string) => {
+    if (tab.includes('SB')) {
+      return ['businessName', 'FEI/EIN Number', 'Document Number', 'Entity Type', 'Status', 'Date Filed', 'Expires', 'Florida UCC Link', '_source'];
+    }
+    if (tab.includes('UCC')) {
+      return ['businessName', 'FEI/EIN Number', 'Status', 'Date Filed', 'Expires', 'Florida UCC Link', '_source'];
+    }
+    if (tab === 'Yellow Pages') {
+      return ['Category', 'businessName', 'Phone', 'Website', '_source'];
+    }
+    return []; // Fallback to auto-detect
+  };
+
+  const handleQuickLinkClick = (type: string) => {
+    setActiveTab(type);
+    setIsSearchOpen(false);
+  };
+
+  const onFilterChange = (column: string, values: string[]) => {
+    setColumnFilters(prev => ({ ...prev, [column]: values }));
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100">
-      <Header 
-        searchTerm={searchTerm} onSearchChange={setSearchTerm} 
-        isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen}
-        searchResults={[]} onResultClick={() => {}} onQuickLinkClick={() => {}}
-        isProductsUnlocked={isProductsUnlocked} isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-        onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-        isRightSidebarOpen={isRightSidebarOpen}
-      />
-
-      <div className="flex-1 flex overflow-hidden">
-        <Sidebar 
-          types={['All', ...Array.from(new Set(allData.map(d => d._type).filter(Boolean)))]} 
-          activeTab={activeTab} setActiveTab={setActiveTab}
-          isProductsUnlocked={isProductsUnlocked} onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
-          zips={[]} selectedZip="All" setSelectedZip={() => {}}
-          locations={[]} selectedLocation="All" setSelectedLocation={() => {}}
-          isOpen={isLeftSidebarOpen} onClose={() => setIsLeftSidebarOpen(false)}
-          onGoHome={() => setActiveTab('Home')} allDataCount={allData.length}
-          isSyncing={loadProgress.current < loadProgress.total}
-        />
-
-        <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 border-l dark:border-slate-800">
-          {loading ? (
-             <div className="flex-1 flex items-center justify-center">Loading...</div>
-          ) : activeTab === 'Home' ? (
-            <Dashboard types={[]} onSelectCategory={setActiveTab} rowCount={allData.length} />
-          ) : (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-6 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold">{activeTab} Hub</h2>
-                <div className="flex items-center space-x-2">
-                  <ColumnToggle columns={currentColumnOrder} visibleColumns={visibleColumns} onToggle={toggleColumn} onReorder={handleColumnReorder} />
-                  <button onClick={copyLayoutConfig} className="p-1.5"><Copy className="w-4 h-4" /></button>
-                </div>
-              </div>
-              <Table 
-                data={filteredData} allData={allData} visibleColumns={sortedVisibleColumns}
-                selectedRow={selectedRow} onRowSelect={setSelectedRow}
-                columnFilters={{}} onFilterChange={() => {}}
-                sortConfig={sortConfig} onSortChange={setSortConfig}
+    <div className={`${isDarkMode ? 'dark' : ''} h-screen flex flex-col`}>
+      <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
+        
+        {/* RESTORED BLUE PROGRESS BAR */}
+        {loadProgress.current < loadProgress.total && (
+          <div className="w-full shrink-0 z-50">
+            <div className="h-1 bg-blue-100 dark:bg-blue-900/30 w-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 transition-all duration-500 ease-out"
+                style={{ width: `${(loadProgress.current / loadProgress.total) * 100}%` }}
               />
             </div>
-          )}
-        </main>
+            <div className="bg-blue-50/50 dark:bg-blue-900/10 px-4 py-1 flex justify-between items-center border-b border-blue-100/50 dark:border-blue-900/20">
+              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                System Sync: {loadProgress.current} / {loadProgress.total} Data Streams Loaded
+              </span>
+              <span className="text-[9px] text-blue-400 animate-pulse font-bold italic">
+                Optimizing Tables...
+              </span>
+            </div>
+          </div>
+        )}
 
-        <RightSidebar 
-          selectedRow={selectedRow} onClose={() => setSelectedRow(null)}
-          manifest={manifest} activeTab={activeTab} isOpen={isRightSidebarOpen}
+        <Header
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          isSearchOpen={isSearchOpen}
+          setIsSearchOpen={setIsSearchOpen}
+          searchResults={[]} 
+          onResultClick={() => {}}
+          onQuickLinkClick={handleQuickLinkClick}
+          isProductsUnlocked={isProductsUnlocked}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+          onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+          isRightSidebarOpen={isRightSidebarOpen}
+        />
+
+        <div className="flex-1 flex overflow-hidden">
+          <Sidebar
+            types={types}
+            activeTab={activeTab}
+            setActiveTab={(tab) => {
+              if (tab === 'Products' && !isProductsUnlocked) {
+                setIsProductsModalOpen(true);
+              } else {
+                setActiveTab(tab);
+              }
+            }}
+            isProductsUnlocked={isProductsUnlocked}
+            onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
+            zips={zips}
+            selectedZip={columnFilters['Zip']?.[0] || 'All'}
+            setSelectedZip={(z) => onFilterChange('Zip', z === 'All' ? [] : [z])}
+            locations={locations}
+            selectedLocation={columnFilters['Location']?.[0] || 'All'}
+            setSelectedLocation={(l) => onFilterChange('Location', l === 'All' ? [] : [l])}
+            isOpen={isLeftSidebarOpen}
+            onClose={() => setIsLeftSidebarOpen(false)}
+            onGoHome={() => setActiveTab('Home')}
+            allDataCount={allData.length}
+            isSyncing={loadProgress.current < loadProgress.total}
+          />
+
+          <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
+            {loading ? (
+              <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-center">
+                  <p className="text-gray-600 dark:text-slate-400 font-medium">Initializing Workspace...</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Loading business datasets</p>
+                </div>
+              </div>
+            ) : activeTab === 'Home' && !searchTerm ? (
+              <Dashboard 
+                types={types} 
+                onSelectCategory={setActiveTab} 
+                rowCount={allData.length} 
+              />
+            ) : (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <DataTable 
+                  data={filteredData} 
+                  title={searchTerm ? `Search Results: ${searchTerm}` : activeTab}
+                  customColumnOrder={getColumnsForTab(activeTab)}
+                />
+              </div>
+            )}
+          </main>
+        </div>
+
+        <ProductsModal 
+          isOpen={isProductsModalOpen} 
+          onClose={() => setIsProductsModalOpen(false)}
+          onUnlock={() => {
+            setIsProductsUnlocked(true);
+            setIsProductsModalOpen(false);
+            setActiveTab('Products');
+          }}
         />
       </div>
     </div>
