@@ -10,7 +10,7 @@ import {
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import DataTable from './components/DataTable';
+import DataTable from './components/Table';
 import ProductsModal from './components/ProductsModal';
 
 function App() {
