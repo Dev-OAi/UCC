@@ -176,6 +176,28 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           // Fill in the rest as "Column X"
           headers = firstRow.map((_, i) => scrubValue(m[i] || `Column ${i + 1}`));
         }
+
+        else if (colCount >= 25 && colCount < 30) {
+          // UCC Last 90 Days Schema (Targets your 26-column CSV)
+          const m: Record<number, string> = {
+            0: 'Status',
+            1: 'Direct Name',    // The Debtor
+            2: 'Reverse Name',   // The Lender/Bank
+            3: 'Record Date',
+            4: 'Location',
+            5: 'Doc Type',
+            9: 'Instrument Number',
+            11: 'Legal Description'
+          };
+
+          headers = firstRow.map((_, i) => m[i] || `Column ${i + 1}`);
+          
+          // Since the first row of your CSV contains "Status,Direct Name..." 
+          // we tell the parser to skip that first row and treat it as headers
+          startIndex++; 
+        }
+
+          
         else if (colCount >= 5) {
           // YP Schema
           const m: Record<number, string> = {
