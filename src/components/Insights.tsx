@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  AreaChart, Area
 } from 'recharts';
-import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck } from 'lucide-react';
+import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck, Activity, FileText, Building2 } from 'lucide-react';
 
 interface InsightsProps {
   data: any[];
@@ -11,7 +12,7 @@ interface InsightsProps {
 }
 
 export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
-  const [marketShareChartType, setMarketShareChartType] = useState<'bar' | 'pie'>('bar');
+  const [marketShareChartType, setMarketShareChartType] = useState<'bar' | 'pie'>('pie');
   const displayTypes = types.filter(t => t !== 'All' && t !== 'Home');
 
   const statusData = useMemo(() => {
@@ -47,7 +48,8 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 10); // Top 10 entities
+      .slice(0, 10)
+      .sort((a, b) => a.value - b.value); // Largest on the right
   }, [data]);
 
   const uniqueReverseNames = useMemo(() => {
@@ -58,6 +60,46 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
         .filter(Boolean)
     );
     return names.size;
+  }, [data]);
+
+  const filingVelocityData = useMemo(() => {
+    const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
+    const counts: Record<string, number> = {};
+    last90DaysData.forEach(row => {
+      const dateStr = row['Record Date'];
+      if (!dateStr) return;
+      counts[dateStr] = (counts[dateStr] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [data]);
+
+  const docTypeData = useMemo(() => {
+    const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
+    const counts: Record<string, number> = {};
+    last90DaysData.forEach(row => {
+      const type = row['Doc Type'] || 'Unknown';
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [data]);
+
+  const entityTypeData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    data.forEach(row => {
+      const type = row['Entity Type'] || 'Unknown';
+      counts[type] = (counts[type] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .filter(entry => entry.name !== 'Unknown')
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
   }, [data]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
@@ -280,6 +322,117 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 </PieChart>
               )}
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Filing Activity Trends */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+              <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white">UCC Filing Activity Trends</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Daily filing volume over the last 90 days</p>
+            </div>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={filingVelocityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: '#64748b', fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fill: '#64748b', fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="count" stroke="#10b981" fillOpacity={1} fill="url(#colorCount)" strokeWidth={3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Document Type Distribution */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
+                <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                Document Type Distribution
+              </h3>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Filing Types</span>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={docTypeData} layout="vertical" margin={{ left: 40, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={80}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                  />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20}>
+                    {docTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Corporate Structure Analysis */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
+                <Building2 className="w-4 h-4 mr-2 text-emerald-500" />
+                Corporate Structure Analysis
+              </h3>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Entity Types</span>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={entityTypeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {entityTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                    formatter={(value) => <span className="text-[10px] text-gray-600 dark:text-slate-400 font-medium">{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
