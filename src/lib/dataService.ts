@@ -25,6 +25,10 @@ export function isPhoneNumber(val: string): boolean {
   return /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/.test(val.trim());
 }
 
+export function isDocumentNumber(val: string): boolean {
+  return /^([A-Za-z]\d{5,}|\d{10,12})$/.test(val.trim());
+}
+
 export function scrubValue(value: any): any {
   if (typeof value !== 'string') return value;
 
@@ -123,6 +127,8 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[41] = 'Status';
           m[42] = 'Date Filed';
           m[43] = 'Expires';
+          m[44] = 'Filings Completed Through';
+          m[45] = 'Summary For Filing';
           m[55] = 'Florida UCC Link';
         }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
@@ -156,16 +162,16 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           if (isHeader) startIndex++;
         }
 
-        // 3. Dynamic Pattern Matching for remaining gaps (Link & Date & Status)
+        // 3. Dynamic Pattern Matching for remaining gaps
         if (Object.keys(m).length > 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
-            if (!val || m[idx]) return; 
+            if (!val || m[idx]) return;
 
             // Date Filed
             if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(val)) {
               if (!Object.values(m).includes('Date Filed')) {
-                  m[idx] = 'Date Filed';
+                m[idx] = 'Date Filed';
               }
             }
             // Sunbiz Link
@@ -173,9 +179,33 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
               m[idx] = 'Sunbiz Link';
             }
             // Status
-            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA|FILED|LAPSED)/i.test(val)) {
               if (!Object.values(m).includes('Status')) {
                 m[idx] = 'Status';
+              }
+            }
+            // Document Number
+            else if (isDocumentNumber(val)) {
+              if (!Object.values(m).includes('Document Number')) {
+                m[idx] = 'Document Number';
+              }
+            }
+            // Phone
+            else if (isPhoneNumber(val)) {
+              if (!Object.values(m).includes('Phone')) {
+                m[idx] = 'Phone';
+              }
+            }
+            // FEI/EIN
+            else if (/^\d{2}-\d{7}$|^\d{9}$/.test(val) && val !== '000000000') {
+              if (!Object.values(m).includes('FEI/EIN Number')) {
+                m[idx] = 'FEI/EIN Number';
+              }
+            }
+            // Category
+            else if (idx === 1 && val.length > 5 && !/\d/.test(val) && !val.includes(',')) {
+              if (!Object.values(m).includes('Category')) {
+                m[idx] = 'Category';
               }
             }
           });
