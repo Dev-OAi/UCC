@@ -148,6 +148,11 @@ function App() {
 
   useEffect(() => {
     setSelectedRow(null);
+    if (activeTab === 'Last 90 Days') {
+      setSortConfig({ key: 'Record Date', direction: 'desc' });
+    } else {
+      setSortConfig(null);
+    }
   }, [activeTab]);
 
   // Auto-open right sidebar on selection
