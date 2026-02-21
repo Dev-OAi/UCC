@@ -3,8 +3,14 @@ import {
   Target, TrendingUp, Users, Phone, Mail, Calendar,
   ArrowUpRight, Search, Filter, MoreHorizontal,
   ChevronRight, Building2, BadgeCheck, AlertCircle,
-  Briefcase, Clock, CheckCircle2, XCircle, Download, ExternalLink
+  Briefcase, Clock, CheckCircle2, XCircle, Download, ExternalLink,
+  PieChart as PieIcon, BarChart3, FileText, Loader2, Edit2, Trash2
 } from 'lucide-react';
+import {
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
+} from 'recharts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { BusinessLead, LeadStatus, LeadType } from '../types';
 
 interface ScorecardProps {
@@ -18,6 +24,30 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [isResearchMode, setIsResearchMode] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const printContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
+  const statusDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    leads.forEach(lead => {
+      counts[lead.status] = (counts[lead.status] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [leads]);
+
+  const industryDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    leads.forEach(lead => {
+      const industry = lead.industry || 'Unknown';
+      counts[industry] = (counts[industry] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [leads]);
 
   const metrics = useMemo(() => {
     const meetingsCount = leads.reduce((acc, lead) =>
@@ -32,7 +62,8 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
       meetings: meetingsCount,
       pipelineTotal: leads.length,
       emailsCollected: leads.filter(l => l.email && l.email !== 'N/A').length,
-      outreach: outreachCount
+      outreach: outreachCount,
+      impactScore: (outreachCount + (meetingsCount * 2))
     };
   }, [leads]);
 
@@ -118,6 +149,22 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
     window.open(url, '_blank');
   };
 
+  const handleDeleteLead = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to remove this business from your pipeline?')) {
+      setLeads(prev => prev.filter(l => l.id !== id));
+      if (selectedLeadId === id) onSelectLead(leads[0] || null);
+    }
+  };
+
+  const handleEditLead = (e: React.MouseEvent, lead: BusinessLead) => {
+    e.stopPropagation();
+    const newName = prompt('Edit Business Name:', lead.businessName);
+    if (newName && newName.trim() !== '') {
+      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, businessName: newName.trim(), lastUpdated: new Date().toISOString() } : l));
+    }
+  };
+
   const handleBulkNote = () => {
     const note = prompt('Enter a note to add to all selected leads:');
     if (!note) return;
@@ -139,6 +186,57 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
       return l;
     }));
     setSelectedLeadIds([]);
+  };
+
+  const exportToPDF = async () => {
+    if (!printContainerRef.current) return;
+    setIsExportingPDF(true);
+
+    try {
+      const canvas = await html2canvas(printContainerRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null,
+        onclone: (documentClone: Document) => {
+          const printableArea = documentClone.getElementById('scorecard-report');
+          if (printableArea) {
+            printableArea.style.backgroundColor = 'white';
+            printableArea.style.color = 'black';
+            printableArea.style.padding = '40px';
+          }
+
+          documentClone.querySelectorAll('.no-print').forEach(el => {
+            (el as HTMLElement).style.display = 'none';
+          });
+
+          documentClone.querySelectorAll('h1, h2, h3, h4, span, label, td, th, p').forEach(el => {
+            (el as HTMLElement).style.color = 'black';
+          });
+
+          // Ensure dark mode backgrounds are removed for print
+          documentClone.querySelectorAll('.bg-slate-900, .bg-slate-950, .dark\\:bg-slate-900, .dark\\:bg-slate-950').forEach(el => {
+            (el as HTMLElement).style.backgroundColor = 'white';
+          });
+
+          documentClone.querySelectorAll('.border-slate-800, .dark\\:border-slate-800').forEach(el => {
+            (el as HTMLElement).style.borderColor = '#e2e8f0';
+          });
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const ratio = canvas.width / pdfWidth;
+      const imgHeight = canvas.height / ratio;
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+      pdf.save(`BankerPro_Scorecard_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
 
   return (
@@ -171,11 +269,19 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
             </div>
             <div className="flex items-center space-x-3">
               <button
+                onClick={exportToPDF}
+                disabled={isExportingPDF}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all flex items-center space-x-2 disabled:opacity-50"
+              >
+                {isExportingPDF ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                <span>{isExportingPDF ? 'Generating...' : 'PDF Report'}</span>
+              </button>
+              <button
                 onClick={exportToCSV}
                 className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center space-x-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Export Pipeline</span>
+                <span>CSV</span>
               </button>
               <button
                 onClick={() => setIsResearchMode(!isResearchMode)}
@@ -274,6 +380,86 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Outreach</p>
                 <p className="text-2xl font-black text-amber-600 dark:text-amber-500">{metrics.outreach}</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center space-x-4 text-white">
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Personal Impact Score</p>
+                <p className="text-2xl font-black">{metrics.impactScore}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                  <PieIcon className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                  Pipeline Funnel
+                </h3>
+              </div>
+              <div className="h-[250px] w-full">
+                {leads.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusDistribution}
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {statusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                  <BarChart3 className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                  Top Industries
+                </h3>
+              </div>
+              <div className="h-[250px] w-full">
+                {leads.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={industryDistribution}
+                        innerRadius={0}
+                        outerRadius={80}
+                        dataKey="value"
+                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                      >
+                        {industryDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
+                )}
               </div>
             </div>
           </div>
@@ -408,51 +594,4 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
                         }`}
                       >
                         {Object.values(LeadStatus).map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="space-y-2 max-w-[200px]">
-                        <div className="flex justify-between text-[10px] font-bold">
-                          <span className={`uppercase tracking-widest ${isResearchMode && calculateResearchProgress(lead) < 100 ? 'text-amber-600 font-black animate-pulse' : 'text-slate-400'}`}>
-                            {lead.phone && lead.phone !== 'N/A' ? '' : 'No Phone, '}
-                            {lead.email && lead.email !== 'N/A' ? '' : 'No Email, '}
-                            {calculateResearchProgress(lead) === 100 ? 'Fully Enriched' : 'Missing Info'}
-                          </span>
-                          <span className="text-slate-600 dark:text-slate-400">{Math.round(calculateResearchProgress(lead))}%</span>
-                        </div>
-                        <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 ${calculateResearchProgress(lead) === 100 ? 'bg-emerald-500' : (isResearchMode ? 'bg-amber-500' : 'bg-blue-500')}`}
-                            style={{ width: `${calculateResearchProgress(lead)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <button className="p-2 text-slate-300 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400 transition-colors">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {filteredLeads.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-8 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <AlertCircle className="w-8 h-8 text-slate-300" />
-                        <p className="text-sm font-bold text-slate-400">No prospects found in your pipeline.</p>
-                        <p className="text-xs text-slate-400">Add businesses from the other hubs to get started.</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-};
+                          <option key={status} value={status}>{status
