@@ -331,9 +331,9 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
                   </div>
                </div>
 
-               {selectedLead.activities.length > 0 ? (
+               {(selectedLead.activities || []).length > 0 ? (
                  <div className="space-y-4">
-                   {selectedLead.activities.map(act => (
+                   {(selectedLead.activities || []).map(act => (
                      <div key={act.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                         <div className="flex justify-between mb-2">
                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${

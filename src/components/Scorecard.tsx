@@ -16,7 +16,7 @@ import { BusinessLead, LeadStatus, LeadType } from '../types';
 interface ScorecardProps {
   leads: BusinessLead[];
   setLeads: React.Dispatch<React.SetStateAction<BusinessLead[]>>;
-  onSelectLead: (lead: BusinessLead) => void;
+  onSelectLead: (lead: BusinessLead | null) => void;
   selectedLeadId: string | null;
 }
 
@@ -51,10 +51,10 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
 
   const metrics = useMemo(() => {
     const meetingsCount = leads.reduce((acc, lead) =>
-      acc + lead.activities.filter(a => a.type === 'Appointment').length, 0);
+      acc + (lead.activities || []).filter(a => a.type === 'Appointment').length, 0);
 
     const outreachCount = leads.reduce((acc, lead) =>
-      acc + lead.activities.filter(a => a.type === 'Call' || a.type === 'Email').length, 0);
+      acc + (lead.activities || []).filter(a => a.type === 'Call' || a.type === 'Email').length, 0);
 
     return {
       newAccts: leads.filter(l => l.status === LeadStatus.CONVERTED).length,
@@ -152,8 +152,13 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
   const handleDeleteLead = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to remove this business from your pipeline?')) {
-      setLeads(prev => prev.filter(l => l.id !== id));
-      if (selectedLeadId === id) onSelectLead(leads[0] || null);
+      setLeads(prev => {
+        const remaining = prev.filter(l => l.id !== id);
+        if (selectedLeadId === id) {
+          onSelectLead(remaining[0] || null);
+        }
+        return remaining;
+      });
     }
   };
 
@@ -240,7 +245,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-slate-950">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-slate-950" ref={printContainerRef} id="scorecard-report">
       {/* Header */}
       <div className="px-8 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
@@ -594,4 +599,67 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
                         }`}
                       >
                         {Object.values(LeadStatus).map(status => (
-                          <option key={status} value={status}>{status
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="space-y-2 max-w-[200px]">
+                        <div className="flex justify-between text-[10px] font-bold">
+                          <span className={`uppercase tracking-widest ${isResearchMode && calculateResearchProgress(lead) < 100 ? 'text-amber-600 font-black animate-pulse' : 'text-slate-400'}`}>
+                            {lead.phone && lead.phone !== 'N/A' ? '' : 'No Phone, '}
+                            {lead.email && lead.email !== 'N/A' ? '' : 'No Email, '}
+                            {calculateResearchProgress(lead) === 100 ? 'Fully Enriched' : 'Missing Info'}
+                          </span>
+                          <span className="text-slate-600 dark:text-slate-400">{Math.round(calculateResearchProgress(lead))}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${calculateResearchProgress(lead) === 100 ? 'bg-emerald-500' : (isResearchMode ? 'bg-amber-500' : 'bg-blue-500')}`}
+                            style={{ width: `${calculateResearchProgress(lead)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => handleEditLead(e, lead)}
+                          className="p-2 text-slate-400 hover:text-blue-500 transition-colors"
+                          title="Edit Business"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteLead(e, lead.id)}
+                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          title="Delete Lead"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredLeads.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-8 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <AlertCircle className="w-8 h-8 text-slate-300" />
+                        <p className="text-sm font-bold text-slate-400">No prospects found in your pipeline.</p>
+                        <p className="text-xs text-slate-400">Add businesses from the other hubs to get started.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};

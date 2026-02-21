@@ -623,8 +623,8 @@ function App() {
               leads={scorecardLeads}
               setLeads={setScorecardLeads}
               onSelectLead={(lead) => {
-                setSelectedLeadId(lead.id);
-                setIsRightSidebarOpen(true);
+                setSelectedLeadId(lead?.id || null);
+                if (lead) setIsRightSidebarOpen(true);
               }}
               selectedLeadId={selectedLeadId}
             />
