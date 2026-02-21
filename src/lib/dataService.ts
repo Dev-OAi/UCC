@@ -143,18 +143,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[11] = 'Legal Description';
           startIndex++;
         }
-        // PRIORITY 4: Palm Beach FIN Detection
-        else if (file.type.includes('PalmBeach_FIN')) {
-          m[0] = 'Direct Name';
-          m[1] = 'Reverse Name';
-          m[2] = 'Record Date';
-          m[3] = 'Doc Type';
-          m[4] = 'Instrument Number';
-          m[5] = 'Book';
-          m[6] = 'Page';
-          startIndex++;
-        }
-        // PRIORITY 5: YELLOW PAGES (YP) Schema
+        // PRIORITY 4: YELLOW PAGES (YP) Schema
         else if (colCount >= 5) {
           m[0] = 'Category';
           m[2] = 'businessName';
