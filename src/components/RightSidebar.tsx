@@ -3,7 +3,7 @@ import {
   Info, X, Share2, Edit3, ChevronUp, Phone, Globe, MapPin,
   Fingerprint, Calendar, Activity, ShieldCheck, HelpCircle,
   ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight,
-  Copy, Check
+  Copy, Check, Target
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
 import { getInsightForCategory } from '../lib/industryKnowledge';
@@ -17,6 +17,7 @@ interface RightSidebarProps {
   activeTab?: string;
   productGuide?: ProductGuide;
   isOpen: boolean;
+  onAddToScorecard?: (row: DataRow) => void;
 }
 
 const FIELD_INFO: Record<string, { icon: any, color: string, description: string }> = {
@@ -31,7 +32,15 @@ const FIELD_INFO: Record<string, { icon: any, color: string, description: string
   'Sunbiz Link': { icon: ExternalLink, color: 'text-cyan-500', description: 'Direct link to the official state business registry.' },
 };
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose, manifest = [], activeTab, productGuide, isOpen }) => {
+export const RightSidebar: React.FC<RightSidebarProps> = ({
+  selectedRow,
+  onClose,
+  manifest = [],
+  activeTab,
+  productGuide,
+  isOpen,
+  onAddToScorecard
+}) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
   const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
@@ -295,6 +304,15 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ selectedRow, onClose
                   <Share2 className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110" />
                   Export
                 </button>
+                {activeTab !== 'Scorecard' && (
+                  <button
+                    onClick={() => selectedRow && onAddToScorecard?.(selectedRow)}
+                    className="col-span-2 flex items-center justify-center p-3 text-[10px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all group"
+                  >
+                    <Target className="w-4 h-4 mr-2 transition-transform group-hover:scale-110" />
+                    Add to Scorecard Pipeline
+                  </button>
+                )}
               </div>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
