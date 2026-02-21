@@ -13,8 +13,10 @@ import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
 import { ActivityLog } from './components/ActivityLog';
+import { Scorecard } from './components/Scorecard';
+import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
 import ProductGuideRenderer from './components/ProductGuideRenderer';
-import { ProductGuide } from './types';
+import { ProductGuide, BusinessLead, LeadStatus, LeadType } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
@@ -28,6 +30,10 @@ function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
   const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
     const saved = localStorage.getItem('productGuides');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() => {
+    const saved = localStorage.getItem('scorecardLeads');
     return saved ? JSON.parse(saved) : [];
   });
   const [allData, setAllData] = useState<DataRow[]>([]);
@@ -101,6 +107,7 @@ function App() {
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
@@ -140,6 +147,10 @@ function App() {
   }, [productGuides]);
 
   useEffect(() => {
+    localStorage.setItem('scorecardLeads', JSON.stringify(scorecardLeads));
+  }, [scorecardLeads]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedAllData(allData);
     }, 100);
@@ -148,6 +159,7 @@ function App() {
 
   useEffect(() => {
     setSelectedRow(null);
+    setSelectedLeadId(null);
     if (activeTab === 'Last 90 Days') {
       setSortConfig({ key: 'Record Date', direction: 'desc' });
     } else {
@@ -157,10 +169,10 @@ function App() {
 
   // Auto-open right sidebar on selection
   useEffect(() => {
-    if (selectedRow) {
+    if (selectedRow || selectedLeadId) {
       setIsRightSidebarOpen(true);
     }
-  }, [selectedRow]);
+  }, [selectedRow, selectedLeadId]);
 
   // Data Loading
   useEffect(() => {
@@ -446,6 +458,41 @@ function App() {
     }
   };
 
+  const handleAddToScorecard = (row: DataRow) => {
+    const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
+    if (exists) {
+      alert('This business is already in your Scorecard pipeline.');
+      return;
+    }
+
+    const newLead: BusinessLead = {
+      id: Math.random().toString(36).substr(2, 9),
+      businessName: row.businessName || row['Entity Name'] || 'Unknown Business',
+      address: row.address || row['Location'] || '',
+      city: row.city || '',
+      state: row.state || '',
+      zip: row._zip || row.Zip || '',
+      phone: row.phone || row.Phone || '',
+      website: row.website || row.Website || '',
+      email: row.email || '',
+      source: row._type || 'Manual',
+      status: LeadStatus.NEW,
+      type: LeadType.PROSPECT,
+      industry: row.Category || row['Category '] || '',
+      keyPrincipal: row['Key Principal'] || row['Officer/Director'] || '',
+      notes: '',
+      activities: [],
+      lastUpdated: new Date().toISOString(),
+      ein: row['FEI/EIN Number'] || row.ein || '',
+      entityType: row['Entity Type'] || row.entityType || '',
+      establishedDate: row['Date Filed'] || '',
+    };
+
+    setScorecardLeads(prev => [newLead, ...prev]);
+    setActiveTab('Scorecard');
+    alert(`${newLead.businessName} added to Scorecard!`);
+  };
+
   const downloadCSV = () => {
     const dataToExport = filteredData.map(row => {
       const exportRow: any = {};
@@ -571,6 +618,16 @@ function App() {
             <TreasuryGuide />
           ) : activeTab === 'Activity Log' ? (
             <ActivityLog />
+          ) : activeTab === 'Scorecard' ? (
+            <Scorecard
+              leads={scorecardLeads}
+              setLeads={setScorecardLeads}
+              onSelectLead={(lead) => {
+                setSelectedLeadId(lead.id);
+                setIsRightSidebarOpen(true);
+              }}
+              selectedLeadId={selectedLeadId}
+            />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="px-6 py-4 flex items-center justify-between shrink-0">
@@ -620,17 +677,32 @@ function App() {
           )}
         </main>
 
-        <RightSidebar
-          selectedRow={selectedRow}
-          onClose={() => {
-            setSelectedRow(null);
-            if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
-          }}
-          manifest={manifest}
-          activeTab={activeTab}
-          productGuide={productGuides[0]}
-          isOpen={isRightSidebarOpen}
-        />
+        {activeTab === 'Scorecard' ? (
+          <ScorecardRightSidebar
+            selectedLead={scorecardLeads.find(l => l.id === selectedLeadId) || null}
+            onClose={() => {
+              setSelectedLeadId(null);
+              if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+            }}
+            isOpen={isRightSidebarOpen}
+            onUpdateLead={(updatedLead) => {
+              setScorecardLeads(prev => prev.map(l => l.id === updatedLead.id ? updatedLead : l));
+            }}
+          />
+        ) : (
+          <RightSidebar
+            selectedRow={selectedRow}
+            onClose={() => {
+              setSelectedRow(null);
+              if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+            }}
+            manifest={manifest}
+            activeTab={activeTab}
+            productGuide={productGuides[0]}
+            isOpen={isRightSidebarOpen}
+            onAddToScorecard={handleAddToScorecard}
+          />
+        )}
       </div>
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
