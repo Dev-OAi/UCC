@@ -19,34 +19,6 @@
     "filename": "initial.json"
   },
   {
-    "path": "Data/4. UCC 2 Zip/33480 Palm Beach.csv",
-    "type": "4. UCC 2 Zip",
-    "zip": "",
-    "location": "33480 Palm Beach",
-    "filename": "33480 Palm Beach.csv"
-  },
-  {
-    "path": "Data/4. UCC 2 Zip/33401 West Palm Beach.csv",
-    "type": "4. UCC 2 Zip",
-    "zip": "",
-    "location": "33401 West Palm Beach",
-    "filename": "33401 West Palm Beach.csv"
-  },
-  {
-    "path": "Data/4. UCC 2 Zip/33027 Pembroke Pines (2).csv",
-    "type": "4. UCC 2 Zip",
-    "zip": "",
-    "location": "33027 Pembroke Pines (2)",
-    "filename": "33027 Pembroke Pines (2).csv"
-  },
-  {
-    "path": "Data/4. UCC 2 Zip/33301 Fort Lauderdale (2).csv",
-    "type": "4. UCC 2 Zip",
-    "zip": "",
-    "location": "33301 Fort Lauderdale (2)",
-    "filename": "33301 Fort Lauderdale (2).csv"
-  },
-  {
     "path": "Data/3. UCC/UCC Pembroke Pines.csv",
     "type": "3. UCC",
     "zip": "",
@@ -61,11 +33,11 @@
     "filename": "UCC Fort Lauderdale.csv"
   },
   {
-    "path": "Data/PalmBeach_FIN/scraped_data.csv",
-    "type": "PalmBeach_FIN",
+    "path": "Data/3. UCC/UCC Palm Beach.csv",
+    "type": "3. UCC",
     "zip": "",
-    "location": "scraped_data",
-    "filename": "scraped_data.csv"
+    "location": "UCC Palm Beach",
+    "filename": "UCC Palm Beach.csv"
   },
   {
     "path": "Data/33301/33301 Fort Lauderdale (2).csv",
@@ -153,7 +125,6 @@
   },
   {
     "path": "Data/2. YP/YP Phone Number Lookup FT L2.csv",
-    "path": "Data/2. YP/YP Phone Number Lookup - Sheet1_part02.csv",
     "type": "2. YP",
     "zip": "",
     "location": "FT L2",
