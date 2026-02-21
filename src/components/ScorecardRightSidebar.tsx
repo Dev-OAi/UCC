@@ -3,9 +3,10 @@ import {
   X, Activity, Package, Phone, Building2, Lightbulb,
   Mail, ChevronRight, Copy, Check, Sparkles, ChevronDown,
   Edit3, Download, Upload, Trash2, Save, Linkedin, ExternalLink,
-  CheckCircle2, Clock, ArrowUpRight
+  CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus
 } from 'lucide-react';
 import { BusinessLead, LeadActivity, LeadStatus, LeadType } from '../types';
+import { getInsightForCategory } from '../lib/industryKnowledge';
 
 interface ScorecardRightSidebarProps {
   selectedLead: BusinessLead | null;
@@ -50,6 +51,14 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const openSearch = (type: 'google' | 'linkedin' | 'sunbiz') => {
+    let url = '';
+    if (type === 'google') url = `https://www.google.com/search?q=${encodeURIComponent(selectedLead.businessName)}`;
+    if (type === 'linkedin') url = `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(selectedLead.businessName)}`;
+    if (type === 'sunbiz') url = `https://search.sunbiz.org/Inquiry/CorporationSearch/ByName?SearchTerm=${encodeURIComponent(selectedLead.businessName)}`;
+    window.open(url, '_blank');
+  };
+
   const handleAiModify = (action: string) => {
     setIsAiMenuOpen(false);
 
@@ -76,6 +85,19 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
       lastUpdated: new Date().toISOString()
     });
     setIsEditing(false);
+  };
+
+  const toggleProduct = (productName: string) => {
+    const currentProducts = selectedLead.productsSold || [];
+    const newProducts = currentProducts.includes(productName)
+      ? currentProducts.filter(p => p !== productName)
+      : [...currentProducts, productName];
+
+    onUpdateLead({
+      ...selectedLead,
+      productsSold: newProducts,
+      lastUpdated: new Date().toISOString()
+    });
   };
 
   return (
@@ -105,8 +127,19 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <button className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-colors">
+            <button
+              onClick={() => openSearch('linkedin')}
+              className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-colors"
+              title="Search LinkedIn"
+            >
                <Linkedin className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => openSearch('sunbiz')}
+              className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-100 transition-colors"
+              title="Search Sunbiz"
+            >
+               <Building2 className="w-4 h-4" />
             </button>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
               <X className="w-5 h-5" />
@@ -211,70 +244,91 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
             </div>
           ) : activeTab === 'Industry' ? (
             <div className="space-y-6">
-              <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                <div className="flex items-center justify-between mb-4">
-                   <div className="flex items-center text-blue-800 dark:text-blue-400">
-                      <Building2 className="w-5 h-5 mr-2" />
-                      <span className="text-xs font-black uppercase tracking-wider">Industry Intelligence</span>
-                   </div>
-                   <span className="text-[9px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded uppercase">VerticalIQ</span>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                   Analysis for <span className="font-bold text-slate-900 dark:text-white">{selectedLead.industry || 'this sector'}</span> shows
-                   strong growth in the Florida region, specifically in the {selectedLead._location || 'local'} market.
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                   <div className="p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-blue-50 dark:border-blue-900/20">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Growth Trend</p>
-                      <p className="text-xs font-black text-emerald-600">+4.2% YoY</p>
-                   </div>
-                   <div className="p-3 bg-white dark:bg-slate-900/50 rounded-xl border border-blue-50 dark:border-blue-900/20">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Risk Profile</p>
-                      <p className="text-xs font-black text-amber-600">Moderate</p>
-                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Key Industry Facts</h4>
-                {[
-                  'Increasing reliance on digital payment processing.',
-                  'Supply chain volatility affecting inventory turnover.',
-                  'Labor market tightening in the specialty services sector.'
-                ].map((fact, i) => (
-                  <div key={i} className="flex items-start space-x-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">{fact}</p>
+              {getInsightForCategory(selectedLead.industry || '') ? (
+                <>
+                  <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                    <div className="flex items-center justify-between mb-4">
+                       <div className="flex items-center text-blue-800 dark:text-blue-400">
+                          <Building2 className="w-5 h-5 mr-2" />
+                          <span className="text-xs font-black uppercase tracking-wider">Industry Intelligence</span>
+                       </div>
+                       <span className="text-[9px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded uppercase">VerticalIQ</span>
+                    </div>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                       {getInsightForCategory(selectedLead.industry || '')?.overview}
+                    </p>
                   </div>
-                ))}
-              </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Key Industry Facts</h4>
+                    {getInsightForCategory(selectedLead.industry || '')?.quickFacts?.map((fact, i) => (
+                      <div key={i} className="flex items-start space-x-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                        <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">{fact}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                   <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                   <p className="text-xs font-bold text-slate-500 mb-1">No Industry Deep-Dive Available</p>
+                   <p className="text-[10px] text-slate-400 uppercase tracking-widest">Searching VerticalIQ for {selectedLead.industry || 'this sector'}...</p>
+                </div>
+              )}
             </div>
           ) : activeTab === 'Activity' ? (
             <div className="space-y-6">
                <div className="flex items-center justify-between">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activities</h4>
-                  <button
-                    onClick={() => {
-                      const notes = prompt('Enter activity notes:');
-                      if (notes) {
-                        const type = prompt('Type (Call, Email, Appointment, Note):', 'Call') as any;
-                        const newActivity: LeadActivity = {
-                          id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
-                          type: ['Call', 'Email', 'Appointment', 'Note'].includes(type) ? type : 'Note',
-                          date: new Date().toISOString(),
-                          notes
-                        };
-                        onUpdateLead({
-                          ...selectedLead,
-                          activities: [newActivity, ...selectedLead.activities],
-                          lastUpdated: new Date().toISOString()
-                        });
-                      }
-                    }}
-                    className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
-                  >
-                    + Log Action
-                  </button>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => {
+                        const notes = prompt('Enter meeting details:');
+                        if (notes) {
+                          const newActivity: LeadActivity = {
+                            id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
+                            type: 'Appointment',
+                            date: new Date().toISOString(),
+                            notes
+                          };
+                          onUpdateLead({
+                            ...selectedLead,
+                            status: LeadStatus.APPOINTMENT_SET,
+                            activities: [newActivity, ...selectedLead.activities],
+                            lastUpdated: new Date().toISOString()
+                          });
+                        }
+                      }}
+                      className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center"
+                    >
+                      <Calendar className="w-3 h-3 mr-1" />
+                      Schedule Meeting
+                    </button>
+                    <button
+                      onClick={() => {
+                        const notes = prompt('Enter activity notes:');
+                        if (notes) {
+                          const type = prompt('Type (Call, Email, Note):', 'Call') as any;
+                          const newActivity: LeadActivity = {
+                            id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
+                            type: ['Call', 'Email', 'Note'].includes(type) ? type : 'Note',
+                            date: new Date().toISOString(),
+                            notes
+                          };
+                          onUpdateLead({
+                            ...selectedLead,
+                            activities: [newActivity, ...selectedLead.activities],
+                            lastUpdated: new Date().toISOString()
+                          });
+                        }
+                      }}
+                      className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Log Action
+                    </button>
+                  </div>
                </div>
 
                {selectedLead.activities.length > 0 ? (
@@ -304,21 +358,41 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
             </div>
           ) : (
             <div className="space-y-6">
-               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommended Solutions</h4>
+               <div className="flex items-center justify-between">
+                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommended Solutions</h4>
+                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase">
+                   {selectedLead.productsSold?.length || 0} Assigned
+                 </span>
+               </div>
                <div className="space-y-3">
                   {[
                     { name: 'Business Platinum Checking', benefit: 'Higher transaction limits for growing firms.' },
                     { name: 'Treasury Management Bundle', benefit: 'Advanced fraud protection & ACH controls.' },
                     { name: 'Business Credit Card', benefit: '1.5% cash back on all operational spend.' }
-                  ].map((prod, i) => (
-                    <div key={i} className="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm group hover:border-blue-500 transition-all">
-                       <div className="flex items-center justify-between mb-1">
-                          <p className="text-xs font-black text-slate-900 dark:text-white">{prod.name}</p>
-                          <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                       </div>
-                       <p className="text-[10px] text-slate-500 dark:text-slate-400">{prod.benefit}</p>
-                    </div>
-                  ))}
+                  ].map((prod, i) => {
+                    const isAssigned = selectedLead.productsSold?.includes(prod.name);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => toggleProduct(prod.name)}
+                        className={`w-full text-left p-4 rounded-2xl border transition-all group ${
+                          isAssigned
+                            ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-500/20'
+                            : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-500'
+                        }`}
+                      >
+                         <div className="flex items-center justify-between mb-1">
+                            <p className={`text-xs font-black ${isAssigned ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{prod.name}</p>
+                            {isAssigned ? (
+                              <Check className="w-4 h-4 text-white" />
+                            ) : (
+                              <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                            )}
+                         </div>
+                         <p className={`text-[10px] ${isAssigned ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{prod.benefit}</p>
+                      </button>
+                    );
+                  })}
                </div>
                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                   <p className="text-[10px] text-slate-400 text-center font-medium italic">
