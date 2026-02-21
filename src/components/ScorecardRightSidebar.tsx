@@ -22,6 +22,8 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
   const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
+  const [editingActivityText, setEditingActivityText] = useState('');
 
   // Script content states
   const [scripts, setScripts] = useState({
@@ -98,6 +100,32 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
       productsSold: newProducts,
       lastUpdated: new Date().toISOString()
     });
+  };
+
+  const deleteActivity = (id: string) => {
+    if (!selectedLead) return;
+    onUpdateLead({
+      ...selectedLead,
+      activities: (selectedLead.activities || []).filter(a => a.id !== id),
+      lastUpdated: new Date().toISOString()
+    });
+  };
+
+  const startEditingActivity = (act: LeadActivity) => {
+    setEditingActivityId(act.id);
+    setEditingActivityText(act.notes);
+  };
+
+  const saveActivityEdit = () => {
+    if (!selectedLead || !editingActivityId) return;
+    onUpdateLead({
+      ...selectedLead,
+      activities: (selectedLead.activities || []).map(a =>
+        a.id === editingActivityId ? { ...a, notes: editingActivityText } : a
+      ),
+      lastUpdated: new Date().toISOString()
+    });
+    setEditingActivityId(null);
   };
 
   return (
@@ -284,21 +312,20 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => {
-                        const notes = prompt('Enter meeting details:');
-                        if (notes) {
-                          const newActivity: LeadActivity = {
-                            id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
-                            type: 'Appointment',
-                            date: new Date().toISOString(),
-                            notes
-                          };
-                          onUpdateLead({
-                            ...selectedLead,
-                            status: LeadStatus.APPOINTMENT_SET,
-                            activities: [newActivity, ...selectedLead.activities],
-                            lastUpdated: new Date().toISOString()
-                          });
-                        }
+                        const newActivity: LeadActivity = {
+                          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
+                          type: 'Appointment',
+                          date: new Date().toISOString(),
+                          notes: 'Initial meeting scheduled via scorecard.'
+                        };
+                        onUpdateLead({
+                          ...selectedLead,
+                          status: LeadStatus.APPOINTMENT_SET,
+                          activities: [newActivity, ...(selectedLead.activities || [])],
+                          lastUpdated: new Date().toISOString()
+                        });
+                        setEditingActivityId(newActivity.id);
+                        setEditingActivityText(newActivity.notes);
                       }}
                       className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center"
                     >
@@ -307,21 +334,19 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
                     </button>
                     <button
                       onClick={() => {
-                        const notes = prompt('Enter activity notes:');
-                        if (notes) {
-                          const type = prompt('Type (Call, Email, Note):', 'Call') as any;
-                          const newActivity: LeadActivity = {
-                            id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
-                            type: ['Call', 'Email', 'Note'].includes(type) ? type : 'Note',
-                            date: new Date().toISOString(),
-                            notes
-                          };
-                          onUpdateLead({
-                            ...selectedLead,
-                            activities: [newActivity, ...selectedLead.activities],
-                            lastUpdated: new Date().toISOString()
-                          });
-                        }
+                        const newActivity: LeadActivity = {
+                          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
+                          type: 'Call',
+                          date: new Date().toISOString(),
+                          notes: 'New call recorded.'
+                        };
+                        onUpdateLead({
+                          ...selectedLead,
+                          activities: [newActivity, ...(selectedLead.activities || [])],
+                          lastUpdated: new Date().toISOString()
+                        });
+                        setEditingActivityId(newActivity.id);
+                        setEditingActivityText(newActivity.notes);
                       }}
                       className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center"
                     >
@@ -334,18 +359,55 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
                {(selectedLead.activities || []).length > 0 ? (
                  <div className="space-y-4">
                    {(selectedLead.activities || []).map(act => (
-                     <div key={act.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                     <div key={act.id} className="group p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 transition-all hover:border-blue-200 dark:hover:border-blue-900/50">
                         <div className="flex justify-between mb-2">
-                           <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
-                             act.type === 'Call' ? 'bg-blue-100 text-blue-700' :
-                             act.type === 'Email' ? 'bg-amber-100 text-amber-700' :
-                             'bg-emerald-100 text-emerald-700'
-                           }`}>
-                             {act.type}
-                           </span>
-                           <span className="text-[10px] text-slate-400">{new Date(act.date).toLocaleDateString()}</span>
+                           <div className="flex items-center space-x-2">
+                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                               act.type === 'Call' ? 'bg-blue-100 text-blue-700' :
+                               act.type === 'Email' ? 'bg-amber-100 text-amber-700' :
+                               'bg-emerald-100 text-emerald-700'
+                             }`}>
+                               {act.type}
+                             </span>
+                             <span className="text-[10px] text-slate-400">{new Date(act.date).toLocaleDateString()}</span>
+                           </div>
+                           <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                             {editingActivityId === act.id ? (
+                               <button
+                                 onClick={saveActivityEdit}
+                                 className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                               >
+                                 <Check className="w-3 h-3" />
+                               </button>
+                             ) : (
+                               <button
+                                 onClick={() => startEditingActivity(act)}
+                                 className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                               >
+                                 <Edit3 className="w-3 h-3" />
+                               </button>
+                             )}
+                             <button
+                               onClick={() => deleteActivity(act.id)}
+                               className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
+                             >
+                               <Trash2 className="w-3 h-3" />
+                             </button>
+                           </div>
                         </div>
-                        <p className="text-xs text-slate-700 dark:text-slate-300">{act.notes}</p>
+                        {editingActivityId === act.id ? (
+                          <textarea
+                            autoFocus
+                            value={editingActivityText}
+                            onChange={(e) => setEditingActivityText(e.target.value)}
+                            onBlur={saveActivityEdit}
+                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && saveActivityEdit()}
+                            className="w-full p-2 text-xs bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none resize-none"
+                            rows={3}
+                          />
+                        ) : (
+                          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{act.notes}</p>
+                        )}
                      </div>
                    ))}
                  </div>
