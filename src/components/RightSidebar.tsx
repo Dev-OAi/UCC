@@ -130,14 +130,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside className={`
-        fixed lg:static inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto shrink-0 z-50 transition-all duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0 w-80 opacity-100 border-l border-gray-200 dark:border-slate-800' : 'translate-x-full lg:translate-x-0 w-0 opacity-0 pointer-events-none border-none'}
+        fixed inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto shrink-0 z-50 transition-all duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0 w-80 opacity-100 border-l border-gray-200 dark:border-slate-800 shadow-2xl' : 'translate-x-full w-0 opacity-0 pointer-events-none border-none'}
       `}>
       {!selectedRow ? (
         <div className="flex-1 flex flex-col p-5 overflow-y-auto">

@@ -137,6 +137,18 @@ function App() {
       "Expires",
       "Florida UCC Link"
     ],
+    'Search Results': [
+      "businessName",
+      "IndirectName",
+      "RecordDate",
+      "DocTypeDescription",
+      "InstrumentNumber",
+      "BookType",
+      "BookPage",
+      "DocLegalDescription",
+      "Consideration",
+      "CaseNumber"
+    ],
     '33480': [
       "businessName",
       "Sunbiz Status",
@@ -215,6 +227,25 @@ function App() {
     }, 100);
     return () => clearTimeout(timer);
   }, [allData]);
+
+  const handleTabChange = (tab: string) => {
+    if (tab === 'Products' && !isProductsUnlocked) {
+      setIsProductsModalOpen(true);
+      return;
+    }
+
+    setActiveTab(tab);
+
+    // Always close right sidebar when navigating to Home
+    if (tab === 'Home') {
+      setIsRightSidebarOpen(false);
+    }
+
+    // Auto-close sidebars on tab change for small screens
+    if (window.innerWidth < 1024) {
+      setIsLeftSidebarOpen(false);
+    }
+  };
 
   useEffect(() => {
     setSelectedRow(null);
@@ -630,21 +661,20 @@ function App() {
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
-          types={types} activeTab={activeTab} setActiveTab={(tab) => {
-            if (tab === 'Products' && !isProductsUnlocked) {
-              setIsProductsModalOpen(true);
-            } else {
-              setActiveTab(tab);
-            }
-          }}
+          types={types}
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
           isProductsUnlocked={isProductsUnlocked}
           onToggleProductsLock={() => setIsProductsUnlocked(!isProductsUnlocked)}
-          zips={zips} selectedZip={columnFilters['Zip']?.[0] || 'All'}
+          zips={zips}
+          selectedZip={columnFilters['Zip']?.[0] || 'All'}
           setSelectedZip={(z) => onFilterChange('Zip', z === 'All' ? [] : [z])}
-          locations={locations} selectedLocation={columnFilters['Location']?.[0] || 'All'}
+          locations={locations}
+          selectedLocation={columnFilters['Location']?.[0] || 'All'}
           setSelectedLocation={(l) => onFilterChange('Location', l === 'All' ? [] : [l])}
-          isOpen={isLeftSidebarOpen} onClose={() => setIsLeftSidebarOpen(false)}
-          onGoHome={() => setActiveTab('Home')}
+          isOpen={isLeftSidebarOpen}
+          onClose={() => setIsLeftSidebarOpen(false)}
+          onGoHome={() => handleTabChange('Home')}
           allDataCount={allData.length}
           isSyncing={loadProgress.current < loadProgress.total}
         />
@@ -765,7 +795,7 @@ function App() {
             selectedLead={scorecardLeads.find(l => l.id === selectedLeadId) || null}
             onClose={() => {
               setSelectedLeadId(null);
-              if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+              setIsRightSidebarOpen(false);
             }}
             isOpen={isRightSidebarOpen}
             onUpdateLead={(updatedLead) => {
@@ -777,7 +807,7 @@ function App() {
             selectedRow={selectedRow}
             onClose={() => {
               setSelectedRow(null);
-              if (window.innerWidth < 1024) setIsRightSidebarOpen(false);
+              setIsRightSidebarOpen(false);
             }}
             manifest={manifest}
             activeTab={activeTab}
