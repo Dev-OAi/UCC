@@ -161,6 +161,20 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[11] = 'Legal Description';
           startIndex++;
         }
+        // PRIORITY 3.6: SEARCH RESULTS HUB
+        else if (file.type === 'Search Results') {
+          m[0] = 'businessName';
+          m[1] = 'IndirectName';
+          m[2] = 'RecordDate';
+          m[3] = 'DocTypeDescription';
+          m[4] = 'InstrumentNumber';
+          m[5] = 'BookType';
+          m[6] = 'BookPage';
+          m[7] = 'DocLegalDescription';
+          m[8] = 'Consideration';
+          m[9] = 'CaseNumber';
+          startIndex++;
+        }
         // PRIORITY 3.5: ENRICHED ZIP HUB (8 Columns)
         else if (colCount === 8) {
           m[0] = 'businessName';
