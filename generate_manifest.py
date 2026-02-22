@@ -30,14 +30,18 @@ def generate_manifest():
 
             if file.endswith('.csv'):
                 # Resolve data_type: use directory name, or "YP" if file starts with it, else "General"
+                data_type = "General"
+                zip_code = ""
+
                 if len(parts) > 0 and parts[0] != '.':
                     data_type = parts[0]
+                    if re.match(r'^\d{5}$', data_type):
+                        zip_code = data_type
                 elif file.startswith("YP "):
                     data_type = "YP"
-                else:
-                    data_type = "General"
                 
-                zip_code = parts[1] if len(parts) > 1 else ""
+                if len(parts) > 1:
+                    zip_code = parts[1]
 
                 # Extract location from filename if possible
                 location = ""

@@ -55,12 +55,13 @@ function App() {
     '3. UCC': [
       "businessName",
       "Document Number",
+      "Sunbiz Status",
       "Phone",
       "Sunbiz Link",
       "Florida UCC Link",
       "Location",
       "Zip",
-      "Status",
+      "UCC Status",
       "Date Filed",
       "Expires",
       "Filings Completed Through",
@@ -69,13 +70,14 @@ function App() {
     '1. SB': [
       "businessName",
       "Document Number",
+      "Sunbiz Status",
       "Column 14",
       "Column 4",
       "FEI/EIN Number",
       "Sunbiz Link",
       "Entity Type",
       "Location",
-      "Status",
+      "UCC Status",
       "Column 41",
       "Date Filed",
       "Expires",
@@ -97,19 +99,76 @@ function App() {
       "Zip"
     ],
     'Last 90 Days': [
-      "Status",
-      "Direct Name",
+      "UCC Status",
+      "businessName",
       "Reverse Name",
       "Record Date",
       "Doc Type",
       "Instrument Number",
       "Legal Description"
+    ],
+    '33027': [
+      "businessName",
+      "Phone",
+      "Website",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link",
+      "Category"
+    ],
+    '33301': [
+      "businessName",
+      "Phone",
+      "Website",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link",
+      "Category"
+    ],
+    '33401': [
+      "businessName",
+      "Sunbiz Status",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link"
+    ],
+    '33480': [
+      "businessName",
+      "Sunbiz Status",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link"
+    ],
+    'All': [
+      "businessName",
+      "Category",
+      "Document Number",
+      "Sunbiz Status",
+      "Phone",
+      "Website",
+      "Sunbiz Link",
+      "Florida UCC Link",
+      "Location",
+      "Zip",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -160,6 +219,9 @@ function App() {
   useEffect(() => {
     setSelectedRow(null);
     setSelectedLeadId(null);
+    if (activeTab !== 'Scorecard') {
+      setIsRightSidebarOpen(false);
+    }
     if (activeTab === 'Last 90 Days') {
       setSortConfig({ key: 'Record Date', direction: 'desc' });
     } else {
@@ -244,6 +306,26 @@ function App() {
     return [...Array.from(keys), 'Location', 'Zip'];
   }, [allData, manifest]);
 
+  const nonEmptyColumns = useMemo(() => {
+    if (allData.length === 0) return new Set<string>();
+    const found = new Set<string>();
+    const cols = allColumns;
+
+    for (let i = 0; i < allData.length; i++) {
+      const row = allData[i];
+      for (let j = 0; j < cols.length; j++) {
+        const col = cols[j];
+        if (found.has(col)) continue;
+        const val = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          found.add(col);
+        }
+      }
+      if (found.size === cols.length) break;
+    }
+    return found;
+  }, [allData, allColumns]);
+
   const currentColumnOrder = useMemo(() => {
     const customOrder = customColumnOrders[activeTab];
     if (!customOrder) return allColumns;
@@ -265,7 +347,8 @@ function App() {
   useEffect(() => {
     if (allData.length === 0) return;
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
-      setVisibleColumns(allColumns);
+      const activeCols = currentColumnOrder.filter(col => nonEmptyColumns.has(col));
+      setVisibleColumns(activeCols);
     } 
     else if (customColumnOrders[activeTab]) {
       setVisibleColumns(customColumnOrders[activeTab]);
@@ -276,7 +359,7 @@ function App() {
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
-  }, [activeTab, allColumns, allData, customColumnOrders]);
+  }, [activeTab, allColumns, allData, customColumnOrders, nonEmptyColumns, currentColumnOrder]);
 
   const toggleColumn = (col: string) => {
     setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
