@@ -1,28 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Target, TrendingUp, Users, Phone, Mail, Calendar,
   ArrowUpRight, Search, Filter, MoreHorizontal,
   ChevronRight, Building2, BadgeCheck, AlertCircle,
   Briefcase, Clock, CheckCircle2, XCircle, Download, ExternalLink,
-  PieChart as PieIcon, BarChart3, FileText, Loader2, Edit2, Trash2
+  PieChart as PieIcon, BarChart3, FileText, Loader2, Edit2, Trash2,
+  Lock, Unlock, Settings2, Plus, ChevronUp, ChevronDown, Eye, EyeOff,
+  Package
 } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
 } from 'recharts';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { BusinessLead, LeadStatus, LeadType } from '../types';
+import { BusinessLead, LeadStatus, LeadType, ScorecardMetric } from '../types';
+import { getProductPoints, getAllProducts } from '../lib/productData';
 
 interface ScorecardProps {
   leads: BusinessLead[];
   setLeads: React.Dispatch<React.SetStateAction<BusinessLead[]>>;
+  metrics: ScorecardMetric[];
+  setMetrics: React.Dispatch<React.SetStateAction<ScorecardMetric[]>>;
   onSelectLead: (lead: BusinessLead | null) => void;
   selectedLeadId: string | null;
 }
 
-export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectLead, selectedLeadId }) => {
+export const Scorecard: React.FC<ScorecardProps> = ({
+  leads, setLeads, metrics, setMetrics, onSelectLead, selectedLeadId
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [isPointsUnlocked, setIsPointsUnlocked] = useState(false);
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [isResearchMode, setIsResearchMode] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [selectedChart, setSelectedChart] = useState<'funnel' | 'industries' | null>(null);
@@ -50,23 +60,63 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
       .slice(0, 5);
   }, [leads]);
 
-  const metrics = useMemo(() => {
+  useEffect(() => {
+    let timer: any;
+    if (isPointsUnlocked) {
+      timer = setTimeout(() => {
+        setIsPointsUnlocked(false);
+      }, 60000);
+    }
+    return () => clearTimeout(timer);
+  }, [isPointsUnlocked]);
+
+  const handleUnlockPoints = () => {
+    const passcode = prompt('Enter passcode to authorize action:');
+    // Obfuscated passcode check
+    const secret = String.fromCharCode(86, 76, 89);
+    if (passcode?.toUpperCase() === secret) {
+      setIsPointsUnlocked(true);
+      return true;
+    } else if (passcode !== null) {
+      alert('Incorrect passcode.');
+    }
+    return false;
+  };
+
+  const scorecardData = useMemo(() => {
     const meetingsCount = leads.reduce((acc, lead) =>
       acc + (lead.activities || []).filter(a => a.type === 'Appointment').length, 0);
 
     const outreachCount = leads.reduce((acc, lead) =>
       acc + (lead.activities || []).filter(a => a.type === 'Call' || a.type === 'Email').length, 0);
 
-    return {
-      newAccts: leads.filter(l => l.status === LeadStatus.CONVERTED).length,
-      cardsSold: leads.filter(l => l.productsSold?.some(p => p.includes('Credit Card'))).length,
-      meetings: meetingsCount,
-      pipelineTotal: leads.length,
-      emailsCollected: leads.filter(l => l.email && l.email !== 'N/A').length,
-      outreach: outreachCount,
-      impactScore: (outreachCount + (meetingsCount * 2))
+    const productMetrics = metrics.filter(m => m.type === 'product');
+
+    const results: Record<string, number> = {
+      'new-accts': leads.filter(l => l.status === LeadStatus.CONVERTED).length,
+      'cards-sold': leads.filter(l => l.productsSold?.some(p => p.toLowerCase().includes('credit card'))).length,
+      'meetings': meetingsCount,
+      'pipeline-total': leads.length,
+      'emails-collected': leads.filter(l => l.email && l.email !== 'N/A').length,
+      'outreach': outreachCount,
     };
-  }, [leads]);
+
+    productMetrics.forEach(m => {
+      results[m.id] = leads.filter(l => l.productsSold?.includes(m.name)).length;
+    });
+
+    let totalPoints = (outreachCount + (meetingsCount * 2));
+    leads.forEach(lead => {
+      (lead.productsSold || []).forEach(pName => {
+        totalPoints += getProductPoints(pName);
+      });
+    });
+
+    return {
+      counts: results,
+      impactScore: totalPoints
+    };
+  }, [leads, metrics]);
 
   const filteredLeads = leads.filter(lead =>
     lead.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,7 +228,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
     setLeads(prev => prev.map(l => {
       if (selectedLeadIds.includes(l.id)) {
         const newActivity = {
-          id: crypto.randomUUID?.() || Math.random().toString(36).substr(2, 9),
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
           type: 'Note' as const,
           date: new Date().toISOString(),
           notes: note
@@ -192,6 +242,53 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
       return l;
     }));
     setSelectedLeadIds([]);
+  };
+
+  const moveMetric = (id: string, direction: 'up' | 'down') => {
+    const index = metrics.findIndex(m => m.id === id);
+    if (index === -1) return;
+    const newMetrics = [...metrics];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newMetrics.length) return;
+    [newMetrics[index], newMetrics[targetIndex]] = [newMetrics[targetIndex], newMetrics[index]];
+    setMetrics(newMetrics);
+  };
+
+  const toggleMetricVisibility = (id: string) => {
+    setMetrics(prev => prev.map(m => m.id === id ? { ...m, isVisible: !m.isVisible } : m));
+  };
+
+  const deleteMetric = (id: string) => {
+    if (window.confirm('Are you sure you want to remove this metric from your scorecard?')) {
+      setMetrics(prev => prev.filter(m => m.id !== id));
+    }
+  };
+
+  const editTarget = (id: string) => {
+    const metric = metrics.find(m => m.id === id);
+    if (!metric) return;
+    const newTarget = prompt(`Set new target for ${metric.name}:`, String(metric.target));
+    if (newTarget && !isNaN(parseInt(newTarget))) {
+      setMetrics(prev => prev.map(m => m.id === id ? { ...m, target: parseInt(newTarget) } : m));
+    }
+  };
+
+  const addProductToScorecard = (productName: string) => {
+    const exists = metrics.find(m => m.name === productName);
+    if (exists) {
+      alert('This product is already being tracked.');
+      return;
+    }
+
+    const newMetric: ScorecardMetric = {
+      id: `prod-${Date.now()}`,
+      name: productName,
+      target: 100,
+      type: 'product',
+      isVisible: true
+    };
+    setMetrics(prev => [...prev, newMetric]);
+    setShowAddProductModal(false);
   };
 
   const exportToPDF = async () => {
@@ -259,8 +356,10 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
         </div>
         <div className="flex items-center space-x-6">
           <div className="text-right border-r border-white/20 pr-6">
-            <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Personal Impact</p>
-            <p className="text-sm font-black text-white">{metrics.impactScore}</p>
+            <div>
+              <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Personal Impact</p>
+              <p className="text-sm font-black text-white">{scorecardData.impactScore}</p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Active Pipeline</p>
@@ -328,6 +427,18 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
                 </div>
               </div>
 
+              <button
+                onClick={() => setIsCustomizing(!isCustomizing)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+                  isCustomizing
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                    : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+                <span>{isCustomizing ? 'Done Customizing' : 'Customize Metrics'}</span>
+              </button>
+
               <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center space-x-2">
                 <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                 <span>All Leads</span>
@@ -336,86 +447,135 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <BadgeCheck className="w-16 h-16 text-blue-600" />
-              </div>
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">New Accts</span>
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">Target: 50</span>
-              </div>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-black text-slate-900 dark:text-white">{metrics.newAccts}</span>
-                <span className="text-slate-400 dark:text-slate-600 font-bold">/ 50</span>
-              </div>
-              <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: `${(metrics.newAccts / 50) * 100}%` }} />
-              </div>
-            </div>
+            {metrics.map((m, idx) => {
+              if (!m.isVisible && !isCustomizing) return null;
+              const count = scorecardData.counts[m.id] || 0;
+              const progress = Math.min(100, (count / m.target) * 100);
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Briefcase className="w-16 h-16 text-indigo-600" />
-              </div>
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cards Sold</span>
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-full">Target: 100</span>
-              </div>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-black text-slate-900 dark:text-white">{metrics.cardsSold}</span>
-                <span className="text-slate-400 dark:text-slate-600 font-bold">/ 100</span>
-              </div>
-              <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-600 transition-all duration-1000" style={{ width: `${(metrics.cardsSold / 100) * 100}%` }} />
-              </div>
-            </div>
+              const isFirstRow = ['new-accts', 'cards-sold', 'meetings'].includes(m.id) || m.type === 'product';
 
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Users className="w-16 h-16 text-purple-600" />
-              </div>
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Meetings (Completed)</span>
-                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">Target: 150</span>
-              </div>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-black text-slate-900 dark:text-white">{metrics.meetings}</span>
-                <span className="text-slate-400 dark:text-slate-600 font-bold">/ 150</span>
-              </div>
-              <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-600 transition-all duration-1000" style={{ width: `${(metrics.meetings / 150) * 100}%` }} />
-              </div>
-            </div>
+              if (!isFirstRow) return null;
+
+              return (
+                <div key={m.id} className={`bg-white dark:bg-slate-900 p-6 rounded-3xl border shadow-sm relative overflow-hidden group transition-all ${!m.isVisible ? 'opacity-50 grayscale' : 'border-slate-100 dark:border-slate-800'}`}>
+                  {isCustomizing && (
+                    <div className="absolute top-2 right-2 flex items-center space-x-1 z-10">
+                      <button onClick={() => moveMetric(m.id, 'up')} disabled={idx === 0} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        <ChevronUp className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => moveMetric(m.id, 'down')} disabled={idx === metrics.length - 1} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        <ChevronDown className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => editTarget(m.id)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => toggleMetricVisibility(m.id)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        {m.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3 text-amber-500" />}
+                      </button>
+                      {m.type === 'product' && (
+                        <button onClick={() => deleteMetric(m.id)} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors text-slate-400 hover:text-red-500">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    {m.id === 'new-accts' ? <BadgeCheck className="w-16 h-16 text-blue-600" /> :
+                     m.id === 'cards-sold' ? <Briefcase className="w-16 h-16 text-indigo-600" /> :
+                     m.id === 'meetings' ? <Users className="w-16 h-16 text-purple-600" /> :
+                     <Package className="w-16 h-16 text-slate-600" />}
+                  </div>
+
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{m.name}</span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      m.id === 'new-accts' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' :
+                      m.id === 'cards-sold' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' :
+                      m.id === 'meetings' ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20' :
+                      'text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800'
+                    }`}>Target: {m.target}</span>
+                  </div>
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-4xl font-black text-slate-900 dark:text-white">{count}</span>
+                    <span className="text-slate-400 dark:text-slate-600 font-bold">/ {m.target}</span>
+                  </div>
+                  <div className="mt-4 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-1000 ${
+                        m.id === 'new-accts' ? 'bg-blue-600' :
+                        m.id === 'cards-sold' ? 'bg-indigo-600' :
+                        m.id === 'meetings' ? 'bg-purple-600' :
+                        'bg-slate-600'
+                      }`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+
+            {isCustomizing && (
+              <button
+                onClick={() => {
+                  if (isPointsUnlocked) {
+                    setShowAddProductModal(true);
+                  } else {
+                    if (handleUnlockPoints()) {
+                      setShowAddProductModal(true);
+                    }
+                  }
+                }}
+                className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all flex flex-col items-center justify-center space-y-3 group"
+              >
+                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Add Product to Scorecard</span>
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center space-x-4">
-              <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-500">
-                <Target className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pipeline Total</p>
-                <p className="text-2xl font-black text-slate-900 dark:text-white">{metrics.pipelineTotal}</p>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center space-x-4">
-              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-500">
-                <Mail className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Emails Collected</p>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-500">{metrics.emailsCollected}</p>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center space-x-4">
-              <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/10 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-500">
-                <Phone className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Outreach</p>
-                <p className="text-2xl font-black text-amber-600 dark:text-amber-500">{metrics.outreach}</p>
-              </div>
-            </div>
+            {metrics.map((m) => {
+              if (!m.isVisible && !isCustomizing) return null;
+              const count = scorecardData.counts[m.id] || 0;
+              const isFirstRow = ['new-accts', 'cards-sold', 'meetings'].includes(m.id) || m.type === 'product';
+              if (isFirstRow) return null;
+
+              return (
+                <div key={m.id} className={`bg-white dark:bg-slate-900 p-6 rounded-2xl border flex items-center space-x-4 relative group transition-all ${!m.isVisible ? 'opacity-50 grayscale border-slate-100' : 'border-slate-100 dark:border-slate-800 shadow-sm'}`}>
+                  {isCustomizing && (
+                    <div className="absolute top-1 right-1 flex items-center space-x-1 z-10">
+                      <button onClick={() => editTarget(m.id)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        <Edit2 className="w-2.5 h-2.5" />
+                      </button>
+                      <button onClick={() => toggleMetricVisibility(m.id)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors text-slate-400 hover:text-blue-500">
+                        {m.isVisible ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5 text-amber-500" />}
+                      </button>
+                    </div>
+                  )}
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    m.id === 'pipeline-total' ? 'bg-slate-50 dark:bg-slate-800 text-slate-400' :
+                    m.id === 'emails-collected' ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600' :
+                    'bg-amber-50 dark:bg-amber-900/10 text-amber-600'
+                  }`}>
+                    {m.id === 'pipeline-total' ? <Target className="w-6 h-6" /> :
+                     m.id === 'emails-collected' ? <Mail className="w-6 h-6" /> :
+                     <Phone className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{m.name}</p>
+                    <p className={`text-2xl font-black ${
+                      m.id === 'pipeline-total' ? 'text-slate-900 dark:text-white' :
+                      m.id === 'emails-collected' ? 'text-emerald-600 dark:text-emerald-500' :
+                      'text-amber-600 dark:text-amber-500'
+                    }`}>{count}</p>
+                    {isCustomizing && <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Target: {m.target}</p>}
+                  </div>
+                </div>
+              );
+            })}
 
             {/* Personal Impact Score moved to header - keeping here for future use */}
             {/* <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center space-x-4 text-white">
@@ -706,6 +866,72 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
           </div>
         </section>
       </div>
+
+      {/* Add Product Modal */}
+      {showAddProductModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform animate-in zoom-in-95 duration-300">
+            <div className="px-8 py-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Add Product to Scorecard</h3>
+                <p className="text-xs text-slate-500 font-medium">Select a product to track in your dashboard.</p>
+              </div>
+              <button
+                onClick={() => setShowAddProductModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-8 max-h-[60vh] overflow-y-auto space-y-2">
+              {getAllProducts().map((product, i) => {
+                const isTracked = metrics.some(m => m.name === product.name);
+                return (
+                  <button
+                    key={i}
+                    disabled={isTracked}
+                    onClick={() => addProductToScorecard(product.name)}
+                    className={`w-full text-left p-4 rounded-2xl border flex items-center justify-between group transition-all ${
+                      isTracked
+                        ? 'bg-slate-50 border-slate-100 opacity-50 cursor-not-allowed'
+                        : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600">
+                        <Package className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900 dark:text-white">{product.name}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                          Points: {getProductPoints(product.name)}
+                        </p>
+                      </div>
+                    </div>
+                    {isTracked ? (
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Already Tracked</span>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <Plus className="w-4 h-4" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="px-8 py-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+              <button
+                onClick={() => setShowAddProductModal(false)}
+                className="px-6 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
