@@ -28,7 +28,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use the same secret logic as Scorecard.tsx
-  const CORRECT_PASSCODE = String.fromCharCode(86, 76, 89); // VLY
+  const CORRECT_PASSCODE = String.fromCharCode(86, 76, 89);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {

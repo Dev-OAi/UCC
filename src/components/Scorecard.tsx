@@ -423,7 +423,15 @@ export const Scorecard: React.FC<ScorecardProps> = ({
               </div>
 
               <button
-                onClick={() => setIsCustomizing(!isCustomizing)}
+                onClick={() => {
+                  if (isCustomizing) {
+                    setIsCustomizing(false);
+                  } else if (isPointsUnlocked) {
+                    setIsCustomizing(true);
+                  } else {
+                    handleUnlockPoints();
+                  }
+                }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
                   isCustomizing
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
@@ -578,17 +586,6 @@ export const Scorecard: React.FC<ScorecardProps> = ({
                 </div>
               );
             })}
-
-            {/* Personal Impact Score moved to header - keeping here for future use */}
-            {/* <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center space-x-4 text-white">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Personal Impact Score</p>
-                <p className="text-2xl font-black">{metrics.impactScore}</p>
-              </div>
-            </div> */}
           </div>
 
           {selectedChart && (
@@ -875,24 +872,21 @@ export const Scorecard: React.FC<ScorecardProps> = ({
         </section>
       </div>
 
-      {/* Add Product Modal */}
+      {/* Modals */}
       <SecurityModal
         isOpen={isSecurityModalOpen}
         onClose={() => setIsSecurityModalOpen(false)}
         onSuccess={() => {
           setIsSecurityModalOpen(false);
           setIsPointsUnlocked(true);
-          if (isCustomizing) {
-            setShowAddProductModal(true);
-          }
+          setIsCustomizing(true);
         }}
         title="Secure Product Customization"
-        description="Please enter the authorization code to add products to the Scorecard."
+        description="Please enter the authorization code to customize metrics and add products to the Scorecard."
         icon={<Package className="w-8 h-8" />}
         buttonText="Unlock Customization"
       />
 
-      {/* Delete Lead Confirmation */}
       <Modal
         isOpen={!!confirmDeleteLead}
         onClose={() => setConfirmDeleteLead(null)}
@@ -909,7 +903,6 @@ export const Scorecard: React.FC<ScorecardProps> = ({
         </p>
       </Modal>
 
-      {/* Edit Lead Name Modal */}
       <Modal
         isOpen={!!editLeadName}
         onClose={() => setEditLeadName(null)}
@@ -933,7 +926,6 @@ export const Scorecard: React.FC<ScorecardProps> = ({
         </div>
       </Modal>
 
-      {/* Bulk Note Modal */}
       <Modal
         isOpen={bulkNoteText !== null}
         onClose={() => setBulkNoteText(null)}
@@ -956,7 +948,6 @@ export const Scorecard: React.FC<ScorecardProps> = ({
         </div>
       </Modal>
 
-      {/* Delete Metric Confirmation */}
       <Modal
         isOpen={!!confirmDeleteMetric}
         onClose={() => setConfirmDeleteMetric(null)}
@@ -973,129 +964,6 @@ export const Scorecard: React.FC<ScorecardProps> = ({
         </p>
       </Modal>
 
-      {/* Edit Metric Target Modal */}
-      <Modal
-        isOpen={!!editMetricTarget}
-        onClose={() => setEditMetricTarget(null)}
-        title={`Set Target: ${editMetricTarget?.name}`}
-        footer={
-          <div className="flex justify-end space-x-3">
-            <button onClick={() => setEditMetricTarget(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
-            <button onClick={editTargetAction} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase tracking-widest">Update Target</button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">New Goal Target</label>
-          <input
-            type="number"
-            value={editMetricTarget?.target || ''}
-            onChange={(e) => setEditMetricTarget(prev => prev ? { ...prev, target: e.target.value } : null)}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 outline-none transition-all dark:text-white"
-            placeholder="Enter target number"
-            autoFocus
-          />
-        </div>
-      </Modal>
-
-      <SecurityModal
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-        onSuccess={() => {
-          setIsSecurityModalOpen(false);
-          setIsPointsUnlocked(true);
-          if (isCustomizing) {
-            setShowAddProductModal(true);
-          }
-        }}
-        title="Secure Product Customization"
-        description="Please enter the authorization code to add products to the Scorecard."
-        icon={<Package className="w-8 h-8" />}
-        buttonText="Unlock Customization"
-      />
-
-      {/* Delete Lead Confirmation */}
-      <Modal
-        isOpen={!!confirmDeleteLead}
-        onClose={() => setConfirmDeleteLead(null)}
-        title="Remove Business from Pipeline?"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <button onClick={() => setConfirmDeleteLead(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
-            <button onClick={() => confirmDeleteLead && handleDeleteLeadAction(confirmDeleteLead)} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all uppercase tracking-widest">Remove Business</button>
-          </div>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Are you sure you want to remove this business from your pipeline? This action cannot be undone.
-        </p>
-      </Modal>
-
-      {/* Edit Lead Name Modal */}
-      <Modal
-        isOpen={!!editLeadName}
-        onClose={() => setEditLeadName(null)}
-        title="Edit Business Name"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <button onClick={() => setEditLeadName(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
-            <button onClick={handleEditLeadAction} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase tracking-widest">Save Changes</button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={editLeadName?.name || ''}
-            onChange={(e) => setEditLeadName(prev => prev ? { ...prev, name: e.target.value } : null)}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 outline-none transition-all dark:text-white"
-            placeholder="Enter business name"
-            autoFocus
-          />
-        </div>
-      </Modal>
-
-      {/* Bulk Note Modal */}
-      <Modal
-        isOpen={bulkNoteText !== null}
-        onClose={() => setBulkNoteText(null)}
-        title="Add Bulk Note"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <button onClick={() => setBulkNoteText(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
-            <button onClick={handleBulkNoteAction} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase tracking-widest">Add Note to All</button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <textarea
-            value={bulkNoteText || ''}
-            onChange={(e) => setBulkNoteText(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 outline-none transition-all dark:text-white min-h-[100px] resize-none"
-            placeholder="Enter note for selected leads..."
-            autoFocus
-          />
-        </div>
-      </Modal>
-
-      {/* Delete Metric Confirmation */}
-      <Modal
-        isOpen={!!confirmDeleteMetric}
-        onClose={() => setConfirmDeleteMetric(null)}
-        title="Remove Metric?"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <button onClick={() => setConfirmDeleteMetric(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
-            <button onClick={() => confirmDeleteMetric && deleteMetricAction(confirmDeleteMetric)} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all uppercase tracking-widest">Remove Metric</button>
-          </div>
-        }
-      >
-        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-          Are you sure you want to remove this metric from your scorecard?
-        </p>
-      </Modal>
-
-      {/* Edit Metric Target Modal */}
       <Modal
         isOpen={!!editMetricTarget}
         onClose={() => setEditMetricTarget(null)}

@@ -6,8 +6,9 @@ import {
   CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus,
   ChevronLeft
 } from 'lucide-react';
-import { BusinessLead, LeadActivity, LeadStatus, LeadType } from '../types';
+import { BusinessLead, LeadActivity, LeadStatus, LeadType, ScorecardMetric } from '../types';
 import { getInsightForCategory } from '../lib/industryKnowledge';
+import { Modal, Input } from './ui';
 
 interface ScorecardRightSidebarProps {
   selectedLead: BusinessLead | null;
@@ -15,6 +16,9 @@ interface ScorecardRightSidebarProps {
   onClose: () => void;
   isOpen: boolean;
   onUpdateLead: (lead: BusinessLead) => void;
+  onAddCallLog?: (client: string, contact: string) => void;
+  onAddEmailLog?: (client: string, subject: string) => void;
+  onAddMeetingLog?: (client: string, attendees: string) => void;
   width?: number;
   isResizing?: boolean;
   onResizeStart?: (e: React.MouseEvent) => void;
@@ -25,6 +29,7 @@ type Tab = 'Activity' | 'Products' | 'Intro Call' | 'Industry' | 'Strategy' | 'E
 
 export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   selectedLead, metrics, onClose, isOpen, onUpdateLead,
+  onAddCallLog, onAddEmailLog, onAddMeetingLog,
   width, isResizing, onResizeStart, onToggle
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Strategy');
@@ -33,6 +38,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   const [copied, setCopied] = useState(false);
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
   const [editingActivityText, setEditingActivityText] = useState('');
+  const [aiCustomPrompt, setAiCustomPrompt] = useState<string | null>(null);
 
   // Script content states
   const [scripts, setScripts] = useState({
@@ -75,16 +81,20 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
 
     let modification = action;
     if (action === 'Custom...') {
-      const input = prompt('What would you like the AI to do? (e.g., "Add more enthusiasm", "Focus on fraud protection")');
-      if (!input) return;
-      modification = input;
+      setAiCustomPrompt('');
+      return;
     }
 
+    applyAiModification(modification);
+  };
+
+  const applyAiModification = (modification: string) => {
     // Mocking AI modification
     const prefix = `[AI: ${modification}] `;
     if (activeTab === 'Intro Call') setScripts(s => ({ ...s, introCall: prefix + s.introCall }));
     if (activeTab === 'Strategy') setScripts(s => ({ ...s, strategy: prefix + s.strategy }));
     if (activeTab === 'Email') setScripts(s => ({ ...s, email: prefix + s.email }));
+    setAiCustomPrompt(null);
   };
 
   const handleSave = () => {
@@ -356,6 +366,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                           activities: [newActivity, ...(selectedLead.activities || [])],
                           lastUpdated: new Date().toISOString()
                         });
+                        onAddMeetingLog?.(selectedLead.businessName, selectedLead.keyPrincipal || 'TBD');
                         setEditingActivityId(newActivity.id);
                         setEditingActivityText(newActivity.notes);
                       }}
@@ -377,6 +388,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                           activities: [newActivity, ...(selectedLead.activities || [])],
                           lastUpdated: new Date().toISOString()
                         });
+                        onAddCallLog?.(selectedLead.businessName, selectedLead.keyPrincipal || 'TBD');
                         setEditingActivityId(newActivity.id);
                         setEditingActivityText(newActivity.notes);
                       }}
@@ -538,6 +550,35 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
         </div>
         </div>
       </aside>
+
+      <Modal
+        isOpen={aiCustomPrompt !== null}
+        onClose={() => setAiCustomPrompt(null)}
+        title="Custom AI Modification"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button onClick={() => setAiCustomPrompt(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
+            <button
+              onClick={() => aiCustomPrompt && applyAiModification(aiCustomPrompt)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase tracking-widest"
+              disabled={!aiCustomPrompt}
+            >
+              Apply Changes
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">What would you like the AI to do?</p>
+          <Input
+            value={aiCustomPrompt || ''}
+            onChange={(e) => setAiCustomPrompt(e.target.value)}
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 outline-none transition-all dark:text-white"
+            placeholder="e.g., 'Add more enthusiasm', 'Focus on fraud protection'"
+            autoFocus
+          />
+        </div>
+      </Modal>
     </>
   );
 };
