@@ -3,7 +3,7 @@ import {
   Info, X, Share2, Edit3, ChevronUp, Phone, Globe, MapPin,
   Fingerprint, Calendar, Activity, ShieldCheck, HelpCircle,
   ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight,
-  Copy, Check, Target
+  Copy, Check, Target, ChevronLeft
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
 import { getInsightForCategory } from '../lib/industryKnowledge';
@@ -18,6 +18,10 @@ interface RightSidebarProps {
   productGuide?: ProductGuide;
   isOpen: boolean;
   onAddToScorecard?: (row: DataRow) => void;
+  width?: number;
+  isResizing?: boolean;
+  onResizeStart?: (e: React.MouseEvent) => void;
+  onToggle?: () => void;
 }
 
 const FIELD_INFO: Record<string, { icon: any, color: string, description: string }> = {
@@ -39,7 +43,11 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   activeTab,
   productGuide,
   isOpen,
-  onAddToScorecard
+  onAddToScorecard,
+  width,
+  isResizing,
+  onResizeStart,
+  onToggle
 }) => {
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
   const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
@@ -135,10 +143,33 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         />
       )}
 
-      <aside className={`
-        fixed inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto shrink-0 z-50 transition-all duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0 w-80 opacity-100 border-l border-gray-200 dark:border-slate-800 shadow-2xl' : 'translate-x-full w-0 opacity-0 pointer-events-none border-none'}
-      `}>
+      <aside
+        style={{ width: isOpen ? `${width}px` : '0px' }}
+        className={`
+          fixed inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full shrink-0 z-50 overflow-visible
+          ${isResizing ? '' : 'transition-all duration-300 ease-in-out'}
+          ${isOpen ? 'translate-x-0 border-l border-gray-200 dark:border-slate-800 shadow-2xl' : 'translate-x-0 border-none'}
+        `}
+      >
+        {/* Resize Handle */}
+        <div
+          onMouseDown={onResizeStart}
+          className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-blue-500/30 transition-colors ${isResizing ? 'bg-blue-500/30' : ''} pointer-events-auto`}
+        >
+           {/* Blue Node */}
+           <button
+             onClick={(e) => {
+               e.stopPropagation();
+               onToggle?.();
+             }}
+             className="absolute left-[-12px] top-24 w-6 h-12 bg-blue-600 hover:bg-blue-700 rounded-l-xl shadow-lg flex items-center justify-center text-white transition-transform hover:scale-105"
+             aria-label={isOpen ? "Close Sidebar" : "Open Sidebar"}
+           >
+             {isOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+           </button>
+        </div>
+
+        <div className={`flex-1 flex flex-col h-full overflow-y-auto transition-opacity duration-300 ${!isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
       {!selectedRow ? (
         <div className="flex-1 flex flex-col p-5 overflow-y-auto">
           {activeTab === 'Product Guide' && productGuide ? (
@@ -392,6 +423,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
         </div>
       )}
+        </div>
       </aside>
     </>
   );

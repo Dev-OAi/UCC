@@ -3,7 +3,8 @@ import {
   X, Activity, Package, Phone, Building2, Lightbulb,
   Mail, ChevronRight, Copy, Check, Sparkles, ChevronDown,
   Edit3, Download, Upload, Trash2, Save, Linkedin, ExternalLink,
-  CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus
+  CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus,
+  ChevronLeft
 } from 'lucide-react';
 import { BusinessLead, LeadActivity, LeadStatus, LeadType } from '../types';
 import { getInsightForCategory } from '../lib/industryKnowledge';
@@ -13,11 +14,18 @@ interface ScorecardRightSidebarProps {
   onClose: () => void;
   isOpen: boolean;
   onUpdateLead: (lead: BusinessLead) => void;
+  width?: number;
+  isResizing?: boolean;
+  onResizeStart?: (e: React.MouseEvent) => void;
+  onToggle?: () => void;
 }
 
 type Tab = 'Activity' | 'Products' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
 
-export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ selectedLead, onClose, isOpen, onUpdateLead }) => {
+export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
+  selectedLead, onClose, isOpen, onUpdateLead,
+  width, isResizing, onResizeStart, onToggle
+}) => {
   const [activeTab, setActiveTab] = useState<Tab>('Strategy');
   const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -137,10 +145,33 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
         />
       )}
 
-      <aside className={`
-        fixed inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full overflow-hidden shrink-0 z-50 transition-all duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0 w-[450px] opacity-100 border-l border-gray-200 dark:border-slate-800 shadow-2xl' : 'translate-x-full w-0 opacity-0 pointer-events-none border-none'}
-      `}>
+      <aside
+        style={{ width: isOpen ? `${width}px` : '0px' }}
+        className={`
+          fixed inset-y-0 right-0 bg-white dark:bg-slate-900 flex flex-col h-full shrink-0 z-50 overflow-visible
+          ${isResizing ? '' : 'transition-all duration-300 ease-in-out'}
+          ${isOpen ? 'translate-x-0 border-l border-gray-200 dark:border-slate-800 shadow-2xl' : 'translate-x-0 border-none'}
+        `}
+      >
+        {/* Resize Handle */}
+        <div
+          onMouseDown={onResizeStart}
+          className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-blue-500/30 transition-colors ${isResizing ? 'bg-blue-500/30' : ''} pointer-events-auto`}
+        >
+           {/* Blue Node */}
+           <button
+             onClick={(e) => {
+               e.stopPropagation();
+               onToggle?.();
+             }}
+             className="absolute left-[-12px] top-24 w-6 h-12 bg-blue-600 hover:bg-blue-700 rounded-l-xl shadow-lg flex items-center justify-center text-white transition-transform hover:scale-105"
+             aria-label={isOpen ? "Close Sidebar" : "Open Sidebar"}
+           >
+             {isOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+           </button>
+        </div>
+
+        <div className={`flex-1 flex flex-col h-full overflow-hidden transition-opacity duration-300 ${!isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         {/* Header */}
         <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
           <div>
@@ -463,6 +494,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({ se
                </div>
             </div>
           )}
+        </div>
         </div>
       </aside>
     </>
