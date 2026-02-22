@@ -109,7 +109,7 @@ function App() {
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(window.innerWidth >= 1024);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
@@ -160,6 +160,9 @@ function App() {
   useEffect(() => {
     setSelectedRow(null);
     setSelectedLeadId(null);
+    if (activeTab !== 'Scorecard') {
+      setIsRightSidebarOpen(false);
+    }
     if (activeTab === 'Last 90 Days') {
       setSortConfig({ key: 'Record Date', direction: 'desc' });
     } else {
