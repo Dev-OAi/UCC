@@ -71,14 +71,16 @@ export const Scorecard: React.FC<ScorecardProps> = ({
   }, [isPointsUnlocked]);
 
   const handleUnlockPoints = () => {
-    const passcode = prompt('Enter passcode to view points:');
+    const passcode = prompt('Enter passcode to authorize action:');
     // Obfuscated passcode check
     const secret = String.fromCharCode(86, 76, 89);
     if (passcode?.toUpperCase() === secret) {
       setIsPointsUnlocked(true);
+      return true;
     } else if (passcode !== null) {
       alert('Incorrect passcode.');
     }
+    return false;
   };
 
   const scorecardData = useMemo(() => {
@@ -353,19 +355,10 @@ export const Scorecard: React.FC<ScorecardProps> = ({
           </div>
         </div>
         <div className="flex items-center space-x-6">
-          <div className="text-right border-r border-white/20 pr-6 flex items-center space-x-3">
+          <div className="text-right border-r border-white/20 pr-6">
             <div>
               <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Personal Impact</p>
-              <div className="flex items-center justify-end space-x-2">
-                <p className="text-sm font-black text-white">{isPointsUnlocked ? scorecardData.impactScore : '•••'}</p>
-                <button
-                  onClick={handleUnlockPoints}
-                  className={`transition-colors ${isPointsUnlocked ? 'text-emerald-400' : 'text-white/60 hover:text-white'}`}
-                  title={isPointsUnlocked ? "Points Visible" : "Unlock Points"}
-                >
-                  {isPointsUnlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                </button>
-              </div>
+              <p className="text-sm font-black text-white">{scorecardData.impactScore}</p>
             </div>
           </div>
           <div className="text-right">
@@ -524,7 +517,15 @@ export const Scorecard: React.FC<ScorecardProps> = ({
 
             {isCustomizing && (
               <button
-                onClick={() => setShowAddProductModal(true)}
+                onClick={() => {
+                  if (isPointsUnlocked) {
+                    setShowAddProductModal(true);
+                  } else {
+                    if (handleUnlockPoints()) {
+                      setShowAddProductModal(true);
+                    }
+                  }
+                }}
                 className="bg-white dark:bg-slate-900 p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all flex flex-col items-center justify-center space-y-3 group"
               >
                 <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
