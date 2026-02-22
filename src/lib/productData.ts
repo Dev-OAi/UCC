@@ -72,6 +72,37 @@ const businessCdTiers: Tier[] = [
 ];
 
 
+export const getAllProducts = (): Product[] => {
+  const products: Product[] = [];
+  productData.forEach(section => {
+    section.categories.forEach(category => {
+      category.subCategories.forEach(sub => {
+        sub.products.forEach(product => {
+          products.push(product);
+        });
+      });
+    });
+  });
+  return products;
+};
+
+export const getProductPoints = (productName: string): number => {
+  const products = getAllProducts();
+  const product = products.find(p => p.name === productName);
+  if (!product) return 0;
+
+  if (typeof product.points === 'number') return product.points;
+  if (typeof product.points === 'string' && !isNaN(parseInt(product.points))) return parseInt(product.points);
+
+  if (product.tiers && product.tiers.length > 0) {
+    const firstTierPoints = product.tiers[0].points;
+    if (typeof firstTierPoints === 'number') return firstTierPoints;
+    if (typeof firstTierPoints === 'string' && !isNaN(parseInt(firstTierPoints))) return parseInt(firstTierPoints);
+  }
+
+  return 0;
+};
+
 export const productData: MainSection[] = [
     {
         title: 'GROSS DEPOSITS',
