@@ -90,6 +90,14 @@ export interface IndustryProfile {
   prepQuestions: string[]; // Meeting Prep-Sheet
 }
 
+export interface ScorecardMetric {
+  id: string;
+  name: string;
+  target: number;
+  type: 'built-in' | 'product';
+  isVisible: boolean;
+}
+
 export interface BusinessLead {
   id: string;
   businessName: string;

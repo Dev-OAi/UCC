@@ -11,6 +11,7 @@ import { getInsightForCategory } from '../lib/industryKnowledge';
 
 interface ScorecardRightSidebarProps {
   selectedLead: BusinessLead | null;
+  metrics: ScorecardMetric[];
   onClose: () => void;
   isOpen: boolean;
   onUpdateLead: (lead: BusinessLead) => void;
@@ -23,7 +24,7 @@ interface ScorecardRightSidebarProps {
 type Tab = 'Activity' | 'Products' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
 
 export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
-  selectedLead, onClose, isOpen, onUpdateLead,
+  selectedLead, metrics, onClose, isOpen, onUpdateLead,
   width, isResizing, onResizeStart, onToggle
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Strategy');
@@ -452,40 +453,80 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
           ) : (
             <div className="space-y-6">
                <div className="flex items-center justify-between">
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommended Solutions</h4>
+                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scorecard Tracked Products</h4>
                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase">
                    {selectedLead.productsSold?.length || 0} Assigned
                  </span>
                </div>
                <div className="space-y-3">
-                  {[
-                    { name: 'Business Platinum Checking', benefit: 'Higher transaction limits for growing firms.' },
-                    { name: 'Treasury Management Bundle', benefit: 'Advanced fraud protection & ACH controls.' },
-                    { name: 'Business Credit Card', benefit: '1.5% cash back on all operational spend.' }
-                  ].map((prod, i) => {
-                    const isAssigned = selectedLead.productsSold?.includes(prod.name);
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => toggleProduct(prod.name)}
-                        className={`w-full text-left p-4 rounded-2xl border transition-all group ${
-                          isAssigned
-                            ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-500/20'
-                            : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-500'
-                        }`}
-                      >
-                         <div className="flex items-center justify-between mb-1">
-                            <p className={`text-xs font-black ${isAssigned ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{prod.name}</p>
-                            {isAssigned ? (
-                              <Check className="w-4 h-4 text-white" />
-                            ) : (
-                              <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                            )}
-                         </div>
-                         <p className={`text-[10px] ${isAssigned ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{prod.benefit}</p>
-                      </button>
-                    );
-                  })}
+                  {metrics.filter(m => m.type === 'product').length > 0 ? (
+                    metrics.filter(m => m.type === 'product').map((m, i) => {
+                      const isAssigned = selectedLead.productsSold?.includes(m.name);
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => toggleProduct(m.name)}
+                          className={`w-full text-left p-4 rounded-2xl border transition-all group ${
+                            isAssigned
+                              ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-500/20'
+                              : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-500'
+                          }`}
+                        >
+                           <div className="flex items-center justify-between mb-1">
+                              <p className={`text-xs font-black ${isAssigned ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{m.name}</p>
+                              {isAssigned ? (
+                                <Check className="w-4 h-4 text-white" />
+                              ) : (
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                              )}
+                           </div>
+                           <p className={`text-[10px] ${isAssigned ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                             Tracked Metric: Target {m.target}
+                           </p>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-[10px] text-slate-400 italic text-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                      No custom products added to scorecard yet. Use the 'Customize' button in the main scorecard view.
+                    </p>
+                  )}
+               </div>
+
+               <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Recommended Solutions</h4>
+                 <div className="space-y-3">
+                    {[
+                      { name: 'Business Platinum Checking', benefit: 'Higher transaction limits for growing firms.' },
+                      { name: 'Treasury Management Bundle', benefit: 'Advanced fraud protection & ACH controls.' },
+                      { name: 'Business Credit Card', benefit: '1.5% cash back on all operational spend.' }
+                    ].map((prod, i) => {
+                      const isAssigned = selectedLead.productsSold?.includes(prod.name);
+                      if (metrics.some(m => m.name === prod.name)) return null; // Don't duplicate if already in scorecard
+
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => toggleProduct(prod.name)}
+                          className={`w-full text-left p-4 rounded-2xl border transition-all group ${
+                            isAssigned
+                              ? 'bg-blue-600 border-blue-600 shadow-lg shadow-blue-500/20'
+                              : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-blue-500'
+                          }`}
+                        >
+                           <div className="flex items-center justify-between mb-1">
+                              <p className={`text-xs font-black ${isAssigned ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{prod.name}</p>
+                              {isAssigned ? (
+                                <Check className="w-4 h-4 text-white" />
+                              ) : (
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                              )}
+                           </div>
+                           <p className={`text-[10px] ${isAssigned ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{prod.benefit}</p>
+                        </button>
+                      );
+                    })}
+                 </div>
                </div>
                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                   <p className="text-[10px] text-slate-400 text-center font-medium italic">
