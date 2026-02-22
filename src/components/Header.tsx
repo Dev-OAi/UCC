@@ -33,6 +33,20 @@ export const Header: React.FC<HeaderProps> = ({
   isDarkMode,
   onToggleDarkMode
 }) => {
+  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    if (isSearchOpen && searchTerm) {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = setTimeout(() => {
+        setIsSearchOpen(false);
+      }, 2000);
+    }
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchTerm, isSearchOpen, setIsSearchOpen]);
+
   return (
     <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 sticky top-0 z-30 transition-colors duration-200">
       <div className="flex items-center space-x-2 w-auto md:w-64 shrink-0">
@@ -60,6 +74,12 @@ export const Header: React.FC<HeaderProps> = ({
               setIsSearchOpen(true);
             }}
             onFocus={() => setIsSearchOpen(true)}
+            onClick={() => setIsSearchOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setIsSearchOpen(false);
+              }
+            }}
           />
           {searchTerm && (
             <button
