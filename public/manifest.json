@@ -2,14 +2,28 @@
   {
     "path": "Data/33027/33027 Pembroke Pines (2).csv",
     "type": "33027",
-    "zip": "",
+    "zip": "33027",
     "location": "33027 Pembroke Pines (2)",
     "filename": "33027 Pembroke Pines (2).csv"
   },
   {
+    "path": "Data/B UCC/YTD BUCC.csv",
+    "type": "B UCC",
+    "zip": "",
+    "location": "YTD BUCC",
+    "filename": "YTD BUCC.csv"
+  },
+  {
+    "path": "Data/B UCC/V BUCC.csv",
+    "type": "B UCC",
+    "zip": "",
+    "location": "V BUCC",
+    "filename": "V BUCC.csv"
+  },
+  {
     "path": "Data/33480/33480 Palm Beach.csv",
     "type": "33480",
-    "zip": "",
+    "zip": "33480",
     "location": "33480 Palm Beach",
     "filename": "33480 Palm Beach.csv"
   },
@@ -42,14 +56,14 @@
   {
     "path": "Data/33301/33301 Fort Lauderdale (2).csv",
     "type": "33301",
-    "zip": "",
+    "zip": "33301",
     "location": "33301 Fort Lauderdale (2)",
     "filename": "33301 Fort Lauderdale (2).csv"
   },
   {
     "path": "Data/33401/33401 West Palm Beach.csv",
     "type": "33401",
-    "zip": "",
+    "zip": "33401",
     "location": "33401 West Palm Beach",
     "filename": "33401 West Palm Beach.csv"
   },
@@ -68,39 +82,11 @@
     "filename": "SB 33480 Palm Beach.csv"
   },
   {
-    "path": "Data/Last 90 Days/SearchResults 1.csv",
-    "type": "Last 90 Days",
-    "zip": "",
-    "location": "SearchResults 1",
-    "filename": "SearchResults 1.csv"
-  },
-  {
-    "path": "Data/Last 90 Days/SearchResults 5.csv",
-    "type": "Last 90 Days",
-    "zip": "",
-    "location": "SearchResults 5",
-    "filename": "SearchResults 5.csv"
-  },
-  {
     "path": "Data/Last 90 Days/UCC Search - Last 90.csv",
     "type": "Last 90 Days",
     "zip": "",
     "location": "UCC Search - Last 90",
     "filename": "UCC Search - Last 90.csv"
-  },
-  {
-    "path": "Data/Last 90 Days/SearchResults.csv",
-    "type": "Last 90 Days",
-    "zip": "",
-    "location": "SearchResults",
-    "filename": "SearchResults.csv"
-  },
-  {
-    "path": "Data/Last 90 Days/SearchResults 4.csv",
-    "type": "Last 90 Days",
-    "zip": "",
-    "location": "SearchResults 4",
-    "filename": "SearchResults 4.csv"
   },
   {
     "path": "Data/Last 90 Days/UCC Search - Last 5 Years.csv",
@@ -110,15 +96,43 @@
     "filename": "UCC Search - Last 5 Years.csv"
   },
   {
-    "path": "Data/Last 90 Days/SearchResults 3.csv",
-    "type": "Last 90 Days",
+    "path": "Data/Search Results/SearchResults 1.csv",
+    "type": "Search Results",
+    "zip": "",
+    "location": "SearchResults 1",
+    "filename": "SearchResults 1.csv"
+  },
+  {
+    "path": "Data/Search Results/SearchResults 5.csv",
+    "type": "Search Results",
+    "zip": "",
+    "location": "SearchResults 5",
+    "filename": "SearchResults 5.csv"
+  },
+  {
+    "path": "Data/Search Results/SearchResults.csv",
+    "type": "Search Results",
+    "zip": "",
+    "location": "SearchResults",
+    "filename": "SearchResults.csv"
+  },
+  {
+    "path": "Data/Search Results/SearchResults 4.csv",
+    "type": "Search Results",
+    "zip": "",
+    "location": "SearchResults 4",
+    "filename": "SearchResults 4.csv"
+  },
+  {
+    "path": "Data/Search Results/SearchResults 3.csv",
+    "type": "Search Results",
     "zip": "",
     "location": "SearchResults 3",
     "filename": "SearchResults 3.csv"
   },
   {
-    "path": "Data/Last 90 Days/SearchResults 2.csv",
-    "type": "Last 90 Days",
+    "path": "Data/Search Results/SearchResults 2.csv",
+    "type": "Search Results",
     "zip": "",
     "location": "SearchResults 2",
     "filename": "SearchResults 2.csv"
