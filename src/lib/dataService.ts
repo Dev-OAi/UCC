@@ -152,7 +152,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
         else if (colCount >= 25 && colCount < 30) {
           m[0] = 'UCC Status';
-          m[1] = 'Direct Name';
+          m[1] = 'businessName';
           m[2] = 'Reverse Name';
           m[3] = 'Record Date';
           m[4] = 'Location';

@@ -100,7 +100,7 @@ function App() {
     ],
     'Last 90 Days': [
       "UCC Status",
-      "Direct Name",
+      "businessName",
       "Reverse Name",
       "Record Date",
       "Doc Type",
@@ -146,6 +146,23 @@ function App() {
       "Date Filed",
       "Expires",
       "Florida UCC Link"
+    ],
+    'All': [
+      "businessName",
+      "Category",
+      "Document Number",
+      "Sunbiz Status",
+      "Phone",
+      "Website",
+      "Sunbiz Link",
+      "Florida UCC Link",
+      "Location",
+      "Zip",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "Summary For Filing"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
@@ -289,6 +306,26 @@ function App() {
     return [...Array.from(keys), 'Location', 'Zip'];
   }, [allData, manifest]);
 
+  const nonEmptyColumns = useMemo(() => {
+    if (allData.length === 0) return new Set<string>();
+    const found = new Set<string>();
+    const cols = allColumns;
+
+    for (let i = 0; i < allData.length; i++) {
+      const row = allData[i];
+      for (let j = 0; j < cols.length; j++) {
+        const col = cols[j];
+        if (found.has(col)) continue;
+        const val = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          found.add(col);
+        }
+      }
+      if (found.size === cols.length) break;
+    }
+    return found;
+  }, [allData, allColumns]);
+
   const currentColumnOrder = useMemo(() => {
     const customOrder = customColumnOrders[activeTab];
     if (!customOrder) return allColumns;
@@ -310,7 +347,8 @@ function App() {
   useEffect(() => {
     if (allData.length === 0) return;
     if (['Home', 'All', 'Insights'].includes(activeTab)) {
-      setVisibleColumns(allColumns);
+      const activeCols = currentColumnOrder.filter(col => nonEmptyColumns.has(col));
+      setVisibleColumns(activeCols);
     } 
     else if (customColumnOrders[activeTab]) {
       setVisibleColumns(customColumnOrders[activeTab]);
@@ -321,7 +359,7 @@ function App() {
         setVisibleColumns([...keys, 'Location', 'Zip']);
       }
     }
-  }, [activeTab, allColumns, allData, customColumnOrders]);
+  }, [activeTab, allColumns, allData, customColumnOrders, nonEmptyColumns, currentColumnOrder]);
 
   const toggleColumn = (col: string) => {
     setVisibleColumns(prev => prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]);
