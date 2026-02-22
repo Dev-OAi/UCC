@@ -16,7 +16,7 @@ import { ActivityLog } from './components/ActivityLog';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
 import ProductGuideRenderer from './components/ProductGuideRenderer';
-import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric } from './types';
+import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, CallEntry, EmailEntry, MeetingEntry } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
@@ -25,6 +25,16 @@ import Papa from 'papaparse';
 export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+const initialCallEntries: CallEntry[] = [
+  { id: 'call-1', time: '09:30', client: 'Innovate Inc.', contact: 'John Smith', callType: 'Follow-up', outcome: 'Confirmed interest, scheduled demo for Friday.', nextAction: 'Send demo confirmation email.', followUpDate: '2026-11-14' }
+];
+const initialEmailEntries: EmailEntry[] = [
+  { id: 'email-1', timeSent: '11:00', client: 'Solutions LLC', subject: 'Re: Proposal', emailType: 'Proposal', responseReceived: true, nextStep: 'Follow up call tomorrow.' }
+];
+const initialMeetingEntries: MeetingEntry[] = [
+  { id: 'meeting-1', time: '14:00', client: 'Global Tech', attendees: 'Sarah Brown, Mike Lee', meetingType: 'Closing', summary: 'Finalized contract terms. Positive outcome.', outcome: 'Deal closed.', nextAction: 'Send final contract for signature.', followUpDate: '2026-11-11' }
+];
 
 const DEFAULT_METRICS: ScorecardMetric[] = [
   { id: 'new-accts', name: 'New Accts', target: 50, type: 'built-in', isVisible: true },
@@ -49,6 +59,21 @@ function App() {
     const saved = localStorage.getItem('scorecardMetrics');
     return saved ? JSON.parse(saved) : DEFAULT_METRICS;
   });
+
+  // Activity Log State
+  const [callEntries, setCallEntries] = useState<CallEntry[]>(() => {
+    const saved = localStorage.getItem('sales_callEntries');
+    return saved ? JSON.parse(saved) : initialCallEntries;
+  });
+  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() => {
+    const saved = localStorage.getItem('sales_emailEntries');
+    return saved ? JSON.parse(saved) : initialEmailEntries;
+  });
+  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() => {
+    const saved = localStorage.getItem('sales_meetingEntries');
+    return saved ? JSON.parse(saved) : initialMeetingEntries;
+  });
+
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -295,6 +320,52 @@ function App() {
   useEffect(() => {
     localStorage.setItem('scorecardMetrics', JSON.stringify(scorecardMetrics));
   }, [scorecardMetrics]);
+
+  useEffect(() => { localStorage.setItem('sales_callEntries', JSON.stringify(callEntries)); }, [callEntries]);
+  useEffect(() => { localStorage.setItem('sales_emailEntries', JSON.stringify(emailEntries)); }, [emailEntries]);
+  useEffect(() => { localStorage.setItem('sales_meetingEntries', JSON.stringify(meetingEntries)); }, [meetingEntries]);
+
+  const addCallEntry = (client: string, contact: string) => {
+    const newEntry: CallEntry = {
+      id: `call-${Date.now()}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      client: client || '',
+      contact: contact || '',
+      callType: 'Follow-up',
+      outcome: 'Auto-logged from Scorecard',
+      nextAction: '',
+      followUpDate: '',
+    };
+    setCallEntries(prev => [newEntry, ...prev]);
+  };
+
+  const addEmailEntry = (client: string, subject: string) => {
+    const newEntry: EmailEntry = {
+      id: `email-${Date.now()}`,
+      timeSent: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      client: client || '',
+      subject: subject || '',
+      emailType: 'Outreach',
+      responseReceived: false,
+      nextStep: '',
+    };
+    setEmailEntries(prev => [newEntry, ...prev]);
+  };
+
+  const addMeetingEntry = (client: string, attendees: string) => {
+    const newEntry: MeetingEntry = {
+      id: `meeting-${Date.now()}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      client: client || '',
+      attendees: attendees || '',
+      meetingType: 'Discovery',
+      summary: 'Scheduled from Scorecard',
+      outcome: '',
+      nextAction: '',
+      followUpDate: '',
+    };
+    setMeetingEntries(prev => [newEntry, ...prev]);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -806,7 +877,15 @@ function App() {
           ) : activeTab === 'treasury-guide' ? (
             <TreasuryGuide />
           ) : activeTab === 'Activity Log' ? (
-            <ActivityLog />
+            <ActivityLog
+              callEntries={callEntries}
+              setCallEntries={setCallEntries}
+              emailEntries={emailEntries}
+              setEmailEntries={setEmailEntries}
+              meetingEntries={meetingEntries}
+              setMeetingEntries={setMeetingEntries}
+              leads={scorecardLeads}
+            />
           ) : activeTab === 'Scorecard' ? (
             <Scorecard
               leads={scorecardLeads}
@@ -880,6 +959,9 @@ function App() {
             onUpdateLead={(updatedLead) => {
               setScorecardLeads(prev => prev.map(l => l.id === updatedLead.id ? updatedLead : l));
             }}
+            onAddCallLog={addCallEntry}
+            onAddEmailLog={addEmailEntry}
+            onAddMeetingLog={addMeetingEntry}
             width={rightSidebarWidth}
             isResizing={isResizing}
             onResizeStart={startResizing}

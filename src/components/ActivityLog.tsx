@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CallEntry, EmailEntry, MeetingEntry, Metric } from '../types';
+import { CallEntry, EmailEntry, MeetingEntry, Metric, BusinessLead, LeadStatus } from '../types';
 import { LogSection } from './LogSection';
 import { PrintIcon, LoadingIcon, RefreshIcon, SparklesIcon } from './icons';
+import { Modal } from './ui';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
-const initialCallEntries: CallEntry[] = [
-  { id: 'call-1', time: '09:30', client: 'Innovate Inc.', contact: 'John Smith', callType: 'Follow-up', outcome: 'Confirmed interest, scheduled demo for Friday.', nextAction: 'Send demo confirmation email.', followUpDate: '2026-11-14' }
-];
-const initialEmailEntries: EmailEntry[] = [
-  { id: 'email-1', timeSent: '11:00', client: 'Solutions LLC', subject: 'Re: Proposal', emailType: 'Proposal', responseReceived: true, nextStep: 'Follow up call tomorrow.' }
-];
-const initialMeetingEntries: MeetingEntry[] = [
-  { id: 'meeting-1', time: '14:00', client: 'Global Tech', attendees: 'Sarah Brown, Mike Lee', meetingType: 'Closing', summary: 'Finalized contract terms. Positive outcome.', outcome: 'Deal closed.', nextAction: 'Send final contract for signature.', followUpDate: '2026-11-11' }
-];
 
 const initialMetricsState: Metric[] = [
     { metric: 'Total Calls', number: 0, comments: '' },
@@ -26,19 +17,22 @@ const initialMetricsState: Metric[] = [
 ];
 
 
-export const ActivityLog: React.FC = () => {
-  const [callEntries, setCallEntries] = useState<CallEntry[]>(() => {
-    const saved = localStorage.getItem('sales_callEntries');
-    return saved ? JSON.parse(saved) : initialCallEntries;
-  });
-  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() => {
-    const saved = localStorage.getItem('sales_emailEntries');
-    return saved ? JSON.parse(saved) : initialEmailEntries;
-  });
-  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() => {
-    const saved = localStorage.getItem('sales_meetingEntries');
-    return saved ? JSON.parse(saved) : initialMeetingEntries;
-  });
+interface ActivityLogProps {
+  callEntries: CallEntry[];
+  setCallEntries: React.Dispatch<React.SetStateAction<CallEntry[]>>;
+  emailEntries: EmailEntry[];
+  setEmailEntries: React.Dispatch<React.SetStateAction<EmailEntry[]>>;
+  meetingEntries: MeetingEntry[];
+  setMeetingEntries: React.Dispatch<React.SetStateAction<MeetingEntry[]>>;
+  leads: BusinessLead[];
+}
+
+export const ActivityLog: React.FC<ActivityLogProps> = ({
+  callEntries, setCallEntries,
+  emailEntries, setEmailEntries,
+  meetingEntries, setMeetingEntries,
+  leads
+}) => {
   const [metrics, setMetrics] = useState<Metric[]>(() => {
     const saved = localStorage.getItem('sales_metrics');
     return saved ? JSON.parse(saved) : initialMetricsState;
@@ -57,12 +51,10 @@ export const ActivityLog: React.FC = () => {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const printContainerRef = useRef<HTMLDivElement>(null);
 
   // Persistence
-  useEffect(() => { localStorage.setItem('sales_callEntries', JSON.stringify(callEntries)); }, [callEntries]);
-  useEffect(() => { localStorage.setItem('sales_emailEntries', JSON.stringify(emailEntries)); }, [emailEntries]);
-  useEffect(() => { localStorage.setItem('sales_meetingEntries', JSON.stringify(meetingEntries)); }, [meetingEntries]);
   useEffect(() => { localStorage.setItem('sales_metrics', JSON.stringify(metrics)); }, [metrics]);
   useEffect(() => { localStorage.setItem('sales_headerInfo', JSON.stringify(headerInfo)); }, [headerInfo]);
   useEffect(() => { localStorage.setItem('sales_strategicBrief', strategicBrief); }, [strategicBrief]);
@@ -90,10 +82,20 @@ export const ActivityLog: React.FC = () => {
         newMetrics[0].number = callSummary.total;
         newMetrics[1].number = emailSummary.total;
         newMetrics[2].number = meetingSummary.total;
-        newMetrics[5].number = meetingSummary.closed;
+
+        // Deals in Pipeline (Total Leads)
+        newMetrics[4].number = leads.length;
+
+        // Deals Closed (Converted Leads)
+        newMetrics[5].number = leads.filter(l => l.status === LeadStatus.CONVERTED).length;
+
+        // New Leads Generated (Today)
+        const today = new Date().toISOString().split('T')[0];
+        newMetrics[3].number = leads.filter(l => l.lastUpdated.startsWith(today)).length;
+
         return newMetrics;
     });
-  }, [callSummary.total, emailSummary.total, meetingSummary.total, meetingSummary.closed]);
+  }, [callSummary.total, emailSummary.total, meetingSummary.total, leads]);
 
 
   const handleMetricChange = (index: number, field: 'number' | 'comments', value: string | number) => {
@@ -166,19 +168,18 @@ export const ActivityLog: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to clear all entries?')) {
-        setCallEntries([]);
-        setEmailEntries([]);
-        setMeetingEntries([]);
-        setMetrics(initialMetricsState);
-        setStrategicBrief('');
-        setHeaderInfo({
-            region: '',
-            manager: '',
-            date: new Date().toISOString().split('T')[0],
-            dept: ''
-        });
-    }
+    setCallEntries([]);
+    setEmailEntries([]);
+    setMeetingEntries([]);
+    setMetrics(initialMetricsState);
+    setStrategicBrief('');
+    setHeaderInfo({
+        region: '',
+        manager: '',
+        date: new Date().toISOString().split('T')[0],
+        dept: ''
+    });
+    setShowResetConfirm(false);
   };
 
   return (
@@ -190,7 +191,7 @@ export const ActivityLog: React.FC = () => {
             <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">Record and analyze daily performance benchmarks.</p>
          </div>
          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-             <button onClick={handleReset} className="bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 px-6 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-slate-700 flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
+             <button onClick={() => setShowResetConfirm(true)} className="bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 px-6 py-2.5 rounded-xl text-sm font-bold border border-gray-200 dark:border-slate-700 flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
                  <RefreshIcon className="w-4 h-4" />
                  Reset Log
              </button>
@@ -339,6 +340,22 @@ export const ActivityLog: React.FC = () => {
           </div>
       </div>
       </div>
+
+      <Modal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        title="Clear All Activity Logs?"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button onClick={() => setShowResetConfirm(false)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
+            <button onClick={handleReset} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-red-500/20 hover:bg-red-700 transition-all uppercase tracking-widest">Clear Everything</button>
+          </div>
+        }
+      >
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          Are you sure you want to clear all call logs, email logs, and meeting entries? This action cannot be undone.
+        </p>
+      </Modal>
     </div>
   );
 };

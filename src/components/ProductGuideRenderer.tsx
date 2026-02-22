@@ -92,6 +92,9 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
     const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
     const [guideTitle, setGuideTitle] = useState(guide.longTitle);
 
+    const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
+    const [categoryToDeleteId, setCategoryToDeleteId] = useState<string | null>(null);
+
     // --- Product Handlers ---
     const handleOpenAddProductModal = (categoryId: string) => {
         setEditingProduct(null);
@@ -150,19 +153,20 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
         handleCloseProductModal();
     };
 
-    const handleDeleteProduct = (productId: string) => {
-        if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
-            setProductGuides(prevGuides => prevGuides.map(g => {
-                if (g.id !== guide.id) return g;
+    const handleDeleteProductAction = () => {
+        if (!productToDeleteId) return;
 
-                const newCategories = g.categories.map(cat => ({
-                    ...cat,
-                    products: cat.products.filter(p => p.id !== productId)
-                }));
+        setProductGuides(prevGuides => prevGuides.map(g => {
+            if (g.id !== guide.id) return g;
 
-                return { ...g, categories: newCategories };
+            const newCategories = g.categories.map(cat => ({
+                ...cat,
+                products: cat.products.filter(p => p.id !== productToDeleteId)
             }));
-        }
+
+            return { ...g, categories: newCategories };
+        }));
+        setProductToDeleteId(null);
     };
 
     const handleMoveProduct = (productId: string, direction: 'up' | 'down') => {
@@ -230,13 +234,14 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
         handleCloseCategoryModal();
     };
 
-    const handleDeleteCategory = (categoryId: string) => {
-        if (window.confirm("Are you sure you want to delete this category and all its products? This action cannot be undone.")) {
-            setProductGuides(prevGuides => prevGuides.map(g => {
-                if (g.id !== guide.id) return g;
-                return { ...g, categories: g.categories.filter(cat => cat.id !== categoryId) };
-            }));
-        }
+    const handleDeleteCategoryAction = () => {
+        if (!categoryToDeleteId) return;
+
+        setProductGuides(prevGuides => prevGuides.map(g => {
+            if (g.id !== guide.id) return g;
+            return { ...g, categories: g.categories.filter(cat => cat.id !== categoryToDeleteId) };
+        }));
+        setCategoryToDeleteId(null);
     };
 
     const handleMoveCategory = (categoryId: string, direction: 'up' | 'down') => {
@@ -296,9 +301,9 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                         category={category}
                         onAddProduct={handleOpenAddProductModal}
                         onEditProduct={handleOpenEditProductModal}
-                        onDeleteProduct={handleDeleteProduct}
+                        onDeleteProduct={setProductToDeleteId}
                         onEditCategory={handleOpenEditCategoryModal}
-                        onDeleteCategory={handleDeleteCategory}
+                        onDeleteCategory={setCategoryToDeleteId}
                         onMoveUp={() => handleMoveCategory(category.id, 'up')}
                         onMoveDown={() => handleMoveCategory(category.id, 'down')}
                         onMoveProduct={handleMoveProduct}
@@ -394,6 +399,36 @@ const ProductGuideRenderer: React.FC<ProductGuideRendererProps> = ({ guide, setP
                 placeholder="e.g., Product Guide: Treasury Management Solutions"
                 required
             />
+        </Modal>
+
+        {/* Delete Product Confirmation */}
+        <Modal
+            isOpen={!!productToDeleteId}
+            onClose={() => setProductToDeleteId(null)}
+            title="Delete Product?"
+            footer={
+                <>
+                    <Button variant="ghost" onClick={() => setProductToDeleteId(null)}>Cancel</Button>
+                    <Button onClick={handleDeleteProductAction} className="bg-red-600 hover:bg-red-700 text-white border-none">Delete Product</Button>
+                </>
+            }
+        >
+            <p className="text-sm text-[var(--color-text-secondary)]">Are you sure you want to delete this product? This action cannot be undone.</p>
+        </Modal>
+
+        {/* Delete Category Confirmation */}
+        <Modal
+            isOpen={!!categoryToDeleteId}
+            onClose={() => setCategoryToDeleteId(null)}
+            title="Delete Category?"
+            footer={
+                <>
+                    <Button variant="ghost" onClick={() => setCategoryToDeleteId(null)}>Cancel</Button>
+                    <Button onClick={handleDeleteCategoryAction} className="bg-red-600 hover:bg-red-700 text-white border-none">Delete Category</Button>
+                </>
+            }
+        >
+            <p className="text-sm text-[var(--color-text-secondary)]">Are you sure you want to delete this category and all its products? This action cannot be undone.</p>
         </Modal>
 
         <style>{`
