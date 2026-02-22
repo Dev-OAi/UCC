@@ -103,15 +103,32 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
 
         // 2. Tri-Schema Detection & Mapping
 
-        // PRIORITY 1: SUNBIZ (SB) Hub Detection
-        if (file.type.includes('SB')) {
+        // PRIORITY 0: 56-Column UCC/SB Master Format
+        if (colCount === 56) {
           m[0] = 'businessName';
           m[1] = 'Document Number';
+          m[2] = 'Sunbiz Status';
+          m[3] = 'Zip';
+          m[4] = 'Sunbiz Link';
+          m[6] = 'Entity Type';
+          m[9] = 'FEI/EIN Number';
+          m[41] = 'UCC Status';
+          m[42] = 'Date Filed';
+          m[43] = 'Expires';
+          m[44] = 'Filings Completed Through';
+          m[45] = 'Summary For Filing';
+          m[55] = 'Florida UCC Link';
+        }
+        // PRIORITY 1: SUNBIZ (SB) Hub Detection
+        else if (file.type.includes('SB')) {
+          m[0] = 'businessName';
+          m[1] = 'Document Number';
+          m[2] = 'Sunbiz Status';
           m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
 
           if (colCount >= 50) {
-            m[41] = 'Status';
+            m[41] = 'UCC Status';
             m[42] = 'Date Filed';
             m[43] = 'Expires';
             m[44] = 'Filings Completed Through';
@@ -122,9 +139,10 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         // PRIORITY 2: LARGE UCC EXPORT Detection
         else if (file.type.includes('UCC') && colCount >= 50) {
           m[0] = 'businessName';
+          m[2] = 'Sunbiz Status';
           m[6] = 'Entity Type';
           m[9] = 'FEI/EIN Number';
-          m[41] = 'Status';
+          m[41] = 'UCC Status';
           m[42] = 'Date Filed';
           m[43] = 'Expires';
           m[44] = 'Filings Completed Through';
@@ -133,7 +151,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
         else if (colCount >= 25 && colCount < 30) {
-          m[0] = 'Status';
+          m[0] = 'UCC Status';
           m[1] = 'Direct Name';
           m[2] = 'Reverse Name';
           m[3] = 'Record Date';
@@ -142,6 +160,33 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[9] = 'Instrument Number';
           m[11] = 'Legal Description';
           startIndex++;
+        }
+        // PRIORITY 3.5: ENRICHED ZIP HUB (8 Columns)
+        else if (colCount === 8) {
+          m[0] = 'businessName';
+          // Detect schema by looking at typical content
+          const hasSunbiz = firstRow.some(cell => String(cell).toLowerCase().includes('sunbiz.org'));
+          const hasPhone = firstRow.some(cell => isPhoneNumber(String(cell)));
+
+          if (hasSunbiz) {
+            // Schema A: Sunbiz & FEI/EIN
+            m[1] = 'Sunbiz Status';
+            m[2] = 'FEI/EIN Number';
+            m[3] = 'Sunbiz Link';
+            m[4] = 'UCC Status';
+            m[5] = 'Date Filed';
+            m[6] = 'Expires';
+            m[7] = 'Florida UCC Link';
+          } else if (hasPhone) {
+            // Schema B: Phone & Website
+            m[1] = 'Phone';
+            m[2] = 'Website';
+            m[3] = 'UCC Status';
+            m[4] = 'Date Filed';
+            m[5] = 'Expires';
+            m[6] = 'Florida UCC Link';
+            m[7] = 'Category';
+          }
         }
         // PRIORITY 4: YELLOW PAGES (YP) Schema
         else if (colCount >= 5) {
@@ -178,10 +223,16 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             else if (val.toLowerCase().includes('sunbiz.org')) {
               m[idx] = 'Sunbiz Link';
             }
-            // Status
-            else if (/^(ACTIVE|INACT|DISS|DELQ|UA|FILED|LAPSED)/i.test(val)) {
-              if (!Object.values(m).includes('Status')) {
-                m[idx] = 'Status';
+            // UCC Status
+            else if (/^(FILED|LAPSED)/i.test(val)) {
+              if (!Object.values(m).includes('UCC Status')) {
+                m[idx] = 'UCC Status';
+              }
+            }
+            // Sunbiz Status
+            else if (/^(ACTIVE|INACT|DISS|DELQ|UA)/i.test(val)) {
+              if (!Object.values(m).includes('Sunbiz Status')) {
+                m[idx] = 'Sunbiz Status';
               }
             }
             // Document Number

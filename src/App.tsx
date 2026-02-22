@@ -55,12 +55,13 @@ function App() {
     '3. UCC': [
       "businessName",
       "Document Number",
+      "Sunbiz Status",
       "Phone",
       "Sunbiz Link",
       "Florida UCC Link",
       "Location",
       "Zip",
-      "Status",
+      "UCC Status",
       "Date Filed",
       "Expires",
       "Filings Completed Through",
@@ -69,13 +70,14 @@ function App() {
     '1. SB': [
       "businessName",
       "Document Number",
+      "Sunbiz Status",
       "Column 14",
       "Column 4",
       "FEI/EIN Number",
       "Sunbiz Link",
       "Entity Type",
       "Location",
-      "Status",
+      "UCC Status",
       "Column 41",
       "Date Filed",
       "Expires",
@@ -97,13 +99,53 @@ function App() {
       "Zip"
     ],
     'Last 90 Days': [
-      "Status",
+      "UCC Status",
       "Direct Name",
       "Reverse Name",
       "Record Date",
       "Doc Type",
       "Instrument Number",
       "Legal Description"
+    ],
+    '33027': [
+      "businessName",
+      "Phone",
+      "Website",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link",
+      "Category"
+    ],
+    '33301': [
+      "businessName",
+      "Phone",
+      "Website",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link",
+      "Category"
+    ],
+    '33401': [
+      "businessName",
+      "Sunbiz Status",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link"
+    ],
+    '33480': [
+      "businessName",
+      "Sunbiz Status",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link"
     ]
   });
   const [selectedRow, setSelectedRow] = useState<DataRow | null>(null);
