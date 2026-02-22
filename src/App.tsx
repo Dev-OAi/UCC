@@ -16,7 +16,7 @@ import { ActivityLog } from './components/ActivityLog';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
 import ProductGuideRenderer from './components/ProductGuideRenderer';
-import { ProductGuide, BusinessLead, LeadStatus, LeadType } from './types';
+import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
@@ -25,6 +25,15 @@ import Papa from 'papaparse';
 export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+const DEFAULT_METRICS: ScorecardMetric[] = [
+  { id: 'new-accts', name: 'New Accts', target: 50, type: 'built-in', isVisible: true },
+  { id: 'cards-sold', name: 'Cards Sold', target: 100, type: 'built-in', isVisible: true },
+  { id: 'meetings', name: 'Meetings (Completed)', target: 150, type: 'built-in', isVisible: true },
+  { id: 'pipeline-total', name: 'Pipeline Total', target: 100, type: 'built-in', isVisible: true },
+  { id: 'emails-collected', name: 'Emails Collected', target: 100, type: 'built-in', isVisible: true },
+  { id: 'outreach', name: 'Outreach', target: 100, type: 'built-in', isVisible: true },
+];
 
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
@@ -35,6 +44,10 @@ function App() {
   const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() => {
     const saved = localStorage.getItem('scorecardLeads');
     return saved ? JSON.parse(saved) : [];
+  });
+  const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() => {
+    const saved = localStorage.getItem('scorecardMetrics');
+    return saved ? JSON.parse(saved) : DEFAULT_METRICS;
   });
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
@@ -278,6 +291,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('scorecardLeads', JSON.stringify(scorecardLeads));
   }, [scorecardLeads]);
+
+  useEffect(() => {
+    localStorage.setItem('scorecardMetrics', JSON.stringify(scorecardMetrics));
+  }, [scorecardMetrics]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -797,6 +814,8 @@ function App() {
             <Scorecard
               leads={scorecardLeads}
               setLeads={setScorecardLeads}
+              metrics={scorecardMetrics}
+              setMetrics={setScorecardMetrics}
               onSelectLead={(lead) => {
                 setSelectedLeadId(lead?.id || null);
                 if (lead) setIsRightSidebarOpen(true);
@@ -855,6 +874,7 @@ function App() {
         {activeTab === 'Scorecard' ? (
           <ScorecardRightSidebar
             selectedLead={scorecardLeads.find(l => l.id === selectedLeadId) || null}
+            metrics={scorecardMetrics}
             onClose={() => {
               setSelectedLeadId(null);
               setIsRightSidebarOpen(false);
