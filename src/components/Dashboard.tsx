@@ -34,7 +34,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ types, onSelectCategory, r
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
               <Zap className="w-24 h-24" />
             </div>
-            <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center mb-6 backdrop-blur-sm">
+            <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center mb-6">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-white text-blue-600 dark:text-blue-700 uppercase mb-4">New Feature</span>

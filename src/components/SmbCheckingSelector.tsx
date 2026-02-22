@@ -118,7 +118,7 @@ export const SmbCheckingSelector: React.FC<SmbCheckingSelectorProps> = ({ setAct
 
             {/* Booking Guide Modal */}
             {showBookingGuide && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm rounded-lg" onClick={() => setShowBookingGuide(false)}>
+                <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 rounded-lg" onClick={() => setShowBookingGuide(false)}>
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-lg w-full border border-gray-200 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-xl font-bold text-gray-900 dark:text-white">How to Book: SMB Bundle</h3>
@@ -340,7 +340,7 @@ export const SmbCheckingSelector: React.FC<SmbCheckingSelectorProps> = ({ setAct
 
                             <h3 className="text-lg uppercase tracking-widest font-semibold opacity-90 mb-2">Recommended Bundle</h3>
                             <h2 className="text-4xl font-bold mb-4">{recommendation}</h2>
-                            <p className="text-indigo-100 text-lg max-w-lg bg-white/10 p-3 rounded-lg backdrop-blur-sm border border-white/20">
+                            <p className="text-indigo-100 text-lg max-w-lg bg-white/10 p-3 rounded-lg border border-white/20">
                                 {reason}
                             </p>
 

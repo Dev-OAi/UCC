@@ -138,7 +138,19 @@ function App() {
       "Florida UCC Link"
     ],
     'Search Results': [
-      "businessName",
+      "DirectName",
+      "IndirectName",
+      "RecordDate",
+      "DocTypeDescription",
+      "InstrumentNumber",
+      "BookType",
+      "BookPage",
+      "DocLegalDescription",
+      "Consideration",
+      "CaseNumber"
+    ],
+    'B UCC': [
+      "DirectName",
       "IndirectName",
       "RecordDate",
       "DocTypeDescription",
@@ -264,6 +276,10 @@ function App() {
   useEffect(() => {
     if (selectedRow || selectedLeadId) {
       setIsRightSidebarOpen(true);
+      // Auto-close left sidebar on desktop to reduce clutter
+      if (window.innerWidth >= 1024) {
+        setIsLeftSidebarOpen(false);
+      }
     }
   }, [selectedRow, selectedLeadId]);
 

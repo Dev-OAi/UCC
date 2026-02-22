@@ -130,7 +130,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/40 dark:bg-black/60 z-40 lg:hidden transition-opacity"
           onClick={onClose}
         />
       )}

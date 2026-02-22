@@ -161,9 +161,9 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[11] = 'Legal Description';
           startIndex++;
         }
-        // PRIORITY 3.6: SEARCH RESULTS HUB
-        else if (file.type === 'Search Results') {
-          m[0] = 'businessName';
+        // PRIORITY 3.6: SEARCH RESULTS HUB & B UCC
+        else if (file.type === 'Search Results' || file.type === 'B UCC') {
+          m[0] = 'DirectName';
           m[1] = 'IndirectName';
           m[2] = 'RecordDate';
           m[3] = 'DocTypeDescription';

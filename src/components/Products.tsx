@@ -62,7 +62,7 @@ export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
                                             {category.subCategories.map((sub, subIdx) => (
                                                 <React.Fragment key={subIdx}>
                                                     {sub.title && (
-                                                        <tr className="bg-gray-50/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                                                        <tr className="bg-gray-50/80 dark:bg-slate-800/80">
                                                             <td colSpan={5} className="px-4 py-2.5 font-bold text-gray-800 dark:text-gray-200 uppercase text-[11px] tracking-[0.15em] text-center border-y border-gray-200 dark:border-slate-800">
                                                                 {sub.title}
                                                             </td>
