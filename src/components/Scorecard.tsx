@@ -72,7 +72,9 @@ export const Scorecard: React.FC<ScorecardProps> = ({
 
   const handleUnlockPoints = () => {
     const passcode = prompt('Enter passcode to view points:');
-    if (passcode?.toUpperCase() === 'VLY') {
+    // Obfuscated passcode check
+    const secret = String.fromCharCode(86, 76, 89);
+    if (passcode?.toUpperCase() === secret) {
       setIsPointsUnlocked(true);
     } else if (passcode !== null) {
       alert('Incorrect passcode.');
