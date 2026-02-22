@@ -495,7 +495,6 @@ function App() {
       allColumnsOrder: currentColumnOrder
     };
     navigator.clipboard.writeText(JSON.stringify(config, null, 2));
-    alert('Layout configuration copied to clipboard!');
   };
 
   const clearFilters = () => {
@@ -654,7 +653,6 @@ function App() {
   const handleAddToScorecard = (row: DataRow) => {
     const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
     if (exists) {
-      alert('This business is already in your Scorecard pipeline.');
       return;
     }
 
@@ -683,7 +681,6 @@ function App() {
 
     setScorecardLeads(prev => [newLead, ...prev]);
     setActiveTab('Scorecard');
-    alert(`${newLead.businessName} added to Scorecard!`);
   };
 
   const downloadCSV = () => {
