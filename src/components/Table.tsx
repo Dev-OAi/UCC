@@ -97,6 +97,7 @@ export const Table: React.FC<TableProps> = ({
                 >
                   <span className="truncate">
                     {col === 'businessName' ? 'Business Name' :
+                     col === 'DirectName' ? 'Direct Name' :
                      col === 'Phone' ? 'Phone Number' :
                      col === 'Filings Completed Through' ? 'Filings Completed' :
                      col === 'Summary For Filing' ? 'Summary for Filing' :
