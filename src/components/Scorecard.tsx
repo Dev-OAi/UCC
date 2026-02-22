@@ -25,6 +25,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [isResearchMode, setIsResearchMode] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<'funnel' | 'industries' | null>(null);
   const printContainerRef = React.useRef<HTMLDivElement>(null);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
@@ -247,19 +248,23 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-slate-950" ref={printContainerRef} id="scorecard-report">
       {/* Header */}
-      <div className="px-8 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+      <div className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center">
             <Target className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight uppercase">BankerPro <span className="text-blue-400">|</span> Scorecard</h1>
+            <h1 className="text-lg font-black tracking-tight uppercase">Scorecard</h1>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-6">
+          <div className="text-right border-r border-white/20 pr-6">
+            <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Personal Impact</p>
+            <p className="text-sm font-black text-white">{metrics.impactScore}</p>
+          </div>
           <div className="text-right">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Pipeline</p>
-            <p className="text-sm font-black text-blue-400">{leads.length} Businesses</p>
+            <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Active Pipeline</p>
+            <p className="text-sm font-black text-white">{leads.length} Businesses</p>
           </div>
         </div>
       </div>
@@ -299,6 +304,30 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
                 <Search className={`w-3.5 h-3.5 ${isResearchMode ? 'text-amber-600' : 'text-slate-400'}`} />
                 <span>Research Mode {isResearchMode ? 'ON' : 'OFF'}</span>
               </button>
+
+              <div className="relative group">
+                <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center space-x-2">
+                  <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{selectedChart === 'funnel' ? 'Pipeline Funnel' : selectedChart === 'industries' ? 'Top Industries' : 'View Analytics'}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <button
+                    onClick={() => setSelectedChart(selectedChart === 'funnel' ? null : 'funnel')}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${selectedChart === 'funnel' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                  >
+                    <PieIcon className="w-3.5 h-3.5" />
+                    <span>Pipeline Funnel</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedChart(selectedChart === 'industries' ? null : 'industries')}
+                    className={`w-full text-left px-4 py-2 text-xs font-bold flex items-center space-x-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${selectedChart === 'industries' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    <span>Top Industries</span>
+                  </button>
+                </div>
+              </div>
+
               <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center space-x-2">
                 <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                 <span>All Leads</span>
@@ -388,7 +417,8 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center space-x-4 text-white">
+            {/* Personal Impact Score moved to header - keeping here for future use */}
+            {/* <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center space-x-4 text-white">
               <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
@@ -396,78 +426,94 @@ export const Scorecard: React.FC<ScorecardProps> = ({ leads, setLeads, onSelectL
                 <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Personal Impact Score</p>
                 <p className="text-2xl font-black">{metrics.impactScore}</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
-                  <PieIcon className="w-3.5 h-3.5 mr-2 text-blue-500" />
-                  Pipeline Funnel
-                </h3>
-              </div>
-              <div className="h-[250px] w-full">
-                {leads.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={statusDistribution}
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {statusDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
-                )}
-              </div>
+          {selectedChart && (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+              {selectedChart === 'funnel' ? (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                      <PieIcon className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                      Pipeline Funnel Analysis
+                    </h3>
+                    <button
+                      onClick={() => setSelectedChart(null)}
+                      className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                    >
+                      Close Analysis
+                    </button>
+                  </div>
+                  <div className="h-[300px] w-full">
+                    {leads.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={statusDistribution}
+                            innerRadius={80}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {statusDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                      <BarChart3 className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                      Industry Distribution
+                    </h3>
+                    <button
+                      onClick={() => setSelectedChart(null)}
+                      className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                    >
+                      Close Analysis
+                    </button>
+                  </div>
+                  <div className="h-[300px] w-full">
+                    {leads.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={industryDistribution}
+                            innerRadius={0}
+                            outerRadius={100}
+                            dataKey="value"
+                            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                          >
+                            {industryDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
-                  <BarChart3 className="w-3.5 h-3.5 mr-2 text-emerald-500" />
-                  Top Industries
-                </h3>
-              </div>
-              <div className="h-[250px] w-full">
-                {leads.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={industryDistribution}
-                        innerRadius={0}
-                        outerRadius={80}
-                        dataKey="value"
-                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                      >
-                        {industryDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-slate-300 italic text-xs">No data to display</div>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* Table Section */}
