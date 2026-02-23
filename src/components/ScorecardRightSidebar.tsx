@@ -7,6 +7,7 @@ import {
   ChevronLeft, Loader2, Zap
 } from 'lucide-react';
 import { BusinessLead, LeadActivity, LeadStatus, LeadType, ScorecardMetric } from '../types';
+import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { Modal, Input } from './ui';
 import { generateAiManifest, generateLeadIntelligence } from '../lib/aiUtils';
@@ -26,14 +27,14 @@ interface ScorecardRightSidebarProps {
   onToggle?: () => void;
 }
 
-type Tab = 'Activity' | 'Products' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
+type Tab = 'Activity' | 'Products' | 'Sales Hooks' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
 
 export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   selectedLead, metrics, onClose, isOpen, onUpdateLead,
   onAddCallLog, onAddEmailLog, onAddMeetingLog,
   width, isResizing, onResizeStart, onToggle
 }) => {
-  const [activeTab, setActiveTab] = useState<Tab>('Strategy');
+  const [activeTab, setActiveTab] = useState<Tab>('Sales Hooks');
   const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -262,7 +263,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
         {/* Tabs */}
         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar">
-            {(['Activity', 'Products', 'Intro Call', 'Industry', 'Strategy', 'Email'] as Tab[]).map(tab => (
+            {(['Activity', 'Products', 'Sales Hooks', 'Intro Call', 'Industry', 'Strategy', 'Email'] as Tab[]).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -280,7 +281,9 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {['Intro Call', 'Strategy', 'Email'].includes(activeTab) ? (
+          {activeTab === 'Sales Hooks' ? (
+            <SalesHooks leadData={selectedLead} />
+          ) : ['Intro Call', 'Strategy', 'Email'].includes(activeTab) ? (
             <div className="space-y-4 h-full flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
