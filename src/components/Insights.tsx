@@ -2,9 +2,9 @@ import React, { useMemo, useState } from 'react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
-  AreaChart, Area
+  AreaChart, Area, Treemap
 } from 'recharts';
-import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck, Activity, FileText, Building2 } from 'lucide-react';
+import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck, Activity, FileText, Building2, MapPin } from 'lucide-react';
 
 interface InsightsProps {
   data: any[];
@@ -110,6 +110,34 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
       .slice(0, 8);
   }, [data]);
 
+  const zipData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    data.forEach(row => {
+      const zip = row._zip || row.Zip || row.ZIP || 'Unknown';
+      if (zip && zip !== 'Unknown' && zip.length >= 5) {
+        counts[zip] = (counts[zip] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 15);
+  }, [data]);
+
+  const cityData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    data.forEach(row => {
+      const city = row._location || row.Location || row.City || 'Unknown';
+      if (city && city !== 'Unknown' && city !== 'Link' && city.length > 2) {
+        counts[city] = (counts[city] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+  }, [data]);
+
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -148,6 +176,75 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Categories</span>
                 <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{displayTypes.length}</span>
              </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md overflow-hidden">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <MapPin className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-white">Territory & Market Analysis</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Prospect density and geographic opportunity mapping</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Top Prospect Hotspots (Zip)</h4>
+                <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold rounded">Active Markets</span>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={zipData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                    <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} />
+                    <YAxis tick={{ fill: '#64748b', fontSize: 10 }} hide />
+                    <RechartsTooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20}>
+                      {zipData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Market Density (City)</h4>
+                <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold rounded">Concentration Index</span>
+              </div>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <Treemap
+                    data={cityData}
+                    dataKey="value"
+                    aspectRatio={4 / 3}
+                    stroke="#fff"
+                    fill="#10b981"
+                    animationDuration={1500}
+                  >
+                    <RechartsTooltip content={<CustomTooltip />} />
+                  </Treemap>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-gray-50 dark:border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+             {zipData.slice(0, 4).map((zip, i) => (
+               <div key={i} className="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-800">
+                 <p className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Priority Zip</p>
+                 <div className="flex items-baseline justify-between">
+                    <span className="text-sm font-black text-gray-900 dark:text-white">{zip.name}</span>
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">+{zip.value}</span>
+                 </div>
+               </div>
+             ))}
           </div>
         </div>
 
