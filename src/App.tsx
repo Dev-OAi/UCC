@@ -94,8 +94,11 @@ function App() {
   });
   const [isResizing, setIsResizing] = useState(false);
 
-  const startResizing = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
+  const startResizing = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent default for mouse to avoid text selection during resize
+    if (!('touches' in e)) {
+      e.preventDefault();
+    }
     setIsResizing(true);
   }, []);
 
@@ -103,15 +106,24 @@ function App() {
     setIsResizing(false);
   }, []);
 
-  const resize = React.useCallback((e: MouseEvent) => {
+  const resize = React.useCallback((e: MouseEvent | TouchEvent) => {
     if (isResizing) {
-      const newWidth = window.innerWidth - e.clientX;
+      let clientX: number;
+      if ('touches' in e) {
+        if (e.touches.length === 0) return;
+        clientX = e.touches[0].clientX;
+        // Prevent scrolling while resizing on touch
+        if (e.cancelable) e.preventDefault();
+      } else {
+        clientX = e.clientX;
+      }
+
+      const newWidth = window.innerWidth - clientX;
       const minWidth = 320;
       const maxWidth = window.innerWidth * 0.8;
 
-      if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setRightSidebarWidth(newWidth);
-      }
+      const clampedWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+      setRightSidebarWidth(clampedWidth);
     }
   }, [isResizing]);
 
@@ -119,13 +131,19 @@ function App() {
     if (isResizing) {
       window.addEventListener('mousemove', resize);
       window.addEventListener('mouseup', stopResizing);
+      window.addEventListener('touchmove', resize, { passive: false });
+      window.addEventListener('touchend', stopResizing);
     } else {
       window.removeEventListener('mousemove', resize);
       window.removeEventListener('mouseup', stopResizing);
+      window.removeEventListener('touchmove', resize);
+      window.removeEventListener('touchend', stopResizing);
     }
     return () => {
       window.removeEventListener('mousemove', resize);
       window.removeEventListener('mouseup', stopResizing);
+      window.removeEventListener('touchmove', resize);
+      window.removeEventListener('touchend', stopResizing);
     };
   }, [isResizing, resize, stopResizing]);
 
@@ -893,8 +911,13 @@ function App() {
               metrics={scorecardMetrics}
               setMetrics={setScorecardMetrics}
               onSelectLead={(lead) => {
-                setSelectedLeadId(lead?.id || null);
-                if (lead) setIsRightSidebarOpen(true);
+                if (selectedLeadId === lead?.id) {
+                  setSelectedLeadId(null);
+                  setIsRightSidebarOpen(false);
+                } else {
+                  setSelectedLeadId(lead?.id || null);
+                  if (lead) setIsRightSidebarOpen(true);
+                }
               }}
               selectedLeadId={selectedLeadId}
             />
@@ -938,7 +961,16 @@ function App() {
               <div className="flex-1 overflow-hidden">
                 <Table
                   data={filteredData} allData={debouncedAllData} visibleColumns={sortedVisibleColumns}
-                  selectedRow={selectedRow} onRowSelect={setSelectedRow}
+                  selectedRow={selectedRow}
+                  onRowSelect={(row) => {
+                    if (selectedRow === row) {
+                      setSelectedRow(null);
+                      setIsRightSidebarOpen(false);
+                    } else {
+                      setSelectedRow(row);
+                      setIsRightSidebarOpen(true);
+                    }
+                  }}
                   columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
                 />
