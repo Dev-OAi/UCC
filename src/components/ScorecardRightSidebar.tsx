@@ -646,7 +646,7 @@ function getDefaultIntroScript(lead: BusinessLead) {
 **Objective:** Schedule a 'Business Financial Check-up' to discuss Efficiency & Protection.
 
 #### Step 1: The "Expert" Introduction
-"Good morning/afternoon, [Contact Name], my name is [My Name] and I'm a Business Banker with Valley Bank. I work proactively with business owners like yourself, especially those in the ${lead.industry || 'local business'} space, to help them streamline operations and safeguard their finances. I was particularly impressed by the name '${lead.businessName}' – it speaks volumes about the quality and protection you offer."
+"Good morning/afternoon, [Contact Name], my name is [My Name] and I'm a Business Banker with _ Bank. I work proactively with business owners like yourself, especially those in the ${lead.industry || 'local business'} space, to help them streamline operations and safeguard their finances. I was particularly impressed by the name '${lead.businessName}' – it speaks volumes about the quality and protection you offer."
 
 #### Step 2: The Hook (Value/Efficiency)
 "I'm reaching out because I work with a lot of ${lead.industry || 'similar'} firms, and I know that managing **inconsistent cash flow** and **protecting against payment fraud** are major headaches right now."`;
@@ -669,12 +669,12 @@ Dear [Contact Name],
 
 As ${lead.businessName} continues to grow, navigating the complexities of operational efficiency and financial security becomes increasingly vital.
 
-I've worked with many organizations in the ${lead.industry || 'same'} industry to optimize their cash flow and implement robust fraud protection measures. I'd love to share how Valley Bank's specialized business solutions could support your current goals.
+I've worked with many organizations in the ${lead.industry || 'same'} industry to optimize their cash flow and implement robust fraud protection measures. I'd love to share how _ Bank's specialized business solutions could support your current goals.
 
 Would you be open to a brief 5-minute conversation next week?
 
 Best regards,
 
 [My Name]
-Valley Bank | Business Banker`;
+Bank | Business Banker`;
 }
