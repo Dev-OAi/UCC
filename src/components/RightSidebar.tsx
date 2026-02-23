@@ -20,7 +20,7 @@ interface RightSidebarProps {
   onAddToScorecard?: (row: DataRow) => void;
   width?: number;
   isResizing?: boolean;
-  onResizeStart?: (e: React.MouseEvent) => void;
+  onResizeStart?: (e: React.MouseEvent | React.TouchEvent) => void;
   onToggle?: () => void;
 }
 
@@ -154,6 +154,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {/* Resize Handle */}
         <div
           onMouseDown={onResizeStart}
+          onTouchStart={onResizeStart}
           className={`absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-blue-500/30 transition-colors ${isResizing ? 'bg-blue-500/30' : ''} pointer-events-auto`}
         >
            {/* Blue Node */}

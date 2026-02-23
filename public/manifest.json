@@ -33,20 +33,6 @@
     "filename": "initial.json"
   },
   {
-    "path": "Data/3. UCC/UCC Pembroke Pines.csv",
-    "type": "3. UCC",
-    "zip": "",
-    "location": "UCC Pembroke Pines",
-    "filename": "UCC Pembroke Pines.csv"
-  },
-  {
-    "path": "Data/3. UCC/UCC Fort Lauderdale.csv",
-    "type": "3. UCC",
-    "zip": "",
-    "location": "UCC Fort Lauderdale",
-    "filename": "UCC Fort Lauderdale.csv"
-  },
-  {
     "path": "Data/3. UCC/UCC Palm Beach.csv",
     "type": "3. UCC",
     "zip": "",
