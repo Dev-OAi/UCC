@@ -6,6 +6,7 @@ import {
   Copy, Check, Target, ChevronLeft, Sparkles, Mail
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
+import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { productData } from '../lib/productData';
 import { ProductGuide } from '../types';
@@ -341,6 +342,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                 );
               })}
+            </div>
+
+            <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+              <SalesHooks leadData={selectedRow} />
             </div>
 
             <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">

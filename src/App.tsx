@@ -12,6 +12,8 @@ import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
+import { TerritoryMap } from './components/TerritoryMap';
+import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
@@ -23,7 +25,7 @@ import { productData } from './lib/productData';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | string;
+export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | string;
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -858,6 +860,23 @@ function App() {
             <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
           ) : activeTab === 'Insights' ? (
             <Insights data={allData} types={types} />
+          ) : activeTab === 'Territory Map' ? (
+            <TerritoryMap
+              data={allData}
+              onSelectZip={(zip) => {
+                setActiveTab(zip);
+                onFilterChange('Zip', [zip]);
+              }}
+            />
+          ) : activeTab === 'Action Hub' ? (
+            <ActionHub
+              leads={scorecardLeads}
+              onUpdateLeads={setScorecardLeads}
+              onSelectLead={(lead) => {
+                setSelectedLeadId(lead.id);
+                setIsRightSidebarOpen(true);
+              }}
+            />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Product Guide' ? (
