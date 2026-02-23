@@ -29,14 +29,14 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
         id: 'temp-1',
         name: 'UCC Renewal Intro',
         subject: 'Expiring UCC Filing - Action Required for {{businessName}}',
-        body: 'Hello {{contactName}},\n\nI noticed that your current UCC filing for {{businessName}} is set to expire soon. Ensuring this remains active is critical for your current lending relationships.\n\nI would love to discuss how Valley Bank can help you manage this renewal and explore potential refinancing options.\n\nBest regards,\n[My Name]',
+        body: 'Hello {{contactName}},\n\nI noticed that your current UCC filing for {{businessName}} is set to expire soon. Ensuring this remains active is critical for your current lending relationships.\n\nI would love to discuss how _ Bank can help you manage this renewal and explore potential refinancing options.\n\nBest regards,\n[My Name]',
         category: 'Email'
       },
       {
         id: 'temp-2',
         name: 'New Entity Welcome',
         subject: 'Supporting the Growth of {{businessName}}',
-        body: 'Hi {{contactName}},\n\nCongratulations on your recent filing for {{businessName}}! Starting a new venture is an exciting milestone.\n\nAt Valley Bank, we specialize in supporting emerging businesses in the {{industry}} sector with tailored treasury and credit solutions.\n\nAre you available for a brief 5-minute intro call next week?',
+        body: 'Hi {{contactName}},\n\nCongratulations on your recent filing for {{businessName}}! Starting a new venture is an exciting milestone.\n\nAt _ Bank, we specialize in supporting emerging businesses in the {{industry}} sector with tailored treasury and credit solutions.\n\nAre you available for a brief 5-minute intro call next week?',
         category: 'Email'
       }
     ];
