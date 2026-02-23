@@ -4,11 +4,13 @@ import {
   Mail, ChevronRight, Copy, Check, Sparkles, ChevronDown,
   Edit3, Download, Upload, Trash2, Save, Linkedin, ExternalLink,
   CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus,
-  ChevronLeft
+  ChevronLeft, Loader2, Zap
 } from 'lucide-react';
 import { BusinessLead, LeadActivity, LeadStatus, LeadType, ScorecardMetric } from '../types';
+import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { Modal, Input } from './ui';
+import { generateAiManifest, generateLeadIntelligence } from '../lib/aiUtils';
 
 interface ScorecardRightSidebarProps {
   selectedLead: BusinessLead | null;
@@ -25,20 +27,22 @@ interface ScorecardRightSidebarProps {
   onToggle?: () => void;
 }
 
-type Tab = 'Activity' | 'Products' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
+type Tab = 'Activity' | 'Products' | 'Sales Hooks' | 'Intro Call' | 'Industry' | 'Strategy' | 'Email';
 
 export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   selectedLead, metrics, onClose, isOpen, onUpdateLead,
   onAddCallLog, onAddEmailLog, onAddMeetingLog,
   width, isResizing, onResizeStart, onToggle
 }) => {
-  const [activeTab, setActiveTab] = useState<Tab>('Strategy');
+  const [activeTab, setActiveTab] = useState<Tab>('Sales Hooks');
   const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
   const [editingActivityText, setEditingActivityText] = useState('');
   const [aiCustomPrompt, setAiCustomPrompt] = useState<string | null>(null);
+  const [isManifestCopied, setIsManifestCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Script content states
   const [scripts, setScripts] = useState({
@@ -147,6 +151,30 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
     setEditingActivityId(null);
   };
 
+  const copyAiManifest = () => {
+    if (!selectedLead) return;
+    const manifest = generateAiManifest(selectedLead);
+    navigator.clipboard.writeText(manifest);
+    setIsManifestCopied(true);
+    setTimeout(() => setIsManifestCopied(false), 3000);
+  };
+
+  const handleGenerateIntelligence = () => {
+    if (!selectedLead) return;
+    setIsGenerating(true);
+
+    // Simulate generation delay
+    setTimeout(() => {
+      const { strategy, email } = generateLeadIntelligence(selectedLead);
+      setScripts(prev => ({
+        ...prev,
+        strategy: strategy,
+        email: email
+      }));
+      setIsGenerating(false);
+    }, 800);
+  };
+
   return (
     <>
       {isOpen && (
@@ -212,6 +240,20 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
             >
                <Building2 className="w-4 h-4" />
             </button>
+            <button
+              onClick={copyAiManifest}
+              className={`p-2 rounded-lg transition-all flex items-center space-x-2 ${
+                isManifestCopied
+                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'
+                  : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100'
+              }`}
+              title="Export Context for AI Agent"
+            >
+               {isManifestCopied ? <Check className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+               <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">
+                 {isManifestCopied ? 'Manifest Copied' : 'AI Agent Ready'}
+               </span>
+            </button>
             <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
               <X className="w-5 h-5" />
             </button>
@@ -221,7 +263,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
         {/* Tabs */}
         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar">
-            {(['Activity', 'Products', 'Intro Call', 'Industry', 'Strategy', 'Email'] as Tab[]).map(tab => (
+            {(['Activity', 'Products', 'Sales Hooks', 'Intro Call', 'Industry', 'Strategy', 'Email'] as Tab[]).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -239,18 +281,30 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {['Intro Call', 'Strategy', 'Email'].includes(activeTab) ? (
+          {activeTab === 'Sales Hooks' ? (
+            <SalesHooks leadData={selectedLead} />
+          ) : ['Intro Call', 'Strategy', 'Email'].includes(activeTab) ? (
             <div className="space-y-4 h-full flex flex-col">
               <div className="flex items-center justify-between">
-                <div className="relative">
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setIsAiMenuOpen(!isAiMenuOpen)}
-                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-900/30"
+                    onClick={handleGenerateIntelligence}
+                    disabled={isGenerating}
+                    className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all disabled:opacity-50"
                   >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Modify with AI</span>
-                    <ChevronDown className="w-3 h-3" />
+                    {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                    <span>{isGenerating ? 'Generating...' : 'Generate Intelligence'}</span>
                   </button>
+
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAiMenuOpen(!isAiMenuOpen)}
+                      className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-900/30"
+                    >
+                      <Zap className="w-3 h-3" />
+                      <span>Refine</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
 
                   {isAiMenuOpen && (
                     <div className="absolute left-0 top-full mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 py-1">
@@ -265,6 +319,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                       ))}
                     </div>
                   )}
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-1">
