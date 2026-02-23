@@ -135,4 +135,6 @@ export interface BusinessLead {
 
   // Associated Entities
   relatedBusinesses?: string[];
+
+  score?: number;
 }

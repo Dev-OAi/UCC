@@ -1,4 +1,5 @@
 import Papa from 'papaparse';
+import { calculateScore } from './scoring';
 
 export interface FileManifest {
   path: string;
@@ -288,6 +289,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           obj._type = file.type;
           obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
           obj._location = scrubValue(file.location || obj['Location'] || '');
+          obj.Score = calculateScore(obj);
           
           return obj;
         });

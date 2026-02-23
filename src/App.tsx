@@ -12,17 +12,21 @@ import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
 import { Products } from './components/Products';
+import { TerritoryMap } from './components/TerritoryMap';
+import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
+import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
 import ProductGuideRenderer from './components/ProductGuideRenderer';
 import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, CallEntry, EmailEntry, MeetingEntry } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
+import { calculateScore } from './lib/scoring';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | string;
+export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | string;
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -155,6 +159,7 @@ function App() {
 
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
+
       "businessName",
       "Document Number",
       "Sunbiz Status",
@@ -170,6 +175,7 @@ function App() {
       "Summary For Filing"
     ],
     '1. SB': [
+
       "businessName",
       "Document Number",
       "Sunbiz Status",
@@ -193,6 +199,7 @@ function App() {
       "Website"
     ],
     '2. YP': [
+
       "businessName",
       "Category",
       "Phone",
@@ -274,6 +281,7 @@ function App() {
       "Florida UCC Link"
     ],
     'All': [
+
       "businessName",
       "Category",
       "Document Number",
@@ -763,6 +771,7 @@ function App() {
       notes: '',
       activities: [],
       lastUpdated: new Date().toISOString(),
+      score: row.Score || calculateScore(row),
       ein: row['FEI/EIN Number'] || row.ein || '',
       entityType: row['Entity Type'] || row.entityType || '',
       establishedDate: row['Date Filed'] || '',
@@ -857,6 +866,23 @@ function App() {
             <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
           ) : activeTab === 'Insights' ? (
             <Insights data={allData} types={types} />
+          ) : activeTab === 'Territory Map' ? (
+            <TerritoryMap
+              data={allData}
+              onSelectZip={(zip) => {
+                setActiveTab(zip);
+                onFilterChange('Zip', [zip]);
+              }}
+            />
+          ) : activeTab === 'Action Hub' ? (
+            <ActionHub
+              leads={scorecardLeads}
+              onUpdateLeads={setScorecardLeads}
+              onSelectLead={(lead) => {
+                setSelectedLeadId(lead.id);
+                setIsRightSidebarOpen(true);
+              }}
+            />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
           ) : activeTab === 'Product Guide' ? (
@@ -903,6 +929,23 @@ function App() {
               meetingEntries={meetingEntries}
               setMeetingEntries={setMeetingEntries}
               leads={scorecardLeads}
+            />
+          ) : activeTab === 'Playbook' ? (
+            <Playbook
+              allData={allData}
+              scorecardLeads={scorecardLeads}
+              onSelectLead={(lead) => {
+                setActiveTab('Scorecard');
+                setSelectedLeadId(lead.id);
+                setIsRightSidebarOpen(true);
+              }}
+              onSelectRow={(row) => {
+                // If it's a prospect, we might want to show it in the context of its source hub
+                // but for now, let's just show the detail view
+                setSelectedRow(row);
+                setIsRightSidebarOpen(true);
+              }}
+              onAddToScorecard={handleAddToScorecard}
             />
           ) : activeTab === 'Scorecard' ? (
             <Scorecard

@@ -3,12 +3,18 @@ import {
   Info, X, Share2, Edit3, ChevronUp, Phone, Globe, MapPin,
   Fingerprint, Calendar, Activity, ShieldCheck, HelpCircle,
   ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight,
-  Copy, Check, Target, ChevronLeft
+  Copy, Check, Target, ChevronLeft, Sparkles, Mail, TrendingUp,
+  Zap
 } from 'lucide-react';
 import { DataRow, FileManifest } from '../lib/dataService';
+import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { productData } from '../lib/productData';
 import { ProductGuide } from '../types';
+import { generateAiManifest, generateLeadIntelligence } from '../lib/aiUtils';
+import { getStoredTemplates, replacePlaceholders, autoSelectTemplate } from '../lib/outreachUtils';
+import { Modal } from './ui';
+import { getScoreDetails } from '../lib/scoring';
 
 interface RightSidebarProps {
   selectedRow: DataRow | null;
@@ -52,6 +58,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const [isOverviewExpanded, setIsOverviewExpanded] = React.useState(true);
   const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+  const [isManifestCopied, setIsManifestCopied] = React.useState(false);
+  const [generatedIntel, setGeneratedIntel] = React.useState<{ strategy: string, email: string } | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>('');
+
+  const templates = React.useMemo(() => getStoredTemplates(), []);
+
+  React.useEffect(() => {
+    if (selectedRow) {
+      setSelectedTemplateId(autoSelectTemplate(selectedRow, templates));
+    }
+  }, [selectedRow, templates]);
+
+  const currentTemplate = templates.find(t => t.id === selectedTemplateId);
+  const personalizedBody = selectedRow && currentTemplate ? replacePlaceholders(currentTemplate.body, selectedRow) : '';
 
   const handleCopy = (key: string, value: any) => {
     if (value === null || value === undefined) return;
@@ -103,6 +123,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const category = selectedRow ? (selectedRow['Category'] || selectedRow['Category '] || selectedRow['_type'] || '') : '';
   const insight = getInsightForCategory(category);
+  const scoreDetails = selectedRow ? getScoreDetails(selectedRow) : null;
 
   const pdfReport = manifest.find(m =>
     m.type === 'PDF' &&
@@ -132,6 +153,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     }
 
     return String(value);
+  };
+
+  const copyAiManifest = () => {
+    if (!selectedRow) return;
+    const manifest = generateAiManifest(selectedRow);
+    navigator.clipboard.writeText(manifest);
+    setIsManifestCopied(true);
+    setTimeout(() => setIsManifestCopied(false), 3000);
+  };
+
+  const handleGenerateIntelligence = () => {
+    if (!selectedRow) return;
+    const intel = generateLeadIntelligence(selectedRow);
+    setGeneratedIntel(intel);
   };
 
   return (
@@ -274,6 +309,29 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
 
           <div className="p-5 space-y-6">
+            {/* Priority Insights */}
+            {scoreDetails && (
+              <section className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/30">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-900 dark:text-blue-100">Priority Insights</h4>
+                  </div>
+                  <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg">
+                    {scoreDetails.total} PTS
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {scoreDetails.insights.map((insight, i) => (
+                    <div key={i} className="flex items-center justify-between text-[11px]">
+                      <span className="text-blue-800 dark:text-blue-300 font-medium tracking-tight">• {insight.label}</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-bold">+{insight.points}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <div className="space-y-4">
               {Object.entries(selectedRow).map(([key, value]) => {
                 if (key.startsWith('_')) return null;
@@ -325,16 +383,69 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               })}
             </div>
 
+            <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+              <SalesHooks leadData={selectedRow} />
+            </div>
+
+            {selectedRow && (
+              <div className="pt-6 border-t border-gray-100 dark:border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider flex items-center">
+                    <Zap className="w-3.5 h-3.5 mr-2 text-amber-500 fill-amber-500" />
+                    Instant Outreach
+                  </h4>
+                  <select
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                    className="bg-transparent text-[10px] font-bold text-blue-600 dark:text-blue-400 outline-none cursor-pointer"
+                  >
+                    {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-slate-800/50 rounded-xl p-4 border border-gray-100 dark:border-slate-800">
+                  <p className="text-xs text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap line-clamp-6 italic mb-4">
+                    "{personalizedBody}"
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(personalizedBody);
+                      if (onAddToScorecard) onAddToScorecard(selectedRow);
+                      alert(`Copied outreach and added ${selectedRow.businessName || 'lead'} to Scorecard pipeline.`);
+                    }}
+                    className="w-full flex items-center justify-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-widest"
+                  >
+                    <Copy className="w-3.5 h-3.5 mr-2" />
+                    Copy & Claim Lead
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">
               <h4 className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Operational Tools</h4>
               <div className="grid grid-cols-2 gap-2">
-                <button className="flex flex-col items-center justify-center p-3 text-[10px] font-bold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl border border-gray-100 dark:border-slate-800 transition-all group">
-                  <Edit3 className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110" />
-                  Annotate
+                <button
+                  onClick={handleGenerateIntelligence}
+                  className="flex flex-col items-center justify-center p-3 text-[10px] font-bold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl border border-gray-100 dark:border-slate-800 transition-all group"
+                >
+                  <Sparkles className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110 text-blue-500" />
+                  Get Intel
                 </button>
-                <button className="flex flex-col items-center justify-center p-3 text-[10px] font-bold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl border border-gray-100 dark:border-slate-800 transition-all group">
-                  <Share2 className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110" />
-                  Export
+                <button
+                  onClick={copyAiManifest}
+                  className={`flex flex-col items-center justify-center p-3 text-[10px] font-bold rounded-xl border transition-all group ${
+                    isManifestCopied
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800'
+                      : 'text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 border-gray-100 dark:border-slate-800'
+                  }`}
+                >
+                  {isManifestCopied ? (
+                    <Check className="w-4 h-4 mb-1.5 text-emerald-500" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110 text-purple-500" />
+                  )}
+                  {isManifestCopied ? 'Manifest Copied' : 'AI Manifest'}
                 </button>
                 {activeTab !== 'Scorecard' && (
                   <button
@@ -426,6 +537,47 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       )}
         </div>
       </aside>
+
+      <Modal
+        isOpen={!!generatedIntel}
+        onClose={() => setGeneratedIntel(null)}
+        title="AI-Generated Sales Intelligence"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={() => {
+                if (generatedIntel) {
+                  navigator.clipboard.writeText(`${generatedIntel.strategy}\n\n${generatedIntel.email}`);
+                }
+                setGeneratedIntel(null);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase tracking-widest"
+            >
+              Copy & Close
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center">
+              <Target className="w-3 h-3 mr-1.5" /> Strategy Overview
+            </h4>
+            <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+              {generatedIntel?.strategy}
+            </div>
+          </div>
+
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3 flex items-center">
+              <Mail className="w-3 h-3 mr-1.5" /> Personalized Email
+            </h4>
+            <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+              {generatedIntel?.email}
+            </div>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
