@@ -911,8 +911,13 @@ function App() {
               metrics={scorecardMetrics}
               setMetrics={setScorecardMetrics}
               onSelectLead={(lead) => {
-                setSelectedLeadId(lead?.id || null);
-                if (lead) setIsRightSidebarOpen(true);
+                if (selectedLeadId === lead?.id) {
+                  setSelectedLeadId(null);
+                  setIsRightSidebarOpen(false);
+                } else {
+                  setSelectedLeadId(lead?.id || null);
+                  if (lead) setIsRightSidebarOpen(true);
+                }
               }}
               selectedLeadId={selectedLeadId}
             />
@@ -956,7 +961,16 @@ function App() {
               <div className="flex-1 overflow-hidden">
                 <Table
                   data={filteredData} allData={debouncedAllData} visibleColumns={sortedVisibleColumns}
-                  selectedRow={selectedRow} onRowSelect={setSelectedRow}
+                  selectedRow={selectedRow}
+                  onRowSelect={(row) => {
+                    if (selectedRow === row) {
+                      setSelectedRow(null);
+                      setIsRightSidebarOpen(false);
+                    } else {
+                      setSelectedRow(row);
+                      setIsRightSidebarOpen(true);
+                    }
+                  }}
                   columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
                 />
