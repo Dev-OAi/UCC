@@ -4,13 +4,15 @@ import {
   Mail, ChevronRight, Copy, Check, Sparkles, ChevronDown,
   Edit3, Download, Upload, Trash2, Save, Linkedin, ExternalLink,
   CheckCircle2, Clock, ArrowUpRight, AlertCircle, Calendar, Plus,
-  ChevronLeft, Loader2, Zap
+  ChevronLeft, Loader2, Zap, TrendingUp
 } from 'lucide-react';
 import { BusinessLead, LeadActivity, LeadStatus, LeadType, ScorecardMetric } from '../types';
 import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { Modal, Input } from './ui';
 import { generateAiManifest, generateLeadIntelligence } from '../lib/aiUtils';
+import { getStoredTemplates, replacePlaceholders, autoSelectTemplate } from '../lib/outreachUtils';
+import { getScoreDetails } from '../lib/scoring';
 
 interface ScorecardRightSidebarProps {
   selectedLead: BusinessLead | null;
@@ -43,6 +45,19 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   const [aiCustomPrompt, setAiCustomPrompt] = useState<string | null>(null);
   const [isManifestCopied, setIsManifestCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+
+  const templates = React.useMemo(() => getStoredTemplates(), []);
+
+  useEffect(() => {
+    if (selectedLead) {
+      setSelectedTemplateId(autoSelectTemplate(selectedLead, templates));
+    }
+  }, [selectedLead, templates]);
+
+  const currentTemplate = templates.find(t => t.id === selectedTemplateId);
+  const personalizedBody = selectedLead && currentTemplate ? replacePlaceholders(currentTemplate.body, selectedLead) : '';
+  const scoreDetails = selectedLead ? getScoreDetails(selectedLead) : null;
 
   // Script content states
   const [scripts, setScripts] = useState({
@@ -281,6 +296,29 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Priority Insights */}
+          {scoreDetails && (
+            <section className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-900/30 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-900 dark:text-blue-100">Priority Insights</h4>
+                </div>
+                <span className="px-2 py-1 bg-blue-600 text-white text-[10px] font-black rounded-lg">
+                  {scoreDetails.total} PTS
+                </span>
+              </div>
+              <div className="space-y-2">
+                {scoreDetails.insights.map((insight, i) => (
+                  <div key={i} className="flex items-center justify-between text-[11px]">
+                    <span className="text-blue-800 dark:text-blue-300 font-medium tracking-tight">• {insight.label}</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-bold">+{insight.points}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {activeTab === 'Sales Hooks' ? (
             <SalesHooks leadData={selectedLead} />
           ) : ['Intro Call', 'Strategy', 'Email'].includes(activeTab) ? (
@@ -405,6 +443,51 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
             </div>
           ) : activeTab === 'Activity' ? (
             <div className="space-y-6">
+               {/* Instant Action Section */}
+               <div className="bg-blue-50 dark:bg-blue-900/10 rounded-2xl p-5 border border-blue-100 dark:border-blue-900/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-blue-800 dark:text-blue-400">
+                      <Zap className="w-4 h-4 mr-2 fill-blue-600" />
+                      <span className="text-[11px] font-black uppercase tracking-wider">Instant Outreach</span>
+                    </div>
+                    <select
+                      value={selectedTemplateId}
+                      onChange={(e) => setSelectedTemplateId(e.target.value)}
+                      className="bg-transparent text-[10px] font-bold text-blue-600 dark:text-blue-400 outline-none cursor-pointer"
+                    >
+                      {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic line-clamp-3">
+                    "{personalizedBody}"
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(personalizedBody);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+
+                      const newActivity: LeadActivity = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: 'Email',
+                        date: new Date().toISOString(),
+                        notes: `Sent outreach using template: ${currentTemplate?.name}`
+                      };
+                      onUpdateLead({
+                        ...selectedLead,
+                        status: LeadStatus.CONTACTED,
+                        activities: [newActivity, ...(selectedLead.activities || [])],
+                        lastUpdated: new Date().toISOString()
+                      });
+                      onAddEmailLog?.(selectedLead.businessName, currentTemplate?.subject || 'Outreach');
+                    }}
+                    className="w-full flex items-center justify-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black rounded-xl shadow-lg shadow-blue-500/20 transition-all uppercase tracking-widest"
+                  >
+                    <Copy className="w-3.5 h-3.5 mr-2" />
+                    {copied ? 'Copied & Logged!' : 'Copy & Log Outreach'}
+                  </button>
+               </div>
+
                <div className="flex items-center justify-between">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Activities</h4>
                   <div className="flex items-center space-x-3">
@@ -646,7 +729,7 @@ function getDefaultIntroScript(lead: BusinessLead) {
 **Objective:** Schedule a 'Business Financial Check-up' to discuss Efficiency & Protection.
 
 #### Step 1: The "Expert" Introduction
-"Good morning/afternoon, [Contact Name], my name is [My Name] and I'm a Business Banker with _ Bank. I work proactively with business owners like yourself, especially those in the ${lead.industry || 'local business'} space, to help them streamline operations and safeguard their finances. I was particularly impressed by the name '${lead.businessName}' – it speaks volumes about the quality and protection you offer."
+"Good morning/afternoon, [Contact Name], my name is [My Name] and I'm a Business Banker with [Bank Name]. I work proactively with business owners like yourself, especially those in the ${lead.industry || 'local business'} space, to help them streamline operations and safeguard their finances. I was particularly impressed by the name '${lead.businessName}' – it speaks volumes about the quality and protection you offer."
 
 #### Step 2: The Hook (Value/Efficiency)
 "I'm reaching out because I work with a lot of ${lead.industry || 'similar'} firms, and I know that managing **inconsistent cash flow** and **protecting against payment fraud** are major headaches right now."`;
@@ -669,12 +752,12 @@ Dear [Contact Name],
 
 As ${lead.businessName} continues to grow, navigating the complexities of operational efficiency and financial security becomes increasingly vital.
 
-I've worked with many organizations in the ${lead.industry || 'same'} industry to optimize their cash flow and implement robust fraud protection measures. I'd love to share how _ Bank's specialized business solutions could support your current goals.
+I've worked with many organizations in the ${lead.industry || 'same'} industry to optimize their cash flow and implement robust fraud protection measures. I'd love to share how [Bank Name]'s specialized business solutions could support your current goals.
 
 Would you be open to a brief 5-minute conversation next week?
 
 Best regards,
 
 [My Name]
-Bank | Business Banker`;
+[Bank Name] | Business Banker`;
 }

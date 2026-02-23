@@ -22,6 +22,7 @@ import ProductGuideRenderer from './components/ProductGuideRenderer';
 import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, CallEntry, EmailEntry, MeetingEntry } from './types';
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
+import { calculateScore } from './lib/scoring';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -158,6 +159,7 @@ function App() {
 
   const [customColumnOrders, setCustomColumnOrders] = useState<Record<string, string[]>>({
     '3. UCC': [
+
       "businessName",
       "Document Number",
       "Sunbiz Status",
@@ -173,6 +175,7 @@ function App() {
       "Summary For Filing"
     ],
     '1. SB': [
+
       "businessName",
       "Document Number",
       "Sunbiz Status",
@@ -196,6 +199,7 @@ function App() {
       "Website"
     ],
     '2. YP': [
+
       "businessName",
       "Category",
       "Phone",
@@ -277,6 +281,7 @@ function App() {
       "Florida UCC Link"
     ],
     'All': [
+
       "businessName",
       "Category",
       "Document Number",
@@ -766,6 +771,7 @@ function App() {
       notes: '',
       activities: [],
       lastUpdated: new Date().toISOString(),
+      score: row.Score || calculateScore(row),
       ein: row['FEI/EIN Number'] || row.ein || '',
       entityType: row['Entity Type'] || row.entityType || '',
       establishedDate: row['Date Filed'] || '',

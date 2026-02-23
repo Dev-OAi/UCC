@@ -23,6 +23,8 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
+    "@playwright/browser-chromium": "^1.58.2",
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.64",

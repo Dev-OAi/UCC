@@ -31,27 +31,36 @@ export const Playbook: React.FC<PlaybookProps> = ({
   }, []);
 
   const urgentUcc = useMemo(() => {
-    return allData.filter(row => {
-      const expiryStr = row['Expires'];
-      if (!expiryStr || expiryStr === 'N/A') return false;
-      const expiryDate = new Date(expiryStr);
-      return !isNaN(expiryDate.getTime()) && expiryDate <= sixtyDaysFromNow && expiryDate >= now;
-    }).slice(0, 10);
+    return allData
+      .filter(row => {
+        const expiryStr = row['Expires'];
+        if (!expiryStr || expiryStr === 'N/A') return false;
+        const expiryDate = new Date(expiryStr);
+        return !isNaN(expiryDate.getTime()) && expiryDate <= sixtyDaysFromNow && expiryDate >= now;
+      })
+      .sort((a, b) => (b.Score || 0) - (a.Score || 0))
+      .slice(0, 10);
   }, [allData, sixtyDaysFromNow, now]);
 
   const stagnantLeads = useMemo(() => {
-    return scorecardLeads.filter(lead => {
-      const lastUpdated = new Date(lead.lastUpdated);
-      return !isNaN(lastUpdated.getTime()) && lastUpdated <= sevenDaysAgo;
-    }).slice(0, 10);
+    return scorecardLeads
+      .filter(lead => {
+        const lastUpdated = new Date(lead.lastUpdated);
+        return !isNaN(lastUpdated.getTime()) && lastUpdated <= sevenDaysAgo;
+      })
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, 10);
   }, [scorecardLeads, sevenDaysAgo]);
 
   const freshProspects = useMemo(() => {
     const leadNames = new Set(scorecardLeads.map(l => l.businessName.toLowerCase()));
-    return allData.filter(row => {
-      const name = (row['businessName'] || row['Entity Name'] || '').toLowerCase();
-      return row._type === 'Last 90 Days' && name && !leadNames.has(name);
-    }).slice(0, 10);
+    return allData
+      .filter(row => {
+        const name = (row['businessName'] || row['Entity Name'] || '').toLowerCase();
+        return row._type === 'Last 90 Days' && name && !leadNames.has(name);
+      })
+      .sort((a, b) => (b.Score || 0) - (a.Score || 0))
+      .slice(0, 10);
   }, [allData, scorecardLeads]);
 
   return (
@@ -86,8 +95,13 @@ export const Playbook: React.FC<PlaybookProps> = ({
             {urgentUcc.map((row, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
                 <div className="flex justify-between items-start mb-3">
-                  <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600 font-bold text-xs">
-                    {String(row['businessName'] || 'U').charAt(0).toUpperCase()}
+                  <div className="flex flex-col">
+                    <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600 font-bold text-xs mb-2">
+                      {String(row['businessName'] || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded uppercase">
+                      Score: {row.Score}
+                    </span>
                   </div>
                   <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-lg uppercase tracking-tighter">
                     Exp: {row['Expires']}
@@ -133,8 +147,13 @@ export const Playbook: React.FC<PlaybookProps> = ({
             {stagnantLeads.map((lead, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
                 <div className="flex justify-between items-start mb-3">
-                  <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center text-amber-600 font-bold text-xs">
-                    {lead.businessName.charAt(0).toUpperCase()}
+                  <div className="flex flex-col">
+                    <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center text-amber-600 font-bold text-xs mb-2">
+                      {lead.businessName.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded uppercase">
+                      Score: {lead.score}
+                    </span>
                   </div>
                   <span className="text-[10px] font-black text-amber-500 bg-amber-50 px-2 py-1 rounded-lg uppercase tracking-tighter">
                     Status: {lead.status}
@@ -171,11 +190,16 @@ export const Playbook: React.FC<PlaybookProps> = ({
             {freshProspects.map((row, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-blue-500 transition-all">
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 text-xs font-black">
+                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 text-xs font-black shrink-0">
                     UCC
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{row['businessName']}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{row['businessName']}</h3>
+                      <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded uppercase shrink-0">
+                        {row.Score}
+                      </span>
+                    </div>
                     <div className="flex items-center space-x-3 mt-1">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
                         <Building2 className="w-3 h-3 mr-1" /> {row['Category'] || 'General'}

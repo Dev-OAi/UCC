@@ -55,6 +55,29 @@ export const Table: React.FC<TableProps> = ({
   };
 
   const renderCell = (value: any, col: string) => {
+    if (col === 'Score') {
+      const score = Number(value || 0);
+      let bgColor = 'bg-gray-100 dark:bg-slate-800';
+      let textColor = 'text-gray-600 dark:text-slate-400';
+
+      if (score >= 80) {
+        bgColor = 'bg-emerald-100 dark:bg-emerald-900/30';
+        textColor = 'text-emerald-700 dark:text-emerald-400';
+      } else if (score >= 50) {
+        bgColor = 'bg-blue-100 dark:bg-blue-900/30';
+        textColor = 'text-blue-700 dark:text-blue-400';
+      } else if (score >= 25) {
+        bgColor = 'bg-amber-100 dark:bg-amber-900/30';
+        textColor = 'text-amber-700 dark:text-amber-400';
+      }
+
+      return (
+        <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${bgColor} ${textColor}`}>
+          {score} Pts
+        </span>
+      );
+    }
+
     const isUccLink = col === 'Florida UCC Link';
     if (isUccLink || (typeof value === 'string' && (value.startsWith('http') || value.startsWith('www.')))) {
       if (!value || value === 'N/A') return value;

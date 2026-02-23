@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { BusinessLead, LeadStatus } from '../types';
 import { Modal, Input } from './ui';
+import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
 
 interface ActionHubProps {
   leads: BusinessLead[];
@@ -13,34 +14,8 @@ interface ActionHubProps {
   onUpdateLeads: (leads: BusinessLead[]) => void;
 }
 
-interface OutreachTemplate {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-  category: 'Email' | 'SMS' | 'Script';
-}
-
 export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpdateLeads }) => {
-  const [templates, setTemplates] = useState<OutreachTemplate[]>(() => {
-    const saved = localStorage.getItem('outreach_templates');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'temp-1',
-        name: 'UCC Renewal Intro',
-        subject: 'Expiring UCC Filing - Action Required for {{businessName}}',
-        body: 'Hello {{contactName}},\n\nI noticed that your current UCC filing for {{businessName}} is set to expire soon. Ensuring this remains active is critical for your current lending relationships.\n\nI would love to discuss how _ Bank can help you manage this renewal and explore potential refinancing options.\n\nBest regards,\n[My Name]',
-        category: 'Email'
-      },
-      {
-        id: 'temp-2',
-        name: 'New Entity Welcome',
-        subject: 'Supporting the Growth of {{businessName}}',
-        body: 'Hi {{contactName}},\n\nCongratulations on your recent filing for {{businessName}}! Starting a new venture is an exciting milestone.\n\nAt _ Bank, we specialize in supporting emerging businesses in the {{industry}} sector with tailored treasury and credit solutions.\n\nAre you available for a brief 5-minute intro call next week?',
-        category: 'Email'
-      }
-    ];
-  });
+  const [templates, setTemplates] = useState<OutreachTemplate[]>(() => getStoredTemplates());
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<OutreachTemplate | null>(null);
@@ -61,12 +36,6 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     templates.find(t => t.id === selectedTemplateId),
   [templates, selectedTemplateId]);
 
-  const replacePlaceholders = (text: string, lead: BusinessLead) => {
-    return text
-      .replace(/{{businessName}}/g, lead.businessName)
-      .replace(/{{contactName}}/g, lead.keyPrincipal || 'Business Owner')
-      .replace(/{{industry}}/g, lead.industry || 'local');
-  };
 
   const saveTemplate = (template: OutreachTemplate) => {
     if (editingTemplate?.id) {
