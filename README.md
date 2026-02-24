@@ -39,12 +39,16 @@ By centralizing lead scoring, geographic intelligence, and activity management i
 
 ---
 
-## Key Features
+## Technical Foundation
 
-*   **Lead Prioritization:** Proprietary scoring algorithms rank opportunities based on urgency, contactability, and data completeness.
-*   **Unified Identity Mapping:** Disparate data sources are standardized into a single, clean business profile for seamless exploration.
-*   **Product Intelligence:** Integrated product guides and sales hooks help bankers deliver the right message at the right time.
-*   **Efficiency at Scale:** Advanced virtualization technology allows for the exploration of massive datasets with zero performance lag.
+Data Explorer is built on a modern, robust stack designed for speed, type-safety, and scalability:
+
+*   **React & TypeScript:** A strictly typed frontend architecture ensuring runtime reliability and maintainable component logic.
+*   **High-Performance Virtualization:** Leveraging `react-virtuoso` to handle massive datasets with 60FPS scrolling and minimal memory overhead.
+*   **Sophisticated Scoring Engine:** A custom-built client-side logic layer that applies complex weighted algorithms for real-time lead prioritization.
+*   **Dynamic Data Visualization:** Powered by `Recharts` for high-fidelity, interactive SVG and Canvas-based analytics.
+*   **Responsive Utility-First Styling:** Built with `Tailwind CSS` for a lean, adaptive interface that performs flawlessly across all device breakpoints.
+*   **Data Integrity Layer:** Unified schema mapping that standardizes disparate data formats into a consistent, searchable internal identity system.
 
 ---
 
@@ -52,8 +56,4 @@ By centralizing lead scoring, geographic intelligence, and activity management i
 
 *   **Responsive Interface:** Optimized for both desktop and mobile environments, ensuring intelligence is available in the office or in the field.
 *   **Aesthetic Flexibility:** Features a sleek, professional interface with full support for both Light and Dark modes.
-*   **Data Integrity:** Built with a focus on data standardization and high-fidelity reporting, including PDF export capabilities for performance reviews.
-
----
-
-*Note: Data Explorer is a professional tool designed for internal banking operations. Access to advanced customization and configuration features is restricted to authorized personnel.*
+*   **Data Portability:** High-fidelity reporting engine with built-in PDF export capabilities (via `jspdf` and `html2canvas`) for professional documentation and performance reviews.
