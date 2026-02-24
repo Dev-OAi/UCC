@@ -77,6 +77,19 @@ def generate_manifest():
                     "filename": file
                 })
 
+    # Sort manifest: Zip hubs first (numeric types), then others
+    def sort_key(item):
+        t = item.get('type', '')
+        if re.match(r'^\d{5}$', t):
+            return (0, t) # Zip codes first
+        if t in ['1. SB', '3. UCC']:
+            return (1, t) # Then SB and UCC
+        if t == '2. YP':
+            return (3, t) # Huge YP files last
+        return (2, t) # Everything else in between
+
+    manifest.sort(key=sort_key)
+
     with open('public/manifest.json', 'w') as f:
         json.dump(manifest, f, indent=2)
 
