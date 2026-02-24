@@ -4,18 +4,21 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
   AreaChart, Area, Treemap
 } from 'recharts';
-import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck, Activity, FileText, Building2, MapPin, Settings2 } from 'lucide-react';
+import { PieChart as PieIcon, BarChart3, TrendingUp, Users, Database, ShieldCheck, Activity, FileText, Building2, MapPin, Settings2, Info } from 'lucide-react';
 
 interface InsightsProps {
   data: any[];
   types: string[];
+  onNavigate: (tab: string) => void;
+  onFilterChange: (col: string, val: string[]) => void;
 }
 
 type VisualType = 'territory' | 'status' | 'categories' | 'market-share' | 'trends' | 'docs' | 'structure';
 
-export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
+export const Insights: React.FC<InsightsProps> = ({ data, types, onNavigate, onFilterChange }) => {
   const [activeVisual, setActiveVisual] = useState<VisualType>('territory');
   const [marketShareChartType, setMarketShareChartType] = useState<'bar' | 'pie'>('pie');
+  const [timeframe, setTimeframe] = useState(90);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   React.useEffect(() => {
@@ -49,10 +52,28 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
       .sort((a, b) => b.value - a.value);
   }, [data]);
 
-  const marketShareData = useMemo(() => {
+  const filteredTimeframeData = useMemo(() => {
     const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
+    if (timeframe === 90) return last90DaysData;
+
+    const dates = last90DaysData.map(d => new Date(d['Record Date']).getTime()).filter(t => !isNaN(t));
+    if (dates.length === 0) return last90DaysData;
+
+    const maxDate = new Date(Math.max(...dates));
+    const cutoffDate = new Date(maxDate);
+    cutoffDate.setDate(cutoffDate.getDate() - timeframe);
+
+    return last90DaysData.filter(row => {
+      const dateStr = row['Record Date'];
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return !isNaN(d.getTime()) && d >= cutoffDate;
+    });
+  }, [data, timeframe]);
+
+  const marketShareData = useMemo(() => {
     const counts: Record<string, number> = {};
-    last90DaysData.forEach(row => {
+    filteredTimeframeData.forEach(row => {
       const name = row['Reverse Name'] || 'Unknown';
       counts[name] = (counts[name] || 0) + 1;
     });
@@ -61,22 +82,20 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
       .sort((a, b) => b.value - a.value)
       .slice(0, 10)
       .sort((a, b) => a.value - b.value); // Largest on the right
-  }, [data]);
+  }, [filteredTimeframeData]);
 
   const uniqueReverseNames = useMemo(() => {
     const names = new Set(
-      data
-        .filter(row => row._type === 'Last 90 Days')
+      filteredTimeframeData
         .map(row => row['Reverse Name'])
         .filter(Boolean)
     );
     return names.size;
-  }, [data]);
+  }, [filteredTimeframeData]);
 
   const filingVelocityData = useMemo(() => {
-    const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
     const counts: Record<string, number> = {};
-    last90DaysData.forEach(row => {
+    filteredTimeframeData.forEach(row => {
       const dateStr = row['Record Date'];
       if (!dateStr) return;
       counts[dateStr] = (counts[dateStr] || 0) + 1;
@@ -85,12 +104,11 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
     return Object.entries(counts)
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data]);
+  }, [filteredTimeframeData]);
 
   const docTypeData = useMemo(() => {
-    const last90DaysData = data.filter(row => row._type === 'Last 90 Days');
     const counts: Record<string, number> = {};
-    last90DaysData.forEach(row => {
+    filteredTimeframeData.forEach(row => {
       const type = row['Doc Type'] || 'Unknown';
       counts[type] = (counts[type] || 0) + 1;
     });
@@ -98,7 +116,7 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 8);
-  }, [data]);
+  }, [filteredTimeframeData]);
 
   const entityTypeData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -153,10 +171,63 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 
+  const analysisBlurbs = useMemo(() => {
+    const total = data.length;
+    const tfTotal = filteredTimeframeData.length;
+
+    return {
+      territory: () => {
+        const top3Count = zipData.slice(0, 3).reduce((sum, z) => sum + z.value, 0);
+        const percentage = total > 0 ? ((top3Count / total) * 100).toFixed(1) : 0;
+        return `Concentration identified in ${zipData[0]?.name}. The top 3 zip codes represent ${percentage}% of indexed leads.`;
+      },
+      status: () => {
+        const percentage = total > 0 ? ((statusData[0]?.value / total) * 100).toFixed(1) : 0;
+        return `${statusData[0]?.name} is currently the dominant entity status, accounting for ${percentage}% of your portfolio.`;
+      },
+      categories: () => {
+        return `Data is distributed across ${displayTypes.length} primary categories. ${categoryData[0]?.name} is your largest volume driver.`;
+      },
+      'market-share': () => {
+        const topBank = marketShareData[marketShareData.length - 1];
+        const percentage = tfTotal > 0 ? ((topBank?.value / tfTotal) * 100).toFixed(1) : 0;
+        return `${topBank?.name} holds the largest market share in the last ${timeframe} days (${percentage}% of new filings).`;
+      },
+      trends: () => {
+        const peak = [...filingVelocityData].sort((a, b) => b.count - a.count)[0];
+        return `Filing activity peaked on ${peak?.date} with ${peak?.count} records during this ${timeframe}-day period.`;
+      },
+      docs: () => {
+        return `${docTypeData[0]?.name} filings are the most frequent, suggesting a high volume of ${docTypeData[0]?.name.toLowerCase()} activity.`;
+      },
+      structure: () => {
+        return `Corporate structure is primarily ${entityTypeData[0]?.name}. This helps tailor your service model to specific entity needs.`;
+      }
+    };
+  }, [data, zipData, statusData, displayTypes, categoryData, marketShareData, filingVelocityData, docTypeData, entityTypeData]);
+
   const AdjustHint = () => (
     <div className="flex items-center space-x-2 opacity-20 hover:opacity-100 transition-opacity duration-300 cursor-help group/hint">
       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden group-hover/hint:block animate-in fade-in slide-in-from-right-2">Configure View</span>
       <Settings2 className="w-4 h-4 text-gray-400 group-hover/hint:text-blue-500 transition-colors" />
+    </div>
+  );
+
+  const TimeframeSelector = () => (
+    <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
+      {[30, 60, 90].map((days) => (
+        <button
+          key={days}
+          onClick={() => setTimeframe(days)}
+          className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${
+            timeframe === days
+              ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 dark:text-slate-500 dark:hover:text-slate-300'
+          }`}
+        >
+          {days}D
+        </button>
+      ))}
     </div>
   );
 
@@ -242,6 +313,13 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 <AdjustHint />
               </div>
 
+              <div className="mb-8 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl border border-amber-100/50 dark:border-amber-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-amber-800 dark:text-amber-300 leading-relaxed">
+                  {analysisBlurbs.territory()}
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
@@ -255,9 +333,21 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                         <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} />
                         <YAxis tick={{ fill: '#64748b', fontSize: 10 }} hide />
                         <RechartsTooltip content={<CustomTooltip />} />
-                        <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20}>
+                    <Bar
+                      dataKey="value"
+                      fill="#3b82f6"
+                      radius={[4, 4, 0, 0]}
+                      barSize={20}
+                      className="cursor-pointer"
+                      onClick={(data) => {
+                        if (data && data.name) {
+                          onFilterChange('Zip', [data.name]);
+                          onNavigate(data.name);
+                        }
+                      }}
+                    >
                           {zipData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} className="hover:opacity-100 transition-opacity" />
                           ))}
                         </Bar>
                       </BarChart>
@@ -278,7 +368,7 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                         aspectRatio={4 / 3}
                         stroke="#fff"
                         fill="#10b981"
-                        animationDuration={1500}
+                        isAnimationActive={false}
                       >
                         <RechartsTooltip content={<CustomTooltip />} />
                       </Treemap>
@@ -319,6 +409,14 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Entity Status</span>
                 </div>
               </div>
+
+              <div className="mb-8 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-300 leading-relaxed">
+                  {analysisBlurbs.status()}
+                </p>
+              </div>
+
               <div className="h-[450px] md:h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -332,9 +430,16 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                       dataKey="value"
                       animationBegin={0}
                       animationDuration={1500}
+                      className="cursor-pointer"
+                      onClick={(data) => {
+                        if (data && data.name) {
+                          onFilterChange('Sunbiz Status', [data.name]);
+                          onNavigate('All');
+                        }
+                      }}
                     >
                       {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity outline-none" />
                       ))}
                     </Pie>
                     <RechartsTooltip content={<CustomTooltip />} />
@@ -367,6 +472,14 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Data Source</span>
                 </div>
               </div>
+
+              <div className="mb-8 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100/50 dark:border-emerald-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  {analysisBlurbs.categories()}
+                </p>
+              </div>
+
               <div className="h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categoryData} layout="vertical" margin={{ left: 60, right: 40 }}>
@@ -388,9 +501,15 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                       barSize={32}
                       animationBegin={500}
                       animationDuration={1500}
+                      className="cursor-pointer"
+                      onClick={(data) => {
+                        if (data && data.name) {
+                          onNavigate(data.name);
+                        }
+                      }}
                     >
                       {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#10b981'} opacity={0.8} />
+                        <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#10b981'} opacity={0.8} className="hover:opacity-100 transition-opacity" />
                       ))}
                     </Bar>
                   </BarChart>
@@ -414,6 +533,7 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 </div>
 
                 <div className="flex items-center space-x-3">
+                  <TimeframeSelector />
                   <AdjustHint />
                   <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
                     <button
@@ -444,6 +564,13 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                 </div>
               </div>
 
+              <div className="mb-8 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-300 leading-relaxed">
+                  {analysisBlurbs['market-share']()}
+                </p>
+              </div>
+
               <div className="h-[550px] md:h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   {marketShareChartType === 'bar' ? (
@@ -465,9 +592,16 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                         radius={[4, 4, 0, 0]}
                         animationBegin={0}
                         animationDuration={1500}
+                        className="cursor-pointer"
+                        onClick={(data) => {
+                          if (data && data.name) {
+                            onFilterChange('Reverse Name', [data.name]);
+                            onNavigate('Last 90 Days');
+                          }
+                        }}
                       >
                         {marketShareData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.9} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.9} className="hover:opacity-100 transition-opacity" />
                         ))}
                       </Bar>
                     </BarChart>
@@ -484,9 +618,16 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                         animationBegin={0}
                         animationDuration={1500}
                         label={isMobile ? false : ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        className="cursor-pointer"
+                        onClick={(data) => {
+                          if (data && data.name) {
+                            onFilterChange('Reverse Name', [data.name]);
+                            onNavigate('Last 90 Days');
+                          }
+                        }}
                       >
                         {marketShareData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity outline-none" />
                         ))}
                       </Pie>
                       <RechartsTooltip content={<CustomTooltip />} />
@@ -512,10 +653,20 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white">UCC Filing Activity Trends</h3>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">Daily filing volume over the last 90 days</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Daily filing volume over the selected period</p>
                   </div>
                 </div>
-                <AdjustHint />
+                <div className="flex items-center space-x-4">
+                  <TimeframeSelector />
+                  <AdjustHint />
+                </div>
+              </div>
+
+              <div className="mb-8 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100/50 dark:border-emerald-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  {analysisBlurbs.trends()}
+                </p>
               </div>
               <div className="h-[400px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -560,10 +711,19 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
+                  <TimeframeSelector />
                   <AdjustHint />
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Filing Types</span>
                 </div>
               </div>
+
+              <div className="mb-8 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-300 leading-relaxed">
+                  {analysisBlurbs.docs()}
+                </p>
+              </div>
+
               <div className="h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={docTypeData} layout="vertical" margin={{ left: 60, right: 40 }}>
@@ -578,9 +738,21 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                       tick={{ fill: '#64748b', fontSize: 13, fontWeight: 500 }}
                     />
                     <RechartsTooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={32}>
+                    <Bar
+                      dataKey="value"
+                      fill="#3b82f6"
+                      radius={[0, 6, 6, 0]}
+                      barSize={32}
+                      className="cursor-pointer"
+                      onClick={(data) => {
+                        if (data && data.name) {
+                          onFilterChange('Doc Type', [data.name]);
+                          onNavigate('Last 90 Days');
+                        }
+                      }}
+                    >
                       {docTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} className="hover:opacity-100 transition-opacity" />
                       ))}
                     </Bar>
                   </BarChart>
@@ -607,6 +779,14 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded">Entity Types</span>
                 </div>
               </div>
+
+              <div className="mb-8 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100/50 dark:border-emerald-900/20 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  {analysisBlurbs.structure()}
+                </p>
+              </div>
+
               <div className="h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -618,9 +798,16 @@ export const Insights: React.FC<InsightsProps> = ({ data, types }) => {
                       outerRadius={isMobile ? 100 : 180}
                       paddingAngle={5}
                       dataKey="value"
+                      className="cursor-pointer"
+                      onClick={(data) => {
+                        if (data && data.name) {
+                          onFilterChange('Entity Type', [data.name]);
+                          onNavigate('All');
+                        }
+                      }}
                     >
                       {entityTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity outline-none" />
                       ))}
                     </Pie>
                     <RechartsTooltip content={<CustomTooltip />} />

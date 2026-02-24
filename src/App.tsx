@@ -865,7 +865,12 @@ function App() {
           ) : activeTab === 'Home' && !searchTerm ? (
             <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
           ) : activeTab === 'Insights' ? (
-            <Insights data={allData} types={types} />
+            <Insights
+              data={allData}
+              types={types}
+              onNavigate={handleTabChange}
+              onFilterChange={onFilterChange}
+            />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}
