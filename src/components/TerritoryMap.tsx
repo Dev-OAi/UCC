@@ -30,7 +30,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   }, [scale]);
 
   // Key Zip Codes from the data
-  const ZIP_CODES = ['33027', '33301', '33401', '33480', '33431', '33444', '33020', '33131'];
+  const ZIP_CODES = ['33408', '33027', '33301', '33401', '33480', '33431', '33444', '33020', '33131'];
 
   const stats = useMemo(() => {
     const counts: Record<string, { volume: number, growth: number, avgScore: number, totalScore: number }> = {};
@@ -77,6 +77,12 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   // Geometric boundaries using straight lines (Polygons)
   // Zoomed out coordinate space: 0-1000 width, 0-1200 height
   const ZIP_PATHS = [
+    {
+      id: '33408',
+      name: 'PGA (North Palm Beach)',
+      path: 'M 702 15 L 812 10 C 815 40, 818 70, 815 100 L 705 105 L 702 15',
+      x: 758, y: 55
+    },
     {
       id: '33480',
       name: 'Palm Beach',
