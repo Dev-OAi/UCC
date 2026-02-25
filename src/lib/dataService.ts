@@ -103,7 +103,7 @@ export async function uploadCsv(file: File): Promise<boolean> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('http://localhost:5001/upload', {
+    const response = await fetch('/api/bridge/upload', {
       method: 'POST',
       body: formData
     });
@@ -136,7 +136,7 @@ export async function startScrape(filename: string, column: string, threshold: n
       job_id: jobId
     };
 
-    const response = await fetch('http://localhost:5001/command', {
+    const response = await fetch('/api/bridge/command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(command)
