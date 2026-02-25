@@ -1,0 +1,44 @@
+[
+  {
+    "filename": "test.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772000127.3092735
+  },
+  {
+    "filename": "verification_test.csv",
+    "headers": [
+      "Business Name",
+      "Other\\nAPPLE INC",
+      "Tech"
+    ],
+    "added_at": 1771996929.5261135
+  },
+  {
+    "filename": "test2.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772000542.1812687
+  },
+  {
+    "filename": "verify_test_1771996685.csv",
+    "headers": [
+      "Business Name",
+      "Other"
+    ],
+    "added_at": 1771996685.9421163
+  },
+  {
+    "filename": "final_verification.csv",
+    "headers": [
+      "Business Name",
+      "Other\\nVERIFIED CORP",
+      "Success"
+    ],
+    "added_at": 1771997145.602111
+  }
+]

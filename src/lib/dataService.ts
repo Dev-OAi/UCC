@@ -72,6 +72,84 @@ export async function fetchManifest(): Promise<FileManifest[]> {
   }));
 }
 
+export interface PendingJob {
+  filename: string;
+  headers: string[];
+  added_at: number;
+}
+
+export interface JobStatus {
+  filename: string;
+  progress: number;
+  total: number;
+  current_name: string;
+  status: string;
+  errors: string[];
+  start_time: string;
+}
+
+export async function fetchPendingJobs(): Promise<PendingJob[]> {
+  try {
+    const response = await fetch('/Uploads/pending_jobs.json?t=' + Date.now());
+    if (!response.ok) return [];
+    return await response.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function uploadCsv(file: File): Promise<boolean> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/bridge/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    return response.ok;
+  } catch (err) {
+    console.error('Upload failed:', err);
+    return false;
+  }
+}
+
+export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
+  try {
+    const response = await fetch(`/Uploads/status/${jobId}.json?t=` + Date.now());
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function startScrape(filename: string, column: string, threshold: number): Promise<string | null> {
+  try {
+    const jobId = `job_${Date.now()}`;
+    const command = {
+      action: "start_scrape",
+      filename,
+      column,
+      threshold,
+      job_id: jobId
+    };
+
+    const response = await fetch('/api/bridge/command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(command)
+    });
+
+    if (response.ok) return jobId;
+    return null;
+  } catch (err) {
+    console.error('Failed to send command to scraper bridge:', err);
+    return null;
+  }
+}
+
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file.path, {
@@ -174,6 +252,30 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[7] = 'DocLegalDescription';
           m[8] = 'Consideration';
           m[9] = 'CaseNumber';
+          startIndex++;
+        }
+        // PRIORITY 3.3: SCRAPED UCC RESULTS
+        else if (file.type === 'UCC Results') {
+          m[0] = 'businessName'; // Search Term
+          m[1] = 'Match Score';
+          m[2] = 'UCC Status'; // Status
+          m[3] = 'Date Filed';
+          m[4] = 'Expires';
+          m[5] = 'Filings Completed Through';
+          m[6] = 'UCC Number';
+          m[7] = 'Filing Events';
+          m[8] = 'Secured Parties Count';
+          // Standard Table.tsx might not show all 5 secured parties by default,
+          // but they'll be in the row object for the sidebar.
+          for (let i = 1; i <= 5; i++) {
+            m[9 + (i - 1) * 2] = `Secured Party ${i} Name`;
+            m[10 + (i - 1) * 2] = `Secured Party ${i} Address`;
+          }
+          m[19] = 'Debtor Parties Count';
+          m[20] = 'Debtor Name';
+          m[21] = 'Debtor Address';
+          m[22] = 'Document Type';
+          m[23] = 'Document Pages';
           startIndex++;
         }
         // PRIORITY 3.5: ENRICHED ZIP HUB (8 Columns)
