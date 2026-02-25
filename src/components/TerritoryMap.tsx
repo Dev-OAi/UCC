@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { MapPin, TrendingUp, Users, Target, ChevronRight, Layers, Maximize2, Filter, Search, Plus, Minus, Navigation } from 'lucide-react';
+import { MapPin, TrendingUp, Users, Target, ChevronRight, Layers, Maximize2, Filter, Search, Plus, Minus, Navigation, Lock, Unlock } from 'lucide-react';
 
 interface TerritoryMapProps {
   data: any[];
@@ -10,24 +10,35 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   const [viewMode, setViewMode] = useState<'volume' | 'growth'>('volume');
   const [hoveredZip, setHoveredZip] = useState<string | null>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1.2);
+  const [scale, setScale] = useState(1.1);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const handleReset = () => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
-      // Center the territories (approx center x: 710, y: 575 in SVG space)
-      const targetX = 710;
-      const targetY = 575;
+      const newScale = 1.1;
+      // Boca Raton center point (Zip 33431) approx: x: 755, y: 410
+      const targetX = 755;
+      const targetY = 410;
+
+      setScale(newScale);
       setPan({
-        x: (width / 2) - (targetX * scale),
-        y: (height / 2) - (targetY * scale)
+        x: (width / 2) - (targetX * newScale),
+        y: (height / 2) - (targetY * newScale)
       });
     }
-  }, [scale]);
+  };
+
+  useEffect(() => {
+    handleReset();
+    // Initial centering after a short delay to ensure layout is stable
+    const timer = setTimeout(handleReset, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Key Zip Codes from the data
   const ZIP_CODES = ['33408', '33027', '33301', '33401', '33480', '33431', '33444', '33020', '33131'];
@@ -134,12 +145,13 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   ];
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isLocked) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isLocked) return;
     setPan({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
@@ -151,13 +163,15 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isLocked) return;
     setIsDragging(true);
     const touch = e.touches[0];
     setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isLocked) return;
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     setPan({
       x: touch.clientX - dragStart.x,
@@ -222,7 +236,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
       {/* Main Map Content */}
       <div
         ref={containerRef}
-        className="flex-1 relative bg-[#f8f5f0] dark:bg-slate-950 overflow-hidden cursor-grab active:cursor-grabbing"
+        className={`flex-1 relative bg-[#f8f5f0] dark:bg-slate-950 overflow-hidden ${isLocked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
@@ -234,10 +248,15 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
         }}></div>
 
         <div
-          className="relative w-full h-full flex items-center justify-center transition-transform duration-75"
-          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transformOrigin: '0 0' }}
+          className="absolute transition-transform duration-75"
+          style={{
+            width: '1000px',
+            height: '1200px',
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+            transformOrigin: '0 0'
+          }}
         >
-          <svg viewBox="0 0 1000 1200" className="w-full h-full max-h-[1200px] drop-shadow-2xl">
+          <svg viewBox="0 0 1000 1200" className="w-full h-full drop-shadow-2xl">
             {/* Intra-coastal Waterway (Background) */}
             <path
               d="M 820 0 L 840 300 L 825 600 L 835 1200 L 1000 1200 L 1000 0 Z"
@@ -410,17 +429,14 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
              <Minus className="w-5 h-5" />
            </button>
            <button
-             onClick={() => {
-               if (containerRef.current) {
-                 const { width, height } = containerRef.current.getBoundingClientRect();
-                 const newScale = 1.2;
-                 setScale(newScale);
-                 setPan({
-                   x: (width / 2) - (710 * newScale),
-                   y: (height / 2) - (575 * newScale)
-                 });
-               }
-             }}
+             onClick={() => setIsLocked(!isLocked)}
+             className={`p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 transition-all ${isLocked ? 'text-gray-400' : 'text-blue-600 bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800'}`}
+             title={isLocked ? "Unlock Panning" : "Lock Panning"}
+           >
+             {isLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+           </button>
+           <button
+             onClick={handleReset}
              className="p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-blue-600 transition-all"
            >
              <Navigation className="w-5 h-5" />
