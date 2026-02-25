@@ -3,6 +3,7 @@ import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService
 import { Table } from './components/Table';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
+import { UCCAutomation } from './components/UCCAutomation';
 import { RightSidebar } from './components/RightSidebar';
 import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
@@ -279,6 +280,20 @@ function App() {
       "DocLegalDescription",
       "Consideration",
       "CaseNumber"
+    ],
+    'UCC Results': [
+      "businessName",
+      "Match Score",
+      "UCC Status",
+      "UCC Number",
+      "Date Filed",
+      "Expires",
+      "Secured Party 1 Name",
+      "Secured Party 1 Address",
+      "Debtor Name",
+      "Debtor Address",
+      "Document Type",
+      "Filings Completed Through"
     ],
     '33480': [
       "businessName",
@@ -1015,6 +1030,18 @@ function App() {
                   )}
                 </div>
               </div>
+
+              {activeTab === 'UCC Results' && (
+                <div className="px-6 pb-4">
+                  <UCCAutomation onComplete={() => {
+                    async function refresh() {
+                      const m = await fetchManifest();
+                      setManifest(m);
+                    }
+                    refresh();
+                  }} />
+                </div>
+              )}
 
               <div className="flex-1 overflow-hidden">
                 <Table

@@ -163,6 +163,13 @@
     "filename": "SearchResults 2.csv"
   },
   {
+    "path": "Data/UCC Results/all_results.csv",
+    "type": "UCC Results",
+    "zip": "",
+    "location": "all_results",
+    "filename": "all_results.csv"
+  },
+  {
     "path": "Data/2. YP/YP Phone Number Lookup FT L2.csv",
     "type": "2. YP",
     "zip": "",

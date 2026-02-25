@@ -1,0 +1,6 @@
+watchdog
+requests
+flask
+flask-cors
+playwright
+playwright-stealth

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap } from 'lucide-react';
+import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot } from 'lucide-react';
 
 interface SidebarProps {
   types: string[];
@@ -155,6 +155,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Target className="w-4 h-4" />
             <span className="text-sm font-medium font-bold">Scorecard</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('UCC Results')}
+            role="tab"
+            aria-selected={activeTab === 'UCC Results'}
+            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+              activeTab === 'UCC Results'
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+          >
+            <Bot className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium font-bold">UCC Automation</span>
           </button>
 
           <div className="my-2 border-t border-gray-100 dark:border-slate-800" />
