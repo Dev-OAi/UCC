@@ -280,6 +280,19 @@ function App() {
       "Consideration",
       "CaseNumber"
     ],
+    'UCC Results': [
+      "businessName",
+      "UCC Status",
+      "UCC Number",
+      "Date Filed",
+      "Expires",
+      "Secured Party Name",
+      "Secured Party Address",
+      "Debtor Name",
+      "Debtor Address",
+      "Document Type",
+      "Filings Completed Through"
+    ],
     '33480': [
       "businessName",
       "Sunbiz Status",

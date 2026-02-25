@@ -176,6 +176,25 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[9] = 'CaseNumber';
           startIndex++;
         }
+        // PRIORITY 3.3: SCRAPED UCC RESULTS
+        else if (file.type === 'UCC Results') {
+          m[0] = 'businessName';
+          m[1] = 'UCC Status';
+          m[2] = 'Date Filed';
+          m[3] = 'Expires';
+          m[4] = 'Filings Completed Through';
+          m[5] = 'UCC Number';
+          m[6] = 'Filing Events';
+          m[7] = 'Secured Parties Count';
+          m[8] = 'Secured Party Name';
+          m[9] = 'Secured Party Address';
+          m[10] = 'Debtor Parties Count';
+          m[11] = 'Debtor Name';
+          m[12] = 'Debtor Address';
+          m[13] = 'Document Type';
+          m[14] = 'Document Pages';
+          startIndex++;
+        }
         // PRIORITY 3.5: ENRICHED ZIP HUB (8 Columns)
         else if (colCount === 8) {
           m[0] = 'businessName';
