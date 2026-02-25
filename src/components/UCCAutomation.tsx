@@ -54,11 +54,11 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     }
 
     setUploading(true);
-    const success = await uploadCsv(file);
-    if (success) {
+    const result = await uploadCsv(file);
+    if (result.success) {
       setTimeout(refreshPending, 1500); // Give watcher a moment to move it to staging
     } else {
-      alert('Failed to upload file. Is the bridge running?');
+      alert(`Failed to upload file: ${result.error || 'Unknown error'}. Is the bridge running?`);
     }
     setUploading(false);
     e.target.value = '';
