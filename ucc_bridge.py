@@ -14,20 +14,31 @@ COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
 for d in [UPLOAD_FOLDER, COMMANDS_DIR]:
     os.makedirs(d, exist_ok=True)
 
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    app.logger.info(f"Upload request received: {request.files}")
     if 'file' not in request.files:
+        app.logger.error("No file part in request")
         return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     if file.filename == '':
+        app.logger.error("No selected file")
         return jsonify({"error": "No selected file"}), 400
     if file and file.filename.lower().endswith('.csv'):
         filename = secure_filename(file.filename)
-        # Ensure filename is unique if it exists?
-        # Actually watcher handles move to staging immediately, but just in case:
         save_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(save_path)
-        return jsonify({"status": "File uploaded successfully", "filename": filename}), 200
+        try:
+            file.save(save_path)
+            app.logger.info(f"File saved to {save_path}")
+            return jsonify({"status": "File uploaded successfully", "filename": filename}), 200
+        except Exception as e:
+            app.logger.error(f"Failed to save file: {str(e)}")
+            return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+    app.logger.error(f"Invalid file type: {file.filename}")
     return jsonify({"error": "Invalid file type. Only CSV allowed."}), 400
 
 @app.route('/command', methods=['POST'])

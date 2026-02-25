@@ -90,7 +90,7 @@ export interface JobStatus {
 
 export async function fetchPendingJobs(): Promise<PendingJob[]> {
   try {
-    const response = await fetch('/Uploads/pending_jobs.json?t=' + Date.now());
+    const response = await fetch('./Uploads/pending_jobs.json?t=' + Date.now());
     if (!response.ok) return [];
     return await response.json();
   } catch {
@@ -98,26 +98,31 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
-export async function uploadCsv(file: File): Promise<boolean> {
+export async function uploadCsv(file: File): Promise<{ success: boolean; error?: string }> {
   try {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/bridge/upload', {
+    const response = await fetch('./api/bridge/upload', {
       method: 'POST',
       body: formData
     });
 
-    return response.ok;
+    if (response.ok) {
+      return { success: true };
+    } else {
+      const data = await response.json().catch(() => ({}));
+      return { success: false, error: data.error || `Server responded with ${response.status}` };
+    }
   } catch (err) {
     console.error('Upload failed:', err);
-    return false;
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
 export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   try {
-    const response = await fetch(`/Uploads/status/${jobId}.json?t=` + Date.now());
+    const response = await fetch(`./Uploads/status/${jobId}.json?t=` + Date.now());
     if (!response.ok) return null;
     return await response.json();
   } catch {
@@ -136,7 +141,7 @@ export async function startScrape(filename: string, column: string, threshold: n
       job_id: jobId
     };
 
-    const response = await fetch('/api/bridge/command', {
+    const response = await fetch('./api/bridge/command', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(command)
