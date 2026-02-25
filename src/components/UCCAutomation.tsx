@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus } from 'lucide-react';
-import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, PendingJob, JobStatus } from '../lib/dataService';
+import React, { useState, useEffect, useRef } from 'react';
+import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus, Search } from 'lucide-react';
+import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, triggerManualSearch, PendingJob, JobStatus } from '../lib/dataService';
 import { Modal } from './ui';
 
 interface UCCAutomationProps {
@@ -14,9 +14,11 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const [selectedFile, setSelectedFile] = useState<PendingJob | null>(null);
   const [selectedColumn, setSelectedColumn] = useState<string>('');
   const [threshold, setThreshold] = useState<number>(0.7);
+  const [manualTerm, setManualTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     refreshPending();
@@ -64,6 +66,27 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     e.target.value = '';
   };
 
+  const handleManualSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!manualTerm.trim() || loading) return;
+
+    setLoading(true);
+    try {
+      const jobId = await triggerManualSearch(manualTerm.trim());
+      if (jobId) {
+        setActiveJobId(jobId);
+        setManualTerm('');
+      } else {
+        alert('Failed to start manual search. Is the bridge running?');
+      }
+    } catch (err) {
+      alert('Error starting manual search. Check console for details.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStartScrape = async () => {
     if (!selectedFile || !selectedColumn) return;
     setLoading(true);
@@ -101,19 +124,24 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${
-            uploading ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
-          }`}>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
+              uploading ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+            }`}
+          >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             {uploading ? 'Uploading...' : 'Upload CSV'}
-            <input
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-          </label>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileUpload}
+            disabled={uploading}
+          />
           <button
             onClick={refreshPending}
             className="p-2 hover:bg-white rounded-md transition-colors border border-transparent hover:border-slate-200 text-slate-400"
@@ -124,6 +152,43 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
       </div>
 
       <div className="p-4">
+        {/* Manual Search Bar */}
+        <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+            Quick Manual Search
+          </label>
+          <form onSubmit={handleManualSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                value={manualTerm}
+                onChange={(e) => setManualTerm(e.target.value)}
+                placeholder="Enter business or debtor name..."
+                className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                disabled={loading}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!manualTerm.trim() || loading || !!activeJobId}
+              className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${
+                !manualTerm.trim() || loading || !!activeJobId
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm'
+              }`}
+            >
+              {loading && !uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              Run Scraper
+            </button>
+          </form>
+          <p className="text-[10px] text-slate-400 mt-2 italic">
+            Search a single name immediately. Results will appear in the UCC Results hub.
+          </p>
+        </div>
+
         {/* Active Job Progress */}
         {jobStatus && (
           <div className="mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100">

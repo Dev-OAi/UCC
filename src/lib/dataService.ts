@@ -130,6 +130,26 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   }
 }
 
+export async function triggerManualSearch(name: string): Promise<string | null> {
+  try {
+    const jobId = `manual_${Date.now()}`;
+    const response = await fetch('./api/bridge/manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, job_id: jobId })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.job_id || jobId;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to trigger manual search:', err);
+    return null;
+  }
+}
+
 export async function startScrape(filename: string, column: string, threshold: number): Promise<string | null> {
   try {
     const jobId = `job_${Date.now()}`;

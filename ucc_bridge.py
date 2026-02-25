@@ -1,3 +1,5 @@
+import csv
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import json
@@ -9,14 +11,54 @@ CORS(app)
 
 UPLOAD_FOLDER = "public/Uploads"
 COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
+STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
 
 # Ensure directories exist
-for d in [UPLOAD_FOLDER, COMMANDS_DIR]:
+for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR]:
     os.makedirs(d, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"}), 200
+
+@app.route('/manual', methods=['POST'])
+def manual_search():
+    data = request.json
+    if not data or 'name' not in data:
+        return jsonify({"error": "No name provided"}), 400
+
+    name = data['name'].strip()
+    job_id = data.get('job_id', f"manual_{int(time.time())}")
+
+    # 1. Create a single-name CSV in Staging
+    filename = f"{secure_filename(name)}_{int(time.time())}.csv"
+    filepath = os.path.join(STAGING_DIR, filename)
+
+    with open(filepath, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Name"])
+        writer.writerow([name])
+
+    # 2. Trigger the scrape immediately via Command
+    cmd_filename = f"{job_id}.json"
+    cmd_filepath = os.path.join(COMMANDS_DIR, cmd_filename)
+
+    cmd_data = {
+        "action": "start_scrape",
+        "filename": filename,
+        "column": "Name",
+        "threshold": 0.7,
+        "job_id": job_id
+    }
+
+    with open(cmd_filepath, 'w') as f:
+        json.dump(cmd_data, f)
+
+    return jsonify({
+        "status": "Manual search triggered",
+        "job_id": job_id,
+        "filename": filename
+    }), 200
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
