@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText } from 'lucide-react';
-import { fetchPendingJobs, fetchJobStatus, startScrape, PendingJob, JobStatus } from '../lib/dataService';
+import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus } from 'lucide-react';
+import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, PendingJob, JobStatus } from '../lib/dataService';
 import { Modal } from './ui';
 
 interface UCCAutomationProps {
@@ -15,6 +15,7 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const [selectedColumn, setSelectedColumn] = useState<string>('');
   const [threshold, setThreshold] = useState<number>(0.7);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   useEffect(() => {
@@ -41,6 +42,26 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const refreshPending = async () => {
     const jobs = await fetchPendingJobs();
     setPendingJobs(jobs);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('Please upload a CSV file.');
+      return;
+    }
+
+    setUploading(true);
+    const success = await uploadCsv(file);
+    if (success) {
+      setTimeout(refreshPending, 1500); // Give watcher a moment to move it to staging
+    } else {
+      alert('Failed to upload file. Is the bridge running?');
+    }
+    setUploading(false);
+    e.target.value = '';
   };
 
   const handleStartScrape = async () => {
@@ -79,12 +100,27 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
             <p className="text-xs text-slate-500">Manage and monitor Florida UCC API scraping tasks</p>
           </div>
         </div>
-        <button
-          onClick={refreshPending}
-          className="p-2 hover:bg-white rounded-md transition-colors border border-transparent hover:border-slate-200 text-slate-400"
-        >
-          <Clock className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <label className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all ${
+            uploading ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+          }`}>
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {uploading ? 'Uploading...' : 'Upload CSV'}
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleFileUpload}
+              disabled={uploading}
+            />
+          </label>
+          <button
+            onClick={refreshPending}
+            className="p-2 hover:bg-white rounded-md transition-colors border border-transparent hover:border-slate-200 text-slate-400"
+          >
+            <Clock className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <div className="p-4">

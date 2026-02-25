@@ -98,6 +98,23 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
+export async function uploadCsv(file: File): Promise<boolean> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('http://localhost:5001/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    return response.ok;
+  } catch (err) {
+    console.error('Upload failed:', err);
+    return false;
+  }
+}
+
 export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   try {
     const response = await fetch(`./Uploads/status/${jobId}.json?t=` + Date.now());
