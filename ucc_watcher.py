@@ -8,7 +8,7 @@ import queue
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-WATCH_DIRECTORY = "Uploads"
+WATCH_DIRECTORY = "public/Uploads"
 STAGING_DIRECTORY = os.path.join(WATCH_DIRECTORY, "Staging")
 COMMANDS_DIRECTORY = os.path.join(WATCH_DIRECTORY, "Commands")
 PROCESSED_DIRECTORY = os.path.join(WATCH_DIRECTORY, "Processed")

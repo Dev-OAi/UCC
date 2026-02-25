@@ -26,8 +26,8 @@ PAUSE_SECONDS = 30
 MAX_SECURED_PARTIES = 5
 MAX_RETRIES = 3
 OUTPUT_FILE = "Data/UCC Results/all_results.csv"
-CHECKPOINT_DIR = "Uploads/.checkpoints"
-STATUS_DIR = "Uploads/status"
+CHECKPOINT_DIR = "public/Uploads/.checkpoints"
+STATUS_DIR = "public/Uploads/status"
 
 def similarity_score(a, b):
     a = a.upper().strip()

@@ -182,7 +182,7 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
               <CheckCircle2 className="w-6 h-6 text-slate-300" />
             </div>
             <p className="text-slate-500 font-medium">All caught up! No pending uploads.</p>
-            <p className="text-xs text-slate-400 mt-1">Upload a CSV to the 'Uploads' folder to start.</p>
+            <p className="text-xs text-slate-400 mt-1">Upload a CSV using the button above to start.</p>
           </div>
         ) : (
           <div className="grid gap-3">

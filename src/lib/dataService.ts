@@ -90,7 +90,7 @@ export interface JobStatus {
 
 export async function fetchPendingJobs(): Promise<PendingJob[]> {
   try {
-    const response = await fetch('./Uploads/pending_jobs.json?t=' + Date.now());
+    const response = await fetch('/Uploads/pending_jobs.json?t=' + Date.now());
     if (!response.ok) return [];
     return await response.json();
   } catch {
@@ -117,7 +117,7 @@ export async function uploadCsv(file: File): Promise<boolean> {
 
 export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   try {
-    const response = await fetch(`./Uploads/status/${jobId}.json?t=` + Date.now());
+    const response = await fetch(`/Uploads/status/${jobId}.json?t=` + Date.now());
     if (!response.ok) return null;
     return await response.json();
   } catch {
