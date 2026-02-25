@@ -1,0 +1,83 @@
+[
+  {
+    "filename": "test.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "verification_test.csv",
+    "headers": [
+      "Business Name",
+      "Other\\nAPPLE INC",
+      "Tech"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "test2.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "verify_run.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "playwright_test_1772002636.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002636.975834
+  },
+  {
+    "filename": "verify_test_1771996685.csv",
+    "headers": [
+      "Business Name",
+      "Other"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "final_test.csv",
+    "headers": [
+      "Name"
+    ],
+    "added_at": 1772026382.1997297
+  },
+  {
+    "filename": "final_verification.csv",
+    "headers": [
+      "Business Name",
+      "Other\\nVERIFIED CORP",
+      "Success"
+    ],
+    "added_at": 1772002430.2198362
+  },
+  {
+    "filename": "playwright_test_1772002485.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002485.3998356
+  },
+  {
+    "filename": "playwright_test.csv",
+    "headers": [
+      "Name",
+      "Status"
+    ],
+    "added_at": 1772002430.2198362
+  }
+]
