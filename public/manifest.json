@@ -56,6 +56,13 @@
     "filename": "UCC Palm Beach.csv"
   },
   {
+    "path": "Data/4. Test/all_results.csv",
+    "type": "4. Test",
+    "zip": "",
+    "location": "all_results",
+    "filename": "all_results.csv"
+  },
+  {
     "path": "Data/B UCC/BUCC 125.csv",
     "type": "B UCC",
     "zip": "",
@@ -161,13 +168,6 @@
     "zip": "",
     "location": "SearchResults 2",
     "filename": "SearchResults 2.csv"
-  },
-  {
-    "path": "Data/UCC Results/all_results.csv",
-    "type": "UCC Results",
-    "zip": "",
-    "location": "all_results",
-    "filename": "all_results.csv"
   },
   {
     "path": "Data/2. YP/YP Phone Number Lookup FT L2.csv",

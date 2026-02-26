@@ -407,7 +407,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           startIndex++;
         }
         // PRIORITY 3.3: SCRAPED UCC RESULTS
-        else if (file.type === 'UCC Results') {
+        else if (file.type === 'UCC Results' || file.type === '4. Test') {
           m[0] = 'businessName'; // Search Term
           m[1] = 'Match Score';
           m[2] = 'UCC Status'; // Status
