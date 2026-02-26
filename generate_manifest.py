@@ -4,6 +4,7 @@ import re
 import shutil
 
 def generate_manifest():
+    """Generates a manifest.json file for the frontend to index all available data files."""
     source_data = 'Data'
     base_dir = 'public/Data'
     manifest = []

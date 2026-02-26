@@ -86,6 +86,14 @@ export interface JobStatus {
   status: string;
   errors: string[];
   start_time: string;
+  results?: any[];
+}
+
+export interface GithubConfig {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
 }
 
 export async function fetchPendingJobs(): Promise<PendingJob[]> {
@@ -98,12 +106,20 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
+const getBridgeUrl = (path: string) => {
+  // If we are running on localhost, use the relative proxy path
+  // If we are on GitHub Pages, try to connect directly to the local bridge on port 5001
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const baseUrl = isLocalhost ? './api/bridge' : 'http://localhost:5001';
+  return `${baseUrl}${path}`;
+};
+
 export async function uploadCsv(file: File): Promise<{ success: boolean; error?: string }> {
   try {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('./api/bridge/upload', {
+    const response = await fetch(getBridgeUrl('/upload'), {
       method: 'POST',
       body: formData
     });
@@ -130,13 +146,17 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   }
 }
 
-export async function triggerManualSearch(name: string): Promise<string | null> {
+export async function triggerManualSearch(names: string | string[], mode: string = 'standard'): Promise<string | null> {
   try {
     const jobId = `manual_${Date.now()}`;
-    const response = await fetch('./api/bridge/manual', {
+    const payload = Array.isArray(names)
+      ? { names, job_id: jobId, mode }
+      : { name: names, job_id: jobId, mode };
+
+    const response = await fetch(getBridgeUrl('/manual'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, job_id: jobId })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
@@ -150,7 +170,7 @@ export async function triggerManualSearch(name: string): Promise<string | null> 
   }
 }
 
-export async function startScrape(filename: string, column: string, threshold: number): Promise<string | null> {
+export async function startScrape(filename: string, column: string, threshold: number, mode: string = 'standard'): Promise<string | null> {
   try {
     const jobId = `job_${Date.now()}`;
     const command = {
@@ -158,10 +178,11 @@ export async function startScrape(filename: string, column: string, threshold: n
       filename,
       column,
       threshold,
-      job_id: jobId
+      job_id: jobId,
+      mode
     };
 
-    const response = await fetch('./api/bridge/command', {
+    const response = await fetch(getBridgeUrl('/command'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(command)
@@ -172,6 +193,94 @@ export async function startScrape(filename: string, column: string, threshold: n
   } catch (err) {
     console.error('Failed to send command to scraper bridge:', err);
     return null;
+  }
+}
+
+export async function fetchSystemStatus(): Promise<{ bridge: string; watcher: string; worker?: string } | null> {
+  try {
+    const response = await fetch(getBridgeUrl('/system/status'));
+    if (response.ok) return await response.json();
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function restartSystem(): Promise<boolean> {
+  try {
+    const response = await fetch(getBridgeUrl('/system/restart'), { method: 'POST' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function stopAllScrapes(): Promise<boolean> {
+  try {
+    const response = await fetch(getBridgeUrl('/stop'), { method: 'POST' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function deletePendingJob(filename: string): Promise<boolean> {
+  try {
+    const response = await fetch(getBridgeUrl('/delete_pending'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename })
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export function saveGithubConfig(config: GithubConfig) {
+  localStorage.setItem('github_config', JSON.stringify(config));
+}
+
+export function getGithubConfig(): GithubConfig | null {
+  const data = localStorage.getItem('github_config');
+  return data ? JSON.parse(data) : null;
+}
+
+export async function dispatchUccAction(names: string[], mode: string, threshold: number): Promise<boolean> {
+  const config = getGithubConfig();
+  if (!config || !config.token || !config.owner || !config.repo) {
+    throw new Error('GitHub configuration missing');
+  }
+
+  const url = `https://api.github.com/repos/${config.owner}/${config.repo}/actions/workflows/ucc_automation.yml/dispatches`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ref: config.branch || 'main',
+        inputs: {
+          names: names.join('|'),
+          mode: mode,
+          threshold: threshold.toString()
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      console.error('GitHub Action dispatch failed:', err);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error dispatching GitHub Action:', err);
+    return false;
   }
 }
 
