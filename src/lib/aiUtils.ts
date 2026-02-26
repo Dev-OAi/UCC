@@ -74,9 +74,9 @@ export const generateLeadIntelligence = (data: DataRow | BusinessLead) => {
 Focus on ${insight?.quickFacts?.[0] || 'operational efficiency'} and ${insight?.quickFacts?.[1] || 'financial security'}. Given the current market trends, they are likely looking for ways to optimize cash flow.
 
 **2. Product Bundle:**
-- **Primary:** Business Platinum Checking (for transaction volume)
+- **Primary:** SMB Bundle 3 (AT 552) - Premier Business
 - **Secondary:** ACH Positive Pay (for fraud protection)
-- **Value-Add:** Business Credit Card with 1.5% Cash Back.
+- **Value-Add:** Business Credit Card with 1% Cash Back.
 
 **3. Discussion Starters:**
 - "How are you currently managing the rise in ${industry || 'operational'} costs?"

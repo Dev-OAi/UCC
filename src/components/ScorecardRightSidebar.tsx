@@ -648,9 +648,10 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Recommended Solutions</h4>
                  <div className="space-y-3">
                     {[
-                      { name: 'Business Platinum Checking', benefit: 'Higher transaction limits for growing firms.' },
-                      { name: 'Treasury Management Bundle', benefit: 'Advanced fraud protection & ACH controls.' },
-                      { name: 'Business Credit Card', benefit: '1.5% cash back on all operational spend.' }
+                      { name: 'SMB Bundle 3 (AT 552) - Premier Business', benefit: 'Highest value bundle for complex operational needs.' },
+                      { name: 'Business Line of Credit (Secured)', benefit: 'Flexible working capital to manage seasonal cash flow.' },
+                      { name: 'ACH Positive Pay', benefit: 'Critical fraud prevention for outgoing business payments.' },
+                      { name: 'Business Credit Card', benefit: '1% cash back on all operational spend.' }
                     ].map((prod, i) => {
                       const isAssigned = selectedLead.productsSold?.includes(prod.name);
                       if (metrics.some(m => m.name === prod.name)) return null; // Don't duplicate if already in scorecard
