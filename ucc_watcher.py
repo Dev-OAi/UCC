@@ -111,6 +111,8 @@ def worker_thread(processing_queue):
                 args.extend(["--threshold", str(cmd.get("threshold"))])
             if cmd.get("column"):
                 args.extend(["--column", str(cmd.get("column"))])
+            if cmd.get("mode"):
+                args.extend(["--mode", str(cmd.get("mode"))])
 
             # Job ID for status
             job_id = cmd.get("job_id", filename)
