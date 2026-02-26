@@ -45,16 +45,14 @@ def is_close_match(search_term, result_name, threshold=0.7, mode='standard'):
         # Dynamic threshold logic from v6
         search_len = len(search_term)
         if search_len <= 5:
-            dynamic_threshold = 0.5
+            effective_threshold = 0.5
         elif search_len <= 10:
-            dynamic_threshold = 0.6
+            effective_threshold = 0.6
         elif search_len <= 20:
-            dynamic_threshold = 0.7
+            effective_threshold = 0.7
         else:
-            dynamic_threshold = 0.75
+            effective_threshold = 0.75
 
-        # Use the stricter of the two
-        effective_threshold = max(threshold, dynamic_threshold)
         return score >= effective_threshold, score
 
     return score >= threshold, score
@@ -241,7 +239,8 @@ def main():
     global REQUEST_DELAY, MAX_RESULTS_PER_NAME, MAX_RETRIES
 
     parser = argparse.ArgumentParser(description="UCC Scraper Worker")
-    parser.add_argument("input_file", help="Path to input CSV")
+    parser.add_argument("input_file", nargs="?", help="Path to input CSV")
+    parser.add_argument("--names", help="Pipe-separated list of business names to search")
     parser.add_argument("--threshold", type=float, default=0.7, help="Similarity threshold (0.0 to 1.0)")
     parser.add_argument("--column", help="Column name or index for business names")
     parser.add_argument("--job_id", help="Job ID for status tracking")
@@ -254,7 +253,16 @@ def main():
         MAX_RETRIES = 2
         print("Running in LITE mode (faster, dynamic thresholds)")
 
-    filename = os.path.basename(args.input_file)
+    if args.names:
+        all_names = [n.strip() for n in args.names.split('|') if n.strip()]
+        filename = f"manual_{int(time.time())}.csv"
+    elif args.input_file:
+        all_names = read_input_csv(args.input_file, args.column)
+        filename = os.path.basename(args.input_file)
+    else:
+        print("Error: Either input_file or --names must be provided.")
+        return
+
     global CURRENT_JOB_ID
     CURRENT_JOB_ID = args.job_id or filename
 
@@ -265,7 +273,6 @@ def main():
 
     print(f"[{datetime.now()}] Worker processing {filename} (Threshold: {args.threshold})")
 
-    all_names = read_input_csv(args.input_file, args.column)
     start_idx = load_checkpoint(filename)
 
     JOB_STATUS["total"] = len(all_names)

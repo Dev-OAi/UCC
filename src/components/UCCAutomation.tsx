@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus, Search, Server, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
-import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, triggerManualSearch, fetchSystemStatus, restartSystem, PendingJob, JobStatus } from '../lib/dataService';
+import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus, Search, Server, RefreshCw, Zap, ShieldCheck, Cloud, Github, Globe } from 'lucide-react';
+import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, triggerManualSearch, fetchSystemStatus, restartSystem, PendingJob, JobStatus, dispatchUccAction, getGithubConfig, saveGithubConfig, GithubConfig } from '../lib/dataService';
 import { Modal } from './ui';
 
 interface UCCAutomationProps {
@@ -15,14 +15,31 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const [selectedColumn, setSelectedColumn] = useState<string>('');
   const [threshold, setThreshold] = useState<number>(0.7);
   const [mode, setMode] = useState<'standard' | 'lite'>('standard');
+  const [automationMode, setAutomationMode] = useState<'local' | 'cloud'>('local');
   const [manualTerm, setManualTerm] = useState('');
   const [systemStatus, setSystemStatus] = useState<{ bridge: string; watcher: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
+
+  // GitHub Config State
+  const [githubToken, setGithubToken] = useState('');
+  const [githubOwner, setGithubOwner] = useState('');
+  const [githubRepo, setGithubRepo] = useState('');
+  const [githubBranch, setGithubBranch] = useState('main');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Load GitHub Config
+    const config = getGithubConfig();
+    if (config) {
+      setGithubToken(config.token);
+      setGithubOwner(config.owner);
+      setGithubRepo(config.repo);
+      setGithubBranch(config.branch);
+    }
+
     refreshPending();
     checkSystem();
     const interval = setInterval(() => {
@@ -92,15 +109,26 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     e?.preventDefault();
     if (!manualTerm.trim() || loading) return;
 
+    const names = manualTerm.trim().split('\n').map(n => n.trim()).filter(n => n);
+
     setLoading(true);
     try {
-      const names = manualTerm.trim().split('\n').map(n => n.trim()).filter(n => n);
-      const jobId = await triggerManualSearch(names, mode);
-      if (jobId) {
-        setActiveJobId(jobId);
-        setManualTerm('');
+      if (automationMode === 'cloud') {
+        const success = await dispatchUccAction(names, mode, threshold);
+        if (success) {
+          alert('Scraper Action dispatched successfully! Results will appear in the UCC Results hub in a few minutes once the GitHub Action completes.');
+          setManualTerm('');
+        } else {
+          alert('Failed to dispatch GitHub Action. Please check your GitHub Configuration.');
+        }
       } else {
-        alert('Failed to start manual search. Is the bridge running?');
+        const jobId = await triggerManualSearch(names, mode);
+        if (jobId) {
+          setActiveJobId(jobId);
+          setManualTerm('');
+        } else {
+          alert('Failed to start manual search. Is the bridge running?');
+        }
       }
     } catch (err) {
       alert('Error starting manual search. Check console for details.');
@@ -113,14 +141,34 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const handleStartScrape = async () => {
     if (!selectedFile || !selectedColumn) return;
     setLoading(true);
-    const jobId = await startScrape(selectedFile.filename, selectedColumn, threshold, mode);
-    if (jobId) {
-      setActiveJobId(jobId);
-      setIsConfigModalOpen(false);
-    } else {
-      alert('Failed to start scrape. Is the bridge running?');
+
+    try {
+      if (automationMode === 'cloud') {
+        alert('File-based scraping in Cloud Mode is not yet supported. Please use Manual Search or switch to Local Bridge.');
+      } else {
+        const jobId = await startScrape(selectedFile.filename, selectedColumn, threshold, mode);
+        if (jobId) {
+          setActiveJobId(jobId);
+          setIsConfigModalOpen(false);
+        } else {
+          alert('Failed to start scrape. Is the bridge running?');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleSaveGithubConfig = () => {
+    saveGithubConfig({
+      token: githubToken,
+      owner: githubOwner,
+      repo: githubRepo,
+      branch: githubBranch
+    });
+    setIsGithubModalOpen(false);
   };
 
   const openConfig = (job: PendingJob) => {
@@ -147,6 +195,14 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsGithubModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
+            Config
+          </button>
+          <div className="h-6 w-px bg-slate-200 mx-1" />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
@@ -175,39 +231,101 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
       </div>
 
       <div className="p-4">
-        {/* System Health Dashboard */}
-        <div className="mb-6 flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-          <div className="flex items-center gap-3 pr-4 border-r border-slate-200">
-            <div className={`p-2 rounded-lg ${systemStatus?.bridge === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-              <Server className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bridge Status</p>
-              <p className={`text-xs font-bold ${systemStatus?.bridge === 'online' ? 'text-green-600' : 'text-red-600'}`}>
-                {systemStatus?.bridge === 'online' ? 'CONNECTED' : 'OFFLINE'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 flex-1">
-            <div className={`p-2 rounded-lg ${systemStatus?.watcher === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Watcher Service</p>
-              <p className={`text-xs font-bold ${systemStatus?.watcher === 'online' ? 'text-green-600' : 'text-red-600'}`}>
-                {systemStatus?.watcher === 'online' ? 'ACTIVE' : 'STOPPED'}
-              </p>
-            </div>
-          </div>
+        {/* Mode Selector */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
           <button
-            onClick={handleRestart}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm"
+            onClick={() => setAutomationMode('local')}
+            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+              automationMode === 'local'
+                ? 'bg-blue-50 border-blue-600 shadow-md'
+                : 'bg-white border-slate-100 hover:border-slate-300'
+            }`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            Restart Services
+            <div className={`p-3 rounded-lg ${automationMode === 'local' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+              <Server className="w-6 h-6" />
+            </div>
+            <div className="text-left">
+              <h3 className={`font-bold ${automationMode === 'local' ? 'text-blue-900' : 'text-slate-600'}`}>Local Bridge</h3>
+              <p className="text-xs text-slate-500">Fast, local scraping via Python bridge</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAutomationMode('cloud')}
+            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+              automationMode === 'cloud'
+                ? 'bg-emerald-50 border-emerald-600 shadow-md'
+                : 'bg-white border-slate-100 hover:border-slate-300'
+            }`}
+          >
+            <div className={`p-3 rounded-lg ${automationMode === 'cloud' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+              <Cloud className="w-6 h-6" />
+            </div>
+            <div className="text-left">
+              <h3 className={`font-bold ${automationMode === 'cloud' ? 'text-emerald-900' : 'text-slate-600'}`}>Cloud Scraper</h3>
+              <p className="text-xs text-slate-500">Automated via GitHub Actions</p>
+            </div>
           </button>
         </div>
+
+        {/* System Health Dashboard (Local Only) */}
+        {automationMode === 'local' && (
+          <div className="mb-6 flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in duration-300">
+            <div className="flex items-center gap-3 pr-4 border-r border-slate-200">
+              <div className={`p-2 rounded-lg ${systemStatus?.bridge === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                <Server className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bridge Status</p>
+                <p className={`text-xs font-bold ${systemStatus?.bridge === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+                  {systemStatus?.bridge === 'online' ? 'CONNECTED' : 'OFFLINE'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-1">
+              <div className={`p-2 rounded-lg ${systemStatus?.watcher === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                <Clock className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Watcher Service</p>
+                <p className={`text-xs font-bold ${systemStatus?.watcher === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+                  {systemStatus?.watcher === 'online' ? 'ACTIVE' : 'STOPPED'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleRestart}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              Restart Services
+            </button>
+          </div>
+        )}
+
+        {/* Cloud Status (Cloud Only) */}
+        {automationMode === 'cloud' && (
+          <div className="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 animate-in fade-in duration-300">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-600 rounded-lg text-white">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">GitHub Actions Ready</p>
+                <p className="text-[10px] text-emerald-700 font-medium">
+                  Scrapes will run in the cloud. Results sync back via commit.
+                </p>
+              </div>
+              {!githubToken && (
+                <div className="ml-auto flex items-center gap-2 text-[10px] font-bold text-amber-600 bg-amber-100 px-3 py-1 rounded-lg">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  GitHub Token Required
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Manual Search Bar */}
         <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
@@ -257,15 +375,17 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
               </div>
               <button
                 type="submit"
-                disabled={!manualTerm.trim() || loading || !!activeJobId}
+                disabled={!manualTerm.trim() || loading || (automationMode === 'local' && !!activeJobId)}
                 className={`px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${
-                  !manualTerm.trim() || loading || !!activeJobId
+                  !manualTerm.trim() || loading || (automationMode === 'local' && !!activeJobId)
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm'
+                    : automationMode === 'cloud'
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 shadow-sm'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm'
                 }`}
               >
-                {loading && !uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                Run Scraper
+                {loading && !uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : automationMode === 'cloud' ? <Cloud className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                {automationMode === 'cloud' ? 'Dispatch Cloud Scrape' : 'Run Scraper'}
               </button>
             </div>
           </form>
@@ -408,6 +528,99 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </div>
         )}
       </div>
+
+      {/* GitHub Configuration Modal */}
+      {isGithubModalOpen && (
+        <Modal
+          isOpen={isGithubModalOpen}
+          onClose={() => setIsGithubModalOpen(false)}
+          title="GitHub Configuration"
+        >
+          <div className="space-y-4 py-2">
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 mb-4">
+              <div className="flex gap-3">
+                <Github className="w-5 h-5 text-blue-600 shrink-0" />
+                <div className="text-xs text-blue-800 leading-relaxed">
+                  <p className="font-bold mb-1">How to connect GitHub Actions:</p>
+                  <ol className="list-decimal ml-4 space-y-1">
+                    <li>Create a <span className="font-bold">Fine-grained Personal Access Token</span> on GitHub.</li>
+                    <li>Grant <span className="font-bold">Actions: Read & Write</span> and <span className="font-bold">Contents: Read & Write</span> permissions for this repository.</li>
+                    <li>Paste the token and repository details below.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Personal Access Token
+              </label>
+              <input
+                type="password"
+                value={githubToken}
+                onChange={(e) => setGithubToken(e.target.value)}
+                placeholder="ghp_xxxxxxxxxxxx"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Repo Owner
+                </label>
+                <input
+                  type="text"
+                  value={githubOwner}
+                  onChange={(e) => setGithubOwner(e.target.value)}
+                  placeholder="e.g. username"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Repo Name
+                </label>
+                <input
+                  type="text"
+                  value={githubRepo}
+                  onChange={(e) => setGithubRepo(e.target.value)}
+                  placeholder="e.g. data-explorer"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Branch
+              </label>
+              <input
+                type="text"
+                value={githubBranch}
+                onChange={(e) => setGithubBranch(e.target.value)}
+                placeholder="main"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
+              <button
+                onClick={() => setIsGithubModalOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-lg font-bold hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveGithubConfig}
+                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all shadow-md"
+              >
+                Save Connection
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Configuration Modal */}
       {isConfigModalOpen && selectedFile && (

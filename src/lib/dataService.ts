@@ -89,6 +89,13 @@ export interface JobStatus {
   results?: any[];
 }
 
+export interface GithubConfig {
+  token: string;
+  owner: string;
+  repo: string;
+  branch: string;
+}
+
 export async function fetchPendingJobs(): Promise<PendingJob[]> {
   try {
     const response = await fetch('./Uploads/pending_jobs.json?t=' + Date.now());
@@ -196,6 +203,53 @@ export async function restartSystem(): Promise<boolean> {
     const response = await fetch('./api/bridge/system/restart', { method: 'POST' });
     return response.ok;
   } catch {
+    return false;
+  }
+}
+
+export function saveGithubConfig(config: GithubConfig) {
+  localStorage.setItem('github_config', JSON.stringify(config));
+}
+
+export function getGithubConfig(): GithubConfig | null {
+  const data = localStorage.getItem('github_config');
+  return data ? JSON.parse(data) : null;
+}
+
+export async function dispatchUccAction(names: string[], mode: string, threshold: number): Promise<boolean> {
+  const config = getGithubConfig();
+  if (!config || !config.token || !config.owner || !config.repo) {
+    throw new Error('GitHub configuration missing');
+  }
+
+  const url = `https://api.github.com/repos/${config.owner}/${config.repo}/actions/workflows/ucc_automation.yml/dispatches`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ref: config.branch || 'main',
+        inputs: {
+          names: names.join('|'),
+          mode: mode,
+          threshold: threshold.toString()
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      console.error('GitHub Action dispatch failed:', err);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error dispatching GitHub Action:', err);
     return false;
   }
 }
