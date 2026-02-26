@@ -18,13 +18,15 @@ SEARCH_PARAMS = {
     "searchCategory": "Standard"
 }
 
+# Defaults (Standard Mode)
 REQUEST_DELAY = 2.0  # Increased to 2.0s per user request
 MAX_RESULTS_PER_NAME = 10
+MAX_RETRIES = 3
+
 CHECKPOINT_INTERVAL = 15
 RUN_TIME_MINUTES = 5
 PAUSE_SECONDS = 30
 MAX_SECURED_PARTIES = 5
-MAX_RETRIES = 3
 OUTPUT_FILE = "Data/UCC Results/all_results.csv"
 CHECKPOINT_DIR = "public/Uploads/.checkpoints"
 STATUS_DIR = "public/Uploads/status"
@@ -36,10 +38,25 @@ def similarity_score(a, b):
     b_clean = ''.join(c for c in b if c.isalnum() or c.isspace())
     return SequenceMatcher(None, a_clean, b_clean).ratio()
 
-def is_close_match(search_term, result_name, threshold=0.7):
-    # Length-based adjustments if no specific threshold provided?
-    # User asked to adjust from UI, so we use the provided threshold.
+def is_close_match(search_term, result_name, threshold=0.7, mode='standard'):
     score = similarity_score(search_term, result_name)
+
+    if mode == 'lite':
+        # Dynamic threshold logic from v6
+        search_len = len(search_term)
+        if search_len <= 5:
+            dynamic_threshold = 0.5
+        elif search_len <= 10:
+            dynamic_threshold = 0.6
+        elif search_len <= 20:
+            dynamic_threshold = 0.7
+        else:
+            dynamic_threshold = 0.75
+
+        # Use the stricter of the two
+        effective_threshold = max(threshold, dynamic_threshold)
+        return score >= effective_threshold, score
+
     return score >= threshold, score
 
 def search_debtor(name):
@@ -187,7 +204,8 @@ JOB_STATUS = {
     "current_name": "",
     "status": "Starting",
     "errors": [],
-    "start_time": ""
+    "start_time": "",
+    "results": [] # Real-time results for frontend
 }
 
 def update_status_file():
@@ -220,12 +238,21 @@ def load_checkpoint(filename):
     return 0
 
 def main():
+    global REQUEST_DELAY, MAX_RESULTS_PER_NAME, MAX_RETRIES
+
     parser = argparse.ArgumentParser(description="UCC Scraper Worker")
     parser.add_argument("input_file", help="Path to input CSV")
     parser.add_argument("--threshold", type=float, default=0.7, help="Similarity threshold (0.0 to 1.0)")
     parser.add_argument("--column", help="Column name or index for business names")
     parser.add_argument("--job_id", help="Job ID for status tracking")
+    parser.add_argument("--mode", default="standard", choices=["standard", "lite"], help="Scraping mode")
     args = parser.parse_args()
+
+    if args.mode == "lite":
+        REQUEST_DELAY = 1.0
+        MAX_RESULTS_PER_NAME = 3
+        MAX_RETRIES = 2
+        print("Running in LITE mode (faster, dynamic thresholds)")
 
     filename = os.path.basename(args.input_file)
     global CURRENT_JOB_ID
@@ -280,7 +307,7 @@ def main():
         else:
             matches = []
             for d in debtors:
-                is_match, score = is_close_match(name, d.get("name", ""), args.threshold)
+                is_match, score = is_close_match(name, d.get("name", ""), args.threshold, mode=args.mode)
                 if is_match: matches.append((d, score))
 
             if not matches:
@@ -318,6 +345,12 @@ def main():
                         res_dict[f"Secured Party {i} Name"] = s_name
                         res_dict[f"Secured Party {i} Address"] = s_addr
                     name_results.append(res_dict)
+
+        # Update real-time results in status
+        if name_results:
+            # Only keep the most recent found results in status to avoid huge JSON files
+            # but enough for the frontend to show "Live" action
+            JOB_STATUS["results"] = (JOB_STATUS["results"] + name_results)[-20:]
 
         write_results_to_output(name_results)
         save_checkpoint(filename, current_idx)

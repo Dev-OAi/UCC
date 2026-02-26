@@ -86,6 +86,7 @@ export interface JobStatus {
   status: string;
   errors: string[];
   start_time: string;
+  results?: any[];
 }
 
 export async function fetchPendingJobs(): Promise<PendingJob[]> {
@@ -130,13 +131,17 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
   }
 }
 
-export async function triggerManualSearch(name: string): Promise<string | null> {
+export async function triggerManualSearch(names: string | string[], mode: string = 'standard'): Promise<string | null> {
   try {
     const jobId = `manual_${Date.now()}`;
+    const payload = Array.isArray(names)
+      ? { names, job_id: jobId, mode }
+      : { name: names, job_id: jobId, mode };
+
     const response = await fetch('./api/bridge/manual', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, job_id: jobId })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
@@ -150,7 +155,7 @@ export async function triggerManualSearch(name: string): Promise<string | null> 
   }
 }
 
-export async function startScrape(filename: string, column: string, threshold: number): Promise<string | null> {
+export async function startScrape(filename: string, column: string, threshold: number, mode: string = 'standard'): Promise<string | null> {
   try {
     const jobId = `job_${Date.now()}`;
     const command = {
@@ -158,7 +163,8 @@ export async function startScrape(filename: string, column: string, threshold: n
       filename,
       column,
       threshold,
-      job_id: jobId
+      job_id: jobId,
+      mode
     };
 
     const response = await fetch('./api/bridge/command', {
@@ -172,6 +178,25 @@ export async function startScrape(filename: string, column: string, threshold: n
   } catch (err) {
     console.error('Failed to send command to scraper bridge:', err);
     return null;
+  }
+}
+
+export async function fetchSystemStatus(): Promise<{ bridge: string; watcher: string } | null> {
+  try {
+    const response = await fetch('./api/bridge/system/status');
+    if (response.ok) return await response.json();
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function restartSystem(): Promise<boolean> {
+  try {
+    const response = await fetch('./api/bridge/system/restart', { method: 'POST' });
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 
