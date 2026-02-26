@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus, Search, Server, RefreshCw, Zap, ShieldCheck, Cloud, Github, Globe } from 'lucide-react';
-import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, triggerManualSearch, fetchSystemStatus, restartSystem, PendingJob, JobStatus, dispatchUccAction, getGithubConfig, saveGithubConfig, GithubConfig } from '../lib/dataService';
+import { Settings, Play, CheckCircle2, AlertCircle, Loader2, Info, ChevronRight, BarChart3, Clock, FileText, Upload, Plus, Search, Server, RefreshCw, Zap, ShieldCheck, Cloud, Github, Globe, Trash2, Square } from 'lucide-react';
+import { fetchPendingJobs, fetchJobStatus, startScrape, uploadCsv, triggerManualSearch, fetchSystemStatus, restartSystem, stopAllScrapes, deletePendingJob, PendingJob, JobStatus, dispatchUccAction, getGithubConfig, saveGithubConfig, GithubConfig } from '../lib/dataService';
 import { Modal } from './ui';
 
 interface UCCAutomationProps {
@@ -17,8 +17,9 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
   const [mode, setMode] = useState<'standard' | 'lite'>('standard');
   const [automationMode, setAutomationMode] = useState<'local' | 'cloud'>('local');
   const [manualTerm, setManualTerm] = useState('');
-  const [systemStatus, setSystemStatus] = useState<{ bridge: string; watcher: string } | null>(null);
+  const [systemStatus, setSystemStatus] = useState<{ bridge: string; watcher: string; worker?: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bridgeOfflineCount, setBridgeOfflineCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
@@ -42,12 +43,18 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
 
     refreshPending();
     checkSystem();
+
+    // Polling interval with adaptive backoff if offline
     const interval = setInterval(() => {
+      // If we're on GitHub Pages (cloud mode or bridge repeatedly failing),
+      // reduce polling to avoid 404 spam in console
+      if (bridgeOfflineCount > 5 && automationMode === 'cloud') return;
+
       refreshPending();
       checkSystem();
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [bridgeOfflineCount, automationMode]);
 
   useEffect(() => {
     if (activeJobId) {
@@ -71,6 +78,11 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
 
   const checkSystem = async () => {
     const status = await fetchSystemStatus();
+    if (!status) {
+      setBridgeOfflineCount(prev => prev + 1);
+    } else {
+      setBridgeOfflineCount(0);
+    }
     setSystemStatus(status);
   };
 
@@ -109,6 +121,11 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     e?.preventDefault();
     if (!manualTerm.trim() || loading) return;
 
+    if (automationMode === 'cloud' && (!githubToken || !githubOwner || !githubRepo)) {
+      setIsGithubModalOpen(true);
+      return;
+    }
+
     const names = manualTerm.trim().split('\n').map(n => n.trim()).filter(n => n);
 
     setLoading(true);
@@ -135,6 +152,41 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStopAll = async () => {
+    if (!window.confirm('Are you sure you want to stop all active and pending scrapes?')) return;
+
+    setLoading(true);
+    const success = await stopAllScrapes();
+    if (success) {
+      setActiveJobId(null);
+      setJobStatus(null);
+      refreshPending();
+    } else {
+      alert('Failed to stop scrapes. Is the bridge running?');
+    }
+  };
+
+  const handleSaveGithubConfig = () => {
+    saveGithubConfig({
+      token: githubToken,
+      owner: githubOwner,
+      repo: githubRepo,
+      branch: githubBranch
+    });
+    setIsGithubModalOpen(false);
+  };
+
+  const handleDeletePending = async (filename: string) => {
+    if (!window.confirm(`Delete ${filename} from pending scrapes?`)) return;
+
+    const success = await deletePendingJob(filename);
+    if (success) {
+      refreshPending();
+    } else {
+      alert('Failed to delete file. Is the bridge running?');
     }
   };
 
@@ -306,22 +358,27 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
 
         {/* Cloud Status (Cloud Only) */}
         {automationMode === 'cloud' && (
-          <div className="mb-6 p-4 bg-emerald-50 rounded-xl border border-emerald-100 animate-in fade-in duration-300">
+          <div className={`mb-6 p-4 rounded-xl border animate-in fade-in duration-300 ${!githubToken ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-100'}`}>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-600 rounded-lg text-white">
-                <Globe className="w-4 h-4" />
+              <div className={`p-2 rounded-lg text-white ${!githubToken ? 'bg-amber-600' : 'bg-emerald-600'}`}>
+                {!githubToken ? <AlertCircle className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
               </div>
               <div>
-                <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">GitHub Actions Ready</p>
-                <p className="text-[10px] text-emerald-700 font-medium">
-                  Scrapes will run in the cloud. Results sync back via commit.
+                <p className={`text-xs font-bold uppercase tracking-wider ${!githubToken ? 'text-amber-900' : 'text-emerald-900'}`}>
+                  {!githubToken ? 'Connection Required' : 'GitHub Actions Ready'}
+                </p>
+                <p className={`text-[10px] font-medium ${!githubToken ? 'text-amber-700' : 'text-emerald-700'}`}>
+                  {!githubToken ? 'Configure your GitHub Token to enable cloud scraping.' : 'Scrapes will run in the cloud. Results sync back via commit.'}
                 </p>
               </div>
               {!githubToken && (
-                <div className="ml-auto flex items-center gap-2 text-[10px] font-bold text-amber-600 bg-amber-100 px-3 py-1 rounded-lg">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  GitHub Token Required
-                </div>
+                <button
+                  onClick={() => setIsGithubModalOpen(true)}
+                  className="ml-auto flex items-center gap-2 text-xs font-bold text-white bg-amber-600 px-4 py-2 rounded-lg hover:bg-amber-700 transition-all shadow-sm"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Configure Now
+                </button>
               )}
             </div>
           </div>
@@ -407,9 +464,18 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
                   <p className="text-sm text-blue-700 truncate max-w-[300px]">{jobStatus.filename}</p>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-xs font-bold uppercase tracking-wider">
-                {Math.round(jobStatus.progress)}%
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleStopAll}
+                  className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  Stop All
+                </button>
+                <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {Math.round(jobStatus.progress)}%
+                </span>
+              </div>
             </div>
 
             <div className="w-full bg-blue-200 rounded-full h-2.5 mb-3">
@@ -511,18 +577,29 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => openConfig(job)}
-                  disabled={!!activeJobId}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all shadow-sm ${
-                    activeJobId
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
-                  }`}
-                >
-                  <Play className="w-4 h-4" />
-                  Configure & Start
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleDeletePending(job.filename)}
+                    disabled={!!activeJobId}
+                    className={`p-2 rounded-lg transition-all ${
+                      activeJobId ? 'text-slate-300' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
+                    }`}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => openConfig(job)}
+                    disabled={!!activeJobId}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all shadow-sm ${
+                      activeJobId
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
+                    }`}
+                  >
+                    <Play className="w-4 h-4" />
+                    Configure & Start
+                  </button>
+                </div>
               </div>
             ))}
           </div>

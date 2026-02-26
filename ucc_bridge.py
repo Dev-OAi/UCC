@@ -116,20 +116,59 @@ def handle_command():
 
     return jsonify({"status": "Command received", "file": filepath}), 200
 
+@app.route('/stop', methods=['POST'])
+def stop_all_scrapes():
+    try:
+        # Kill any running worker processes
+        os.system("pkill -f ucc_worker.py")
+        # Also clear any pending commands in the Commands directory to prevent restart
+        for f in os.listdir(COMMANDS_DIR):
+            if f.endswith('.json'):
+                try:
+                    os.remove(os.path.join(COMMANDS_DIR, f))
+                except:
+                    pass
+        return jsonify({"status": "All scrapes stopped and commands cleared"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/delete_pending', methods=['POST'])
+def delete_pending():
+    data = request.json
+    if not data or 'filename' not in data:
+        return jsonify({"error": "No filename provided"}), 400
+
+    filename = os.path.basename(data['filename'])
+    filepath = os.path.join(STAGING_DIR, filename)
+
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+            # Update the pending jobs file immediately
+            os.system("python3 -c \"from ucc_watcher import update_pending_jobs; update_pending_jobs()\"")
+            return jsonify({"status": f"Deleted {filename}"}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return jsonify({"error": "File not found"}), 404
+
 @app.route('/system/status', methods=['GET'])
 def system_status():
     watcher_alive = False
+    worker_alive = False
     try:
         # Check if ucc_watcher.py is running
-        output = os.popen("pgrep -f ucc_watcher.py").read().strip()
-        if output:
+        if os.popen("pgrep -f ucc_watcher.py").read().strip():
             watcher_alive = True
+        # Check if ucc_worker.py is running
+        if os.popen("pgrep -f ucc_worker.py").read().strip():
+            worker_alive = True
     except:
         pass
 
     return jsonify({
         "bridge": "online",
         "watcher": "online" if watcher_alive else "offline",
+        "worker": "active" if worker_alive else "idle",
         "timestamp": time.time()
     }), 200
 
@@ -138,6 +177,7 @@ def system_restart():
     try:
         # Restart the watcher
         os.system("pkill -f ucc_watcher.py")
+        os.system("pkill -f ucc_worker.py")
         time.sleep(1)
         os.system("python3 ucc_watcher.py > watcher_output.log 2>&1 &")
 
