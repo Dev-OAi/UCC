@@ -4,7 +4,7 @@ import {
   Plus, ChevronRight, Target, Clock, Filter, Search,
   CheckCircle2, AlertCircle, Sparkles, FileText, Edit3
 } from 'lucide-react';
-import { BusinessLead, LeadStatus } from '../types';
+import { BusinessLead, LeadStatus, LeadType } from '../types';
 import { Modal, Input } from './ui';
 import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
 
@@ -27,7 +27,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const hotLeads = useMemo(() => {
     return leads
-      .filter(l => l.status === LeadStatus.NEW || l.status === LeadStatus.PROSPECT)
+      .filter(l => l.status === LeadStatus.NEW || l.type === LeadType.PROSPECT)
       .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
       .slice(0, 10);
   }, [leads]);
