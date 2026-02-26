@@ -167,16 +167,7 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     } else {
       alert('Failed to stop scrapes. Is the bridge running?');
     }
-  };
-
-  const handleSaveGithubConfig = () => {
-    saveGithubConfig({
-      token: githubToken,
-      owner: githubOwner,
-      repo: githubRepo,
-      branch: githubBranch
-    });
-    setIsGithubModalOpen(false);
+    setLoading(false);
   };
 
   const handleDeletePending = async (filename: string) => {
@@ -213,7 +204,7 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     }
   };
 
-  const handleSaveGithubConfig = () => {
+  const onSaveGithubConfig = () => {
     saveGithubConfig({
       token: githubToken,
       owner: githubOwner,
@@ -689,7 +680,7 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
                 Cancel
               </button>
               <button
-                onClick={handleSaveGithubConfig}
+                onClick={onSaveGithubConfig}
                 className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all shadow-md"
               >
                 Save Connection
