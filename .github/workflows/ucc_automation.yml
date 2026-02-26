@@ -1,0 +1,53 @@
+name: UCC Scraper Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      names:
+        description: 'Pipe-separated list of business names'
+        required: true
+      mode:
+        description: 'Scraper mode (standard or lite)'
+        default: 'standard'
+      threshold:
+        description: 'Similarity threshold (0.4 to 0.95)'
+        default: '0.7'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run Scraper
+        run: |
+          # We pass a dummy path because the current script expects one,
+          # but we will modify it to prioritize the --names flag.
+          python3 ucc_worker.py "ACTION_INPUT" --names "${{ github.event.inputs.names }}" --mode "${{ github.event.inputs.mode }}" --threshold "${{ github.event.inputs.threshold }}"
+        env:
+          PYTHONUNBUFFERED: 1
+
+      - name: Generate Manifest
+        run: python3 generate_manifest.py
+
+      - name: Commit and Push results
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add "Data/UCC Results/all_results.csv" public/manifest.json
+          git commit -m "UCC Scrape Results: ${{ github.event.inputs.names }}" || echo "No changes to commit"
+          git push
