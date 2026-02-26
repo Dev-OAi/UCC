@@ -41,19 +41,20 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
       setGithubBranch(config.branch);
     }
 
-    refreshPending();
-    checkSystem();
+    // PAUSED: Polling disabled to remove browser security popup on hosted versions
+    // refreshPending();
+    // checkSystem();
 
     // Polling interval with adaptive backoff if offline
-    const interval = setInterval(() => {
-      // If we're on GitHub Pages (cloud mode or bridge repeatedly failing),
-      // reduce polling to avoid 404 spam in console
-      if (bridgeOfflineCount > 5 && automationMode === 'cloud') return;
-
-      refreshPending();
-      checkSystem();
-    }, 5000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(() => {
+    //   // If we're on GitHub Pages (cloud mode or bridge repeatedly failing),
+    //   // reduce polling to avoid 404 spam in console
+    //   if (bridgeOfflineCount > 5 && automationMode === 'cloud') return;
+    //
+    //   refreshPending();
+    //   checkSystem();
+    // }, 5000);
+    // return () => clearInterval(interval);
   }, [bridgeOfflineCount, automationMode]);
 
   useEffect(() => {
@@ -247,14 +248,11 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </button>
           <div className="h-6 w-px bg-slate-200 mx-1" />
           <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
-              uploading ? 'bg-slate-100 text-slate-400' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
-            }`}
+            disabled
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold transition-all bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
           >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            {uploading ? 'Uploading...' : 'Upload CSV'}
+            <Upload className="w-4 h-4" />
+            Upload CSV (Paused)
           </button>
           <input
             ref={fileInputRef}
@@ -274,78 +272,73 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
       </div>
 
       <div className="p-4">
-        {/* Mode Selector */}
-        <div className="mb-6 grid grid-cols-2 gap-4">
+        {/* Mode Selector - DISABLED / PAUSED */}
+        <div className="mb-6 grid grid-cols-2 gap-4 relative">
+          <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] flex items-center justify-center rounded-xl border border-dashed border-slate-300">
+            <div className="bg-white px-6 py-2 rounded-full shadow-lg border border-slate-200 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-bold text-slate-700">Automation Features Currently Paused</span>
+            </div>
+          </div>
+
           <button
-            onClick={() => setAutomationMode('local')}
-            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-              automationMode === 'local'
-                ? 'bg-blue-50 border-blue-600 shadow-md'
-                : 'bg-white border-slate-100 hover:border-slate-300'
-            }`}
+            disabled
+            className="flex items-center gap-4 p-4 rounded-xl border-2 bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed"
           >
-            <div className={`p-3 rounded-lg ${automationMode === 'local' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+            <div className="p-3 rounded-lg bg-slate-200 text-slate-400">
               <Server className="w-6 h-6" />
             </div>
             <div className="text-left">
-              <h3 className={`font-bold ${automationMode === 'local' ? 'text-blue-900' : 'text-slate-600'}`}>Local Bridge</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-600">Local Bridge</h3>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-slate-400 text-white uppercase">Disabled</span>
+              </div>
               <p className="text-xs text-slate-500">Fast, local scraping via Python bridge</p>
             </div>
           </button>
 
           <button
-            onClick={() => setAutomationMode('cloud')}
-            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-              automationMode === 'cloud'
-                ? 'bg-emerald-50 border-emerald-600 shadow-md'
-                : 'bg-white border-slate-100 hover:border-slate-300'
-            }`}
+            disabled
+            className="flex items-center gap-4 p-4 rounded-xl border-2 bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed"
           >
-            <div className={`p-3 rounded-lg ${automationMode === 'cloud' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+            <div className="p-3 rounded-lg bg-slate-200 text-slate-400">
               <Cloud className="w-6 h-6" />
             </div>
             <div className="text-left">
-              <h3 className={`font-bold ${automationMode === 'cloud' ? 'text-emerald-900' : 'text-slate-600'}`}>Cloud Scraper</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-600">Cloud Scraper</h3>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-500 text-white uppercase">Under Construction</span>
+              </div>
               <p className="text-xs text-slate-500">Automated via GitHub Actions</p>
             </div>
           </button>
         </div>
 
-        {/* System Health Dashboard (Local Only) */}
-        {automationMode === 'local' && (
-          <div className="mb-6 flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in duration-300">
-            <div className="flex items-center gap-3 pr-4 border-r border-slate-200">
-              <div className={`p-2 rounded-lg ${systemStatus?.bridge === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                <Server className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Bridge Status</p>
-                <p className={`text-xs font-bold ${systemStatus?.bridge === 'online' ? 'text-green-600' : 'text-red-600'}`}>
-                  {systemStatus?.bridge === 'online' ? 'CONNECTED' : 'OFFLINE'}
-                </p>
-              </div>
+        {/* System Health Dashboard - PAUSED */}
+        <div className="mb-6 flex items-center gap-4 p-4 bg-slate-50/50 rounded-xl border border-slate-200 grayscale opacity-60">
+          <div className="flex items-center gap-3 pr-4 border-r border-slate-200">
+            <div className="p-2 rounded-lg bg-slate-100 text-slate-400">
+              <Server className="w-4 h-4" />
             </div>
-            <div className="flex items-center gap-3 flex-1">
-              <div className={`p-2 rounded-lg ${systemStatus?.watcher === 'online' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                <Clock className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Watcher Service</p>
-                <p className={`text-xs font-bold ${systemStatus?.watcher === 'online' ? 'text-green-600' : 'text-red-600'}`}>
-                  {systemStatus?.watcher === 'online' ? 'ACTIVE' : 'STOPPED'}
-                </p>
-              </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bridge Status</p>
+              <p className="text-xs font-bold text-slate-500">PAUSED</p>
             </div>
-            <button
-              onClick={handleRestart}
-              disabled={loading}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Restart Services
-            </button>
           </div>
-        )}
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 rounded-lg bg-slate-100 text-slate-400">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Watcher Service</p>
+              <p className="text-xs font-bold text-slate-500">PAUSED</p>
+            </div>
+          </div>
+          <div className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 flex items-center gap-2">
+            <RefreshCw className="w-3.5 h-3.5" />
+            Services Disabled
+          </div>
+        </div>
 
         {/* Cloud Status (Cloud Only) */}
         {automationMode === 'cloud' && (
@@ -375,71 +368,39 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* Manual Search Bar */}
-        <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        {/* Manual Search Bar - DISABLED */}
+        <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl opacity-75 relative overflow-hidden">
+          <div className="absolute inset-0 bg-slate-100/30 flex items-center justify-center z-10">
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border border-slate-300 px-3 py-1 rounded bg-white/80">
+              Manual Search Disabled
+            </div>
+          </div>
+          <div className="flex items-center justify-between mb-3 grayscale">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
               Quick Manual Search
             </label>
             <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button disabled className="px-3 py-1 text-[10px] font-bold rounded-md bg-white text-slate-400">Standard</button>
+              <button disabled className="px-3 py-1 text-[10px] font-bold rounded-md text-slate-400">Lite (v6)</button>
+            </div>
+          </div>
+          <div className="space-y-3 grayscale">
+            <textarea
+              disabled
+              placeholder="Search is temporarily disabled..."
+              rows={3}
+              className="block w-full px-4 py-3 bg-slate-200 border border-slate-300 rounded-lg text-sm cursor-not-allowed"
+            />
+            <div className="flex items-center justify-end">
               <button
-                onClick={() => setMode('standard')}
-                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${mode === 'standard' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                disabled
+                className="px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 bg-slate-300 text-slate-500 cursor-not-allowed"
               >
-                Standard
-              </button>
-              <button
-                onClick={() => setMode('lite')}
-                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${mode === 'lite' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                Lite (v6)
+                <Play className="w-4 h-4" />
+                Run Scraper
               </button>
             </div>
           </div>
-          <form onSubmit={handleManualSearch} className="space-y-3">
-            <div className="relative">
-              <textarea
-                value={manualTerm}
-                onChange={(e) => setManualTerm(e.target.value)}
-                placeholder="Enter business names (one per line)..."
-                rows={3}
-                className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all resize-none"
-                disabled={loading}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {mode === 'lite' ? (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                    <Zap className="w-3 h-3" />
-                    Faster Mode & Dynamic Thresholds
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                    <ShieldCheck className="w-3 h-3" />
-                    Standard Deep Scraping
-                  </span>
-                )}
-              </div>
-              <button
-                type="submit"
-                disabled={!manualTerm.trim() || loading || (automationMode === 'local' && !!activeJobId)}
-                className={`px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${
-                  !manualTerm.trim() || loading || (automationMode === 'local' && !!activeJobId)
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : automationMode === 'cloud'
-                      ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 shadow-sm'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-sm'
-                }`}
-              >
-                {loading && !uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : automationMode === 'cloud' ? <Cloud className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                {automationMode === 'cloud' ? 'Dispatch Cloud Scrape' : 'Run Scraper'}
-              </button>
-            </div>
-          </form>
-          <p className="text-[10px] text-slate-400 mt-3 italic border-t border-slate-100 pt-2">
-            Paste multiple names to search immediately. Results will be saved to <span className="font-bold">all_results.csv</span>.
-          </p>
         </div>
 
         {/* Active Job Progress */}
@@ -536,21 +497,22 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
           </div>
         )}
 
-        {/* Pending Uploads */}
-        <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wider">
-          <FileText className="w-4 h-4 text-blue-600" />
-          Pending Scrapes ({pendingJobs.length})
+        {/* Pending Uploads - DISABLED */}
+        <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2 uppercase tracking-wider grayscale">
+          <FileText className="w-4 h-4" />
+          Pending Scrapes (Disabled)
         </h3>
 
-        {pendingJobs.length === 0 ? (
-          <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="w-6 h-6 text-slate-300" />
-            </div>
-            <p className="text-slate-500 font-medium">All caught up! No pending uploads.</p>
-            <p className="text-xs text-slate-400 mt-1">Upload a CSV using the button above to start.</p>
+        <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Clock className="w-6 h-6 text-slate-300" />
           </div>
-        ) : (
+          <p className="text-slate-500 font-medium">Automation Center is Offline</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+            Manual scraping and automation are currently disabled. Hub data will refresh when new CSVs are added to the repository.
+          </p>
+        </div>
+        {false && (
           <div className="grid gap-3">
             {pendingJobs.map((job) => (
               <div

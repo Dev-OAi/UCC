@@ -107,19 +107,23 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
 }
 
 const getBridgeUrl = (path: string) => {
-  // If we are running on localhost, use the relative proxy path
-  // If we are on GitHub Pages, try to connect directly to the local bridge on port 5001
+  // PAUSED: Only allow bridge calls if explicitly on localhost to prevent security popups on hosted sites
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const baseUrl = isLocalhost ? './api/bridge' : 'http://localhost:5001';
+  if (!isLocalhost) return null;
+
+  const baseUrl = './api/bridge';
   return `${baseUrl}${path}`;
 };
 
 export async function uploadCsv(file: File): Promise<{ success: boolean; error?: string }> {
   try {
+    const url = getBridgeUrl('/upload');
+    if (!url) return { success: false, error: "Bridge unavailable on hosted versions" };
+
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(getBridgeUrl('/upload'), {
+    const response = await fetch(url, {
       method: 'POST',
       body: formData
     });
@@ -148,12 +152,15 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatus | null> {
 
 export async function triggerManualSearch(names: string | string[], mode: string = 'standard'): Promise<string | null> {
   try {
+    const url = getBridgeUrl('/manual');
+    if (!url) return null;
+
     const jobId = `manual_${Date.now()}`;
     const payload = Array.isArray(names)
       ? { names, job_id: jobId, mode }
       : { name: names, job_id: jobId, mode };
 
-    const response = await fetch(getBridgeUrl('/manual'), {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -172,6 +179,9 @@ export async function triggerManualSearch(names: string | string[], mode: string
 
 export async function startScrape(filename: string, column: string, threshold: number, mode: string = 'standard'): Promise<string | null> {
   try {
+    const url = getBridgeUrl('/command');
+    if (!url) return null;
+
     const jobId = `job_${Date.now()}`;
     const command = {
       action: "start_scrape",
@@ -182,7 +192,7 @@ export async function startScrape(filename: string, column: string, threshold: n
       mode
     };
 
-    const response = await fetch(getBridgeUrl('/command'), {
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(command)
@@ -198,7 +208,9 @@ export async function startScrape(filename: string, column: string, threshold: n
 
 export async function fetchSystemStatus(): Promise<{ bridge: string; watcher: string; worker?: string } | null> {
   try {
-    const response = await fetch(getBridgeUrl('/system/status'));
+    const url = getBridgeUrl('/system/status');
+    if (!url) return null;
+    const response = await fetch(url);
     if (response.ok) return await response.json();
     return null;
   } catch {
@@ -208,7 +220,9 @@ export async function fetchSystemStatus(): Promise<{ bridge: string; watcher: st
 
 export async function restartSystem(): Promise<boolean> {
   try {
-    const response = await fetch(getBridgeUrl('/system/restart'), { method: 'POST' });
+    const url = getBridgeUrl('/system/restart');
+    if (!url) return false;
+    const response = await fetch(url, { method: 'POST' });
     return response.ok;
   } catch {
     return false;
@@ -217,7 +231,9 @@ export async function restartSystem(): Promise<boolean> {
 
 export async function stopAllScrapes(): Promise<boolean> {
   try {
-    const response = await fetch(getBridgeUrl('/stop'), { method: 'POST' });
+    const url = getBridgeUrl('/stop');
+    if (!url) return false;
+    const response = await fetch(url, { method: 'POST' });
     return response.ok;
   } catch {
     return false;
@@ -226,7 +242,9 @@ export async function stopAllScrapes(): Promise<boolean> {
 
 export async function deletePendingJob(filename: string): Promise<boolean> {
   try {
-    const response = await fetch(getBridgeUrl('/delete_pending'), {
+    const url = getBridgeUrl('/delete_pending');
+    if (!url) return false;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename })
