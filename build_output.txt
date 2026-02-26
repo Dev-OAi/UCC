@@ -1,0 +1,25 @@
+
+> data-explorer@0.0.0 prebuild
+> python3 generate_manifest.py
+
+Generated manifest with 40 files.
+
+> data-explorer@0.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 2560 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                        0.40 kB │ gzip:   0.27 kB
+dist/assets/index-Cat3Wdru.css        79.86 kB │ gzip:  12.63 kB
+dist/assets/purify.es-C_uT9hQ1.js     21.98 kB │ gzip:   8.74 kB
+dist/assets/index.es-_oI0cBbd.js     150.47 kB │ gzip:  51.44 kB
+dist/assets/index-BL6mHlZR.js      1,543.93 kB │ gzip: 438.68 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.75s
