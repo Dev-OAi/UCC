@@ -167,7 +167,16 @@ export const UCCAutomation: React.FC<UCCAutomationProps> = ({ onComplete }) => {
     } else {
       alert('Failed to stop scrapes. Is the bridge running?');
     }
-    setLoading(false);
+  };
+
+  const handleSaveGithubConfig = () => {
+    saveGithubConfig({
+      token: githubToken,
+      owner: githubOwner,
+      repo: githubRepo,
+      branch: githubBranch
+    });
+    setIsGithubModalOpen(false);
   };
 
   const handleDeletePending = async (filename: string) => {
