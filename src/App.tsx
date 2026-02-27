@@ -989,6 +989,7 @@ function App() {
           ) : activeTab === 'Playbook' ? (
             <Playbook
               allData={allData}
+              hubTypes={types}
               scorecardLeads={scorecardLeads}
               onSelectLead={(lead) => {
                 setActiveTab('Scorecard');
