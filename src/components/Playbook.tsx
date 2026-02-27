@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Zap, Clock, AlertCircle, Calendar, ArrowRight,
-  Target, TrendingUp, Building2, Phone, Globe, Plus
+  Target, TrendingUp, Building2, Phone, Globe, Plus, ChevronDown
 } from 'lucide-react';
 import { DataRow } from '../lib/dataService';
 import { BusinessLead } from '../types';
 
 interface PlaybookProps {
   allData: DataRow[];
+  hubTypes: string[];
   scorecardLeads: BusinessLead[];
   onSelectLead: (lead: BusinessLead) => void;
   onSelectRow: (row: DataRow) => void;
@@ -16,11 +17,14 @@ interface PlaybookProps {
 
 export const Playbook: React.FC<PlaybookProps> = ({
   allData,
+  hubTypes,
   scorecardLeads,
   onSelectLead,
   onSelectRow,
   onAddToScorecard
 }) => {
+  const [selectedHub, setSelectedHub] = useState('All');
+
   const { now, sixtyDaysFromNow, sevenDaysAgo } = useMemo(() => {
     const n = new Date();
     const s60 = new Date();
@@ -33,6 +37,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
   const urgentUcc = useMemo(() => {
     return allData
       .filter(row => {
+        if (selectedHub !== 'All' && row._type !== selectedHub) return false;
         const expiryStr = row['Expires'];
         if (!expiryStr || expiryStr === 'N/A') return false;
         const expiryDate = new Date(expiryStr);
@@ -40,7 +45,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
       })
       .sort((a, b) => (b.Score || 0) - (a.Score || 0))
       .slice(0, 10);
-  }, [allData, sixtyDaysFromNow, now]);
+  }, [allData, sixtyDaysFromNow, now, selectedHub]);
 
   const stagnantLeads = useMemo(() => {
     return scorecardLeads
@@ -56,25 +61,54 @@ export const Playbook: React.FC<PlaybookProps> = ({
     const leadNames = new Set(scorecardLeads.map(l => l.businessName.toLowerCase()));
     return allData
       .filter(row => {
+        if (selectedHub !== 'All' && row._type !== selectedHub) return false;
         const name = (row['businessName'] || row['Entity Name'] || '').toLowerCase();
-        return row._type === 'Last 90 Days' && name && !leadNames.has(name);
+
+        // When 'All' is selected, we include everything to give a true aggregated view
+        return name && !leadNames.has(name);
       })
       .sort((a, b) => (b.Score || 0) - (a.Score || 0))
       .slice(0, 10);
-  }, [allData, scorecardLeads]);
+  }, [allData, scorecardLeads, selectedHub]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-slate-950">
       <div className="px-8 py-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
-            <Zap className="w-6 h-6 text-white" />
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black tracking-tight uppercase">Banker's Playbook</h1>
+              <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Automated Next Actions & Priority Opportunities</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-black tracking-tight uppercase">Banker's Playbook</h1>
-            <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Automated Next Actions & Priority Opportunities</p>
+
+          <div className="h-10 w-px bg-white/20" />
+
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Target className="w-4 h-4 text-amber-100/60" />
+            </div>
+            <select
+              value={selectedHub}
+              onChange={(e) => setSelectedHub(e.target.value)}
+              className="pl-9 pr-10 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl text-sm font-bold text-white appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-white/30"
+            >
+              <option value="All" className="text-slate-900 font-medium">All Hubs (Aggregated)</option>
+              {hubTypes.filter(t => t !== 'All').map(type => (
+                <option key={type} value={type} className="text-slate-900 font-medium">
+                  {type} Hub
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              <ChevronDown className="w-4 h-4 text-amber-100/60" />
+            </div>
           </div>
         </div>
+
         <div className="text-right">
           <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Today's Focus</p>
           <p className="text-sm font-black text-white">{urgentUcc.length + stagnantLeads.length + freshProspects.length} Actions</p>
@@ -96,8 +130,11 @@ export const Playbook: React.FC<PlaybookProps> = ({
               <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex flex-col">
-                    <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600 font-bold text-xs mb-2">
+                    <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600 font-bold text-xs mb-2 relative">
                       {String(row['businessName'] || 'U').charAt(0).toUpperCase()}
+                      <div className="absolute -bottom-1 -right-1 px-1 bg-white dark:bg-slate-900 rounded text-[7px] font-black border border-red-100 dark:border-red-900/30 text-red-500">
+                        {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : 'UCC'}
+                      </div>
                     </div>
                     <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded uppercase">
                       Score: {row.Score}
@@ -190,8 +227,8 @@ export const Playbook: React.FC<PlaybookProps> = ({
             {freshProspects.map((row, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-blue-500 transition-all">
                 <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 text-xs font-black shrink-0">
-                    UCC
+                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 text-[10px] font-black shrink-0 uppercase tracking-tighter">
+                    {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : 'UCC'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
@@ -205,7 +242,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
                         <Building2 className="w-3 h-3 mr-1" /> {row['Category'] || 'General'}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" /> Filed: {row['Record Date'] || 'Recent'}
+                        <Calendar className="w-3 h-3 mr-1" /> Filed: {row['Record Date'] || row['Date Filed'] || 'Recent'}
                       </span>
                     </div>
                   </div>
