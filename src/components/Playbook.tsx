@@ -24,6 +24,13 @@ export const Playbook: React.FC<PlaybookProps> = ({
   onAddToScorecard
 }) => {
   const [selectedHub, setSelectedHub] = useState('All');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleHubChange = (hub: string) => {
+    setIsUpdating(true);
+    setSelectedHub(hub);
+    setTimeout(() => setIsUpdating(false), 400);
+  };
 
   const { now, sixtyDaysFromNow, sevenDaysAgo } = useMemo(() => {
     const n = new Date();
@@ -73,8 +80,8 @@ export const Playbook: React.FC<PlaybookProps> = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-slate-950">
-      <div className="px-8 py-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-6">
+      <div className="px-8 py-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
               <Zap className="w-6 h-6 text-white" />
@@ -85,16 +92,16 @@ export const Playbook: React.FC<PlaybookProps> = ({
             </div>
           </div>
 
-          <div className="h-10 w-px bg-white/20" />
+          <div className="hidden sm:block h-10 w-px bg-white/20" />
 
-          <div className="relative group">
+          <div className="relative group w-full sm:w-auto">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
               <Target className="w-4 h-4 text-amber-100/60" />
             </div>
             <select
               value={selectedHub}
-              onChange={(e) => setSelectedHub(e.target.value)}
-              className="pl-9 pr-10 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl text-sm font-bold text-white appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-white/30"
+              onChange={(e) => handleHubChange(e.target.value)}
+              className="w-full sm:w-auto pl-9 pr-10 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl text-sm font-bold text-white appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-white/30 hover:scale-[1.02] active:scale-[0.98]"
             >
               <option value="All" className="text-slate-900 font-medium">All Hubs (Aggregated)</option>
               {hubTypes.filter(t => t !== 'All').map(type => (
@@ -109,13 +116,13 @@ export const Playbook: React.FC<PlaybookProps> = ({
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="text-left md:text-right">
           <p className="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Today's Focus</p>
           <p className="text-sm font-black text-white">{urgentUcc.length + stagnantLeads.length + freshProspects.length} Actions</p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className={`flex-1 overflow-y-auto p-8 space-y-8 transition-opacity duration-300 ${isUpdating ? 'opacity-40 scale-[0.995]' : 'opacity-100 scale-100'}`}>
         {/* Urgent UCC Expirations */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
