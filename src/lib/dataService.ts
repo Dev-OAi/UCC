@@ -303,9 +303,11 @@ export async function dispatchUccAction(names: string[], mode: string, threshold
 }
 
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
+  const url = window.location.origin + '/' + file.path.replace(/^\.\//, '');
   return new Promise((resolve, reject) => {
-    Papa.parse(file.path, {
+    Papa.parse(url, {
       download: true,
+      worker: true,
       header: false, // Detecting headers manually for flexibility
       skipEmptyLines: 'greedy',
       complete: (results) => {
