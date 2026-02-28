@@ -315,7 +315,9 @@ export async function dispatchUccAction(names: string[], mode: string, threshold
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
   // Construct absolute URL relative to the current page's directory
   // This ensures Web Workers can correctly fetch the data files
-  const baseUrl = new URL('.', window.location.href).href;
+  const baseUrl = typeof window !== 'undefined'
+    ? new URL('.', window.location.href).href
+    : 'http://localhost/';
   const cleanPath = file.path.replace(/^\.\//, '');
   const url = new URL(cleanPath, baseUrl).href;
 

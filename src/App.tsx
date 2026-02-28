@@ -483,6 +483,8 @@ function App() {
     }
     if (activeTab === 'Last 90 Days') {
       setSortConfig({ key: 'Record Date', direction: 'desc' });
+    } else if (activeTab === 'All') {
+      setSortConfig({ key: 'Date Filed', direction: 'desc' });
     } else {
       setSortConfig(null);
     }
