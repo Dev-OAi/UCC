@@ -540,49 +540,120 @@ function App() {
     init();
   }, []);
 
-  // Column Management
-  const allColumns = useMemo(() => {
-    if (allData.length === 0) return [];
-    const keys = new Set<string>();
-    const samples = new Map<string, DataRow>();
-    const expectedTypesCount = new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type)).size;
+  // Metadata States
+  const [allColumns, setAllColumns] = useState<string[]>([]);
+  const [nonEmptyColumns, setNonEmptyColumns] = useState<Set<string>>(new Set());
+  const [types, setTypes] = useState<string[]>(['All']);
+  const [zips, setZips] = useState<string[]>(['All']);
+  const [locations, setLocations] = useState<string[]>(['All']);
 
-    for (let i = 0; i < allData.length; i++) {
-      const row = allData[i];
-      if (row._type && !samples.has(row._type)) {
-        samples.set(row._type, row);
-        if (samples.size === expectedTypesCount) break;
-      }
+  const processedCountRef = React.useRef(0);
+  const discoveredTypesRef = React.useRef(new Set<string>());
+
+  // Incremental Metadata Processing
+  useEffect(() => {
+    if (allData.length === 0) {
+      processedCountRef.current = 0;
+      discoveredTypesRef.current.clear();
+      setAllColumns([]);
+      setNonEmptyColumns(new Set());
+      setTypes(['All']);
+      setZips(['All']);
+      setLocations(['All']);
+      return;
     }
 
-    samples.forEach(sample => {
-      Object.keys(sample).forEach(key => {
-        if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location') keys.add(key);
+    if (allData.length <= processedCountRef.current) return;
+
+    const newRows = allData.slice(processedCountRef.current);
+    processedCountRef.current = allData.length;
+
+    // 1. Update Types
+    setTypes(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._type && !nextSet.has(r._type)) {
+          nextSet.add(r._type);
+          changed = true;
+        }
       });
+      return changed ? Array.from(nextSet).sort() : prev;
     });
 
-    return [...Array.from(keys), 'Location', 'Zip'];
-  }, [allData, manifest]);
-
-  const nonEmptyColumns = useMemo(() => {
-    if (allData.length === 0) return new Set<string>();
-    const found = new Set<string>();
-    const cols = allColumns;
-
-    for (let i = 0; i < allData.length; i++) {
-      const row = allData[i];
-      for (let j = 0; j < cols.length; j++) {
-        const col = cols[j];
-        if (found.has(col)) continue;
-        const val = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
-        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
-          found.add(col);
+    // 2. Update Zips
+    setZips(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._zip && !nextSet.has(r._zip)) {
+          nextSet.add(r._zip);
+          changed = true;
         }
+      });
+      return changed ? Array.from(nextSet).sort() : prev;
+    });
+
+    // 3. Update Locations
+    setLocations(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._location && !nextSet.has(r._location)) {
+          nextSet.add(r._location);
+          changed = true;
+        }
+      });
+      return changed ? Array.from(nextSet).sort() : prev;
+    });
+
+    // 4. Update Columns (Samples based)
+    setAllColumns(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._type && !discoveredTypesRef.current.has(r._type)) {
+          discoveredTypesRef.current.add(r._type);
+          Object.keys(r).forEach(key => {
+            if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location' && !nextSet.has(key)) {
+              nextSet.add(key);
+              changed = true;
+            }
+          });
+        }
+      });
+      if (changed) {
+        const cols = Array.from(nextSet).filter(c => c !== 'Location' && c !== 'Zip');
+        return [...cols, 'Location', 'Zip'];
       }
-      if (found.size === cols.length) break;
-    }
-    return found;
-  }, [allData, allColumns]);
+      return prev;
+    });
+
+    // 5. Update Non-Empty Column Detection
+    setNonEmptyColumns(prev => {
+      const next = new Set(prev);
+      let changed = false;
+      newRows.forEach(row => {
+        Object.keys(row).forEach(key => {
+          if (next.has(key)) return;
+          const val = row[key];
+          if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+            next.add(key);
+            changed = true;
+          }
+        });
+        if (!next.has('Location') && row._location && row._location !== 'N/A' && row._location !== '') {
+          next.add('Location');
+          changed = true;
+        }
+        if (!next.has('Zip') && row._zip && row._zip !== 'N/A' && row._zip !== '') {
+          next.add('Zip');
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [allData]);
 
   const currentColumnOrder = useMemo(() => {
     const customOrder = customColumnOrders[activeTab];
@@ -654,20 +725,6 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  const types = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const zips = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._zip).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const locations = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._location).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
 
   const onFilterChange = (col: string, val: string[]) => {
     setColumnFilters(p => ({ ...p, [col]: val }));
