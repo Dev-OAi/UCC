@@ -105,6 +105,16 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     onUpdateLeads(updatedLeads);
   };
 
+  const handleThemeChange = (theme: 'growth' | 'efficiency' | 'security') => {
+    if (!selectedLead) return;
+    const updatedLeads = leads.map(l =>
+      l.id === selectedLead.id
+        ? { ...l, preferredTheme: theme, lastUpdated: new Date().toISOString() }
+        : l
+    );
+    onUpdateLeads(updatedLeads);
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-950 overflow-hidden h-full">
       {/* Header */}
@@ -205,9 +215,21 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                       <Target className="w-4 h-4 mr-2 text-blue-600" />
                       Strategic Focus
                     </h3>
-                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-[10px] font-black rounded-lg uppercase tracking-wider shadow-sm">
-                      {selectedLead.preferredTheme || 'Growth'}
-                    </span>
+                    <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700">
+                      {(['growth', 'efficiency', 'security'] as const).map((theme) => (
+                        <button
+                          key={theme}
+                          onClick={() => handleThemeChange(theme)}
+                          className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${
+                            (selectedLead.preferredTheme || 'growth') === theme
+                              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                              : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'
+                          }`}
+                        >
+                          {theme}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="prose prose-sm dark:prose-invert max-w-none relative z-10">
                     <div className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
@@ -341,11 +363,20 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
                 <div className="bg-amber-50 dark:bg-amber-900/10 rounded-2xl p-4 border border-amber-100 dark:border-amber-900/20 flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-tight mb-1">Banker Tip</h4>
-                    <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed font-medium">
-                      Construction clients prioritize speed of funding. Mention our streamlined SBA process to secure the appointment.
-                    </p>
+                  <div className="space-y-2">
+                    <div>
+                      <h4 className="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-tight mb-1">Banker Tip</h4>
+                      <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed font-medium">
+                        {selectedLead.industry?.includes('Construction')
+                          ? 'Construction clients prioritize speed of funding. Mention our streamlined SBA process to secure the appointment.'
+                          : 'Balance strategic relationship building with specific high-point product triggers like SMB Bundle 3 or ACH Positive Pay.'}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-amber-200/50 dark:border-amber-900/30">
+                      <p className="text-[10px] text-amber-600 dark:text-amber-500 font-bold italic">
+                        Tip: Use the theme selector to pivot the strategy, or 'Edit' to make manual changes to the script.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

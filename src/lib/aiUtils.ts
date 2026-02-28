@@ -77,7 +77,7 @@ export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'g
 **Industry Context:** ${industryContext}
 
 **1. Strategic Focus:**
-Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and ${insight?.quickFacts?.[1] || 'optimizing overhead'}. Given the current market trends, they are likely looking for ways to optimize cash flow and reduce manual financial tasks.
+Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and cash flow optimization. Given the current market trends, they are likely looking for ways to reduce manual financial tasks and protect their overhead. ${insight?.quickFacts?.[1] ? `Key Insight: ${insight.quickFacts[1]}` : ''}
 
 **2. Product Bundle:**
 - **Primary:** SMB Bundle 3 (AT 552) - Premier Business
@@ -108,7 +108,7 @@ Best,
 **Industry Context:** ${industryContext}
 
 **1. Strategic Focus:**
-Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority for growing firms.
+Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority. ${insight?.quickFacts?.[0] ? `Context: ${insight.quickFacts[0]}` : ''}
 
 **2. Product Bundle:**
 - **Primary:** ACH Positive Pay (for electronic payment protection)
@@ -140,7 +140,7 @@ Best regards,
 **Industry Context:** ${industryContext}
 
 **1. Strategic Focus:**
-Focus on ${insight?.quickFacts?.[2] || 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion (specifically into developments or new projects) while securing the relationship with a full-service banking suite. We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
+Focus on ${insight ? 'leveraging sector-specific growth' : 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion while securing the relationship with a full-service banking suite. ${insight?.quickFacts?.[2] ? `Note: ${insight.quickFacts[2]}` : ''} We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
 
 **2. Product Bundle:**
 - **Primary:** SBA 7(a) Financing / Secured Lines of Credit (for materials & acquisition)
@@ -163,7 +163,15 @@ After speaking with my business banking partners, they suggested that the next b
 
 Thank you again for the connecting—exciting to hear about your expansion into new construction, developments, and property flips. I’d be happy to walk through growth strategies and financing options that can support this next phase.
 
-Would you be open to a brief call next week?
+Topics We Can Review on Our Call:
+• SBA Financing: Overview of SBA programs, qualification criteria, and timelines.
+• Business Lines of Credit: Flexible options to support cash flow, materials, and project timelines.
+• Term Loans & Business Funding: Solutions for equipment, property acquisition, or working capital for construction or renovation.
+• Growth Planning: Banking tools and structures designed for expanding development-focused businesses.
+
+Can you give me a few days and times you are available. I’ll coordinate a meeting with my business banker at your convenience.
+
+Looking forward to connecting and supporting your continued growth.
 
 Best regards,
 [Your Name]`;

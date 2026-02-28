@@ -74,7 +74,7 @@ export const replacePlaceholders = (text: string, data: DataRow | BusinessLead) 
     : "your expansion and recent business developments";
 
   const recentTalk = "reconnecting with you";
-  const topicsList = "• SBA Financing: Overview of SBA programs, qualification criteria, and timelines.\n• Business Lines of Credit: Flexible options to support cash flow and project timelines.\n• Term Loans & Business Funding: Solutions for equipment, property, or working capital.\n• Growth Planning: Banking tools designed for expanding businesses.";
+  const topicsList = "• SBA Financing: Overview of SBA programs, qualification criteria, and timelines.\n• Business Lines of Credit: Flexible options to support cash flow, materials, and project timelines.\n• Term Loans & Business Funding: Solutions for equipment, property acquisition, or working capital for construction or renovation.\n• Growth Planning: Banking tools and structures designed for expanding development-focused businesses.";
 
   return text
     .replace(/{{businessName}}/g, businessName)
