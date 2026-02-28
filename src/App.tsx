@@ -50,34 +50,39 @@ const DEFAULT_METRICS: ScorecardMetric[] = [
   { id: 'outreach', name: 'Outreach', target: 100, type: 'built-in', isVisible: true },
 ];
 
+function safeJsonParse<T>(key: string, fallback: T): T {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return fallback;
+    return JSON.parse(saved) as T;
+  } catch (err) {
+    console.error(`Error parsing localStorage key "${key}":`, err);
+    return fallback;
+  }
+}
+
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
-  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
-    const saved = localStorage.getItem('productGuides');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() => {
-    const saved = localStorage.getItem('scorecardLeads');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() => {
-    const saved = localStorage.getItem('scorecardMetrics');
-    return saved ? JSON.parse(saved) : DEFAULT_METRICS;
-  });
+  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() =>
+    safeJsonParse('productGuides', [])
+  );
+  const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() =>
+    safeJsonParse('scorecardLeads', [])
+  );
+  const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() =>
+    safeJsonParse('scorecardMetrics', DEFAULT_METRICS)
+  );
 
   // Activity Log State
-  const [callEntries, setCallEntries] = useState<CallEntry[]>(() => {
-    const saved = localStorage.getItem('sales_callEntries');
-    return saved ? JSON.parse(saved) : initialCallEntries;
-  });
-  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() => {
-    const saved = localStorage.getItem('sales_emailEntries');
-    return saved ? JSON.parse(saved) : initialEmailEntries;
-  });
-  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() => {
-    const saved = localStorage.getItem('sales_meetingEntries');
-    return saved ? JSON.parse(saved) : initialMeetingEntries;
-  });
+  const [callEntries, setCallEntries] = useState<CallEntry[]>(() =>
+    safeJsonParse('sales_callEntries', initialCallEntries)
+  );
+  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() =>
+    safeJsonParse('sales_emailEntries', initialEmailEntries)
+  );
+  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() =>
+    safeJsonParse('sales_meetingEntries', initialMeetingEntries)
+  );
 
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
@@ -937,7 +942,23 @@ function App() {
     link.click();
   };
 
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950 p-6">
+      <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-red-100 dark:border-red-900/30 text-center space-y-4">
+        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+          <Database className="w-8 h-8 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Error</h2>
+        <p className="text-gray-500 dark:text-slate-400">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
