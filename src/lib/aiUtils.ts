@@ -60,40 +60,158 @@ export const generateAiManifest = (data: DataRow | BusinessLead) => {
   return manifest;
 };
 
-export const generateLeadIntelligence = (data: DataRow | BusinessLead) => {
+export type OutreachTone = 'professional' | 'friendly' | 'urgent';
+
+export const refineOutreachTone = (email: string, tone: OutreachTone): string => {
+  const lines = email.split('\n');
+  const subject = lines[0];
+  const body = lines.slice(1).join('\n');
+
+  if (tone === 'friendly') {
+    return `${subject.replace('Supporting', 'Excited for')}
+
+Hi there! Hope your week is going great.
+
+${body.replace('Dear [Contact Name],', '').replace('It was a pleasure', 'I really enjoyed').trim()}
+
+Best,
+[Your Name]`;
+  }
+
+  if (tone === 'urgent') {
+    return `${subject.replace('Supporting', 'URGENT: Growth Opportunity for')}
+
+Dear [Contact Name],
+
+I'm following up quickly as we have a limited-time window for some of our expansion financing programs that would be perfect for ${subject.split('of ')[1] || 'your business'}.
+
+${body.replace('Dear [Contact Name],', '').trim()}
+
+Time is of the essence, let's connect today!
+
+Best,
+[Your Name]`;
+  }
+
+  return email; // Professional is the default
+};
+
+export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'growth' | 'efficiency' | 'security' = 'growth') => {
   const isLead = 'status' in data;
   const industry = isLead ? (data as BusinessLead).industry : (data['Category'] || data['Category '] || '');
   const insight = getInsightForCategory(industry || '');
   const businessName = isLead ? (data as BusinessLead).businessName : (data['businessName'] || data['Entity Name'] || 'Unknown Business');
 
-  const strategy = `### 🎯 AI-Generated Strategy for ${businessName}
+  let strategy = '';
+  let email = '';
 
-**Industry Context:** ${insight?.overview || 'Standard small business operations.'}
+  const industryContext = insight?.overview || `The ${industry || 'local business'} sector requires specialized financial tools to manage operations and support growth.`;
+
+  if (focus === 'efficiency') {
+    strategy = `### 🎯 AI-Generated Strategy for ${businessName}
+
+**Industry Context:** ${industryContext}
 
 **1. Strategic Focus:**
-Focus on ${insight?.quickFacts?.[0] || 'operational efficiency'} and ${insight?.quickFacts?.[1] || 'financial security'}. Given the current market trends, they are likely looking for ways to optimize cash flow.
+Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and cash flow optimization. Given the current market trends, they are likely looking for ways to reduce manual financial tasks and protect their overhead. ${insight?.quickFacts?.[1] ? `Key Insight: ${insight.quickFacts[1]}` : ''}
 
 **2. Product Bundle:**
 - **Primary:** SMB Bundle 3 (AT 552) - Premier Business
-- **Secondary:** ACH Positive Pay (for fraud protection)
+- **Secondary:** Fiserv Merchant Services (to accelerate payment collection)
 - **Value-Add:** Business Credit Card with 1% Cash Back.
 
 **3. Discussion Starters:**
-- "How are you currently managing the rise in ${industry || 'operational'} costs?"
-- "We've noticed many ${industry || 'local'} firms are prioritizing fraud prevention this quarter..."`;
+- "How are you currently managing the rise in ${industry || 'operational'} costs and manual billing?"
+- "We've noticed many ${industry || 'local'} firms are prioritizing operational efficiency this quarter..."
 
-  const email = `Subject: Strategic Financial Efficiency for ${businessName}
+`;
+
+    email = `Subject: Strategic Financial Efficiency for ${businessName}
 
 Dear [Contact Name],
 
-As ${businessName} continues to grow in the ${industry || 'local'} market, I wanted to reach out regarding a few specific strategies we're using to help ${industry || 'similar'} firms protect their cash flow.
+As ${businessName} continues to grow in the ${industry || 'local'} market, I wanted to reach out regarding a few specific strategies we're using to help ${industry || 'similar'} firms protect their cash flow and improve operational efficiency.
 
-Based on recent industry benchmarks, we've identified three key areas where we can likely improve your operational efficiency.
+Based on recent industry benchmarks, we've identified three key areas where we can likely streamline your daily banking and implement more robust fraud protection.
 
-Would you be open to a brief 5-minute conversation next Tuesday?
+Would you be open to a brief 5-minute conversation next week?
 
 Best,
 [Your Name]`;
+  } else if (focus === 'security') {
+    strategy = `### 🎯 AI-Generated Strategy for ${businessName}
+
+**Industry Context:** ${industryContext}
+
+**1. Strategic Focus:**
+Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority. ${insight?.quickFacts?.[0] ? `Context: ${insight.quickFacts[0]}` : ''}
+
+**2. Product Bundle:**
+- **Primary:** ACH Positive Pay (for electronic payment protection)
+- **Secondary:** Check Positive Pay (to prevent physical check fraud)
+- **Value-Add:** SMB Bundle 3 (AT 552) - Premier Business with enhanced security features.
+
+**3. Discussion Starters:**
+- "Have you updated your ACH blocks or filters recently to account for new vendors?"
+- "We've noticed many ${industry || 'local'} firms are prioritizing fraud prevention this quarter—how are you currently securing your outgoing payments?"
+
+`;
+
+    email = `Subject: Protecting the Assets of ${businessName}
+
+Dear [Contact Name],
+
+As ${businessName} continues to expand, security and fraud prevention become increasingly critical. I’m reaching out to share some proactive measures we’re seeing ${industry || 'industry'} leaders implement to protect their outgoing payments.
+
+I’d like to share how our security-first banking structures can safeguard ${businessName} from the rising risks of electronic and check fraud.
+
+Would you be open to a brief conversation next Tuesday regarding your current security protocols?
+
+Best regards,
+[Your Name]`;
+  } else {
+    // Default to 'growth' focus
+    strategy = `### 🎯 AI-Generated Strategy for ${businessName}
+
+**Industry Context:** ${industryContext}
+
+**1. Strategic Focus:**
+Focus on ${insight ? 'leveraging sector-specific growth' : 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion while securing the relationship with a full-service banking suite. ${insight?.quickFacts?.[2] ? `Note: ${insight.quickFacts[2]}` : ''} We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
+
+**2. Product Bundle:**
+- **Primary:** SBA 7(a) Financing / Secured Lines of Credit (for materials & acquisition)
+- **Secondary:** SMB Bundle 3 (AT 552) - Premier Business (to grow deposits & streamline ops)
+- **Value-Add:** Treasury Solutions (ACH Positive Pay) and ADP Payroll to support workforce scaling.
+
+**3. Discussion Starters:**
+- "I've been reviewing how other firms in the ${industry || 'local'} sector are leveraging SBA programs for their expansion into developments and property flips..."
+- "What are your primary financial goals for ${businessName}? I'd love to walk through growth strategies and financing options that can support this next phase."
+
+`;
+
+    email = `Subject: Supporting the Growth of ${businessName}
+
+Dear [Contact Name],
+
+It was a pleasure reconnecting with you. [Bank Name] offers a wide range of business accounts and banking services designed to support small and medium-sized businesses. From what you shared, it sounds like your primary need is financing to support operations and upcoming projects. I want to ensure we recommend the best solutions for your goals.
+
+After speaking with my business banking partners, they suggested that the next best step is to schedule a call so we can better understand your financial needs. In general, they may ask a few key questions around revenue, project plans, and long‑term business objectives to determine the right product fit.
+
+Thank you again for the connecting—exciting to hear about your expansion into new construction, developments, and property flips. I’d be happy to walk through growth strategies and financing options that can support this next phase.
+
+Topics We Can Review on Our Call:
+• SBA Financing: Overview of SBA programs, qualification criteria, and timelines.
+• Business Lines of Credit: Flexible options to support cash flow, materials, and project timelines.
+• Term Loans & Business Funding: Solutions for equipment, property acquisition, or working capital for construction or renovation.
+• Growth Planning: Banking tools and structures designed for expanding development-focused businesses.
+
+Can you give me a few days and times you are available. I’ll coordinate a meeting with my business banker at your convenience.
+
+Looking forward to connecting and supporting your continued growth.
+
+Best regards,
+[Your Name]`;
+  }
 
   return { strategy, email };
 };
