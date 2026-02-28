@@ -30,33 +30,43 @@ export function isDocumentNumber(val: string): boolean {
   return /^([A-Za-z]\d{5,}|\d{10,12})$/.test(val.trim());
 }
 
+const VALLEY_REGEX = /valley/gi;
+const DOUBLE_SPACE_REGEX = /\s\s+/g;
+const AMP_REGEX = /&amp;/gi;
+const QUOTE_REGEX = /&#39;/g;
+
 export function scrubValue(value: any): any {
-  if (typeof value !== 'string') return value;
+  if (typeof value !== 'string' || value.length === 0) return value;
 
-  const lowerValue = value.toLowerCase();
-
-  // URL/Domain detection - if it contains valley and looks like a link or domain
-  if (lowerValue.includes('valley') && (
-    lowerValue.includes('http') ||
-    lowerValue.includes('www.') ||
-    lowerValue.includes('.com') ||
-    lowerValue.includes('.org') ||
-    lowerValue.includes('.net')
-  )) {
-    return 'https://www.google.com';
+  const hasV = value.includes('v') || value.includes('V');
+  if (hasV) {
+    const lowerValue = value.toLowerCase();
+    if (lowerValue.includes('valley')) {
+      if (lowerValue.includes('http') ||
+          lowerValue.includes('www.') ||
+          lowerValue.includes('.com') ||
+          lowerValue.includes('.org') ||
+          lowerValue.includes('.net')) {
+        return 'https://www.google.com';
+      }
+      value = value.replace(VALLEY_REGEX, '');
+    }
   }
 
-  // Remove "Valley" (case-insensitive)
-  let newValue = value.replace(/valley/gi, '');
+  if (value.includes('  ')) {
+    value = value.replace(DOUBLE_SPACE_REGEX, ' ');
+  }
 
-  // Clean up spaces: remove double spaces, trim leading/trailing
-  newValue = newValue.replace(/\s\s+/g, ' ').trim();
+  value = value.trim();
 
-  // Decode common HTML entities
-  newValue = newValue.replace(/&amp;/gi, '&');
-  newValue = newValue.replace(/&#39;/g, "'");
+  if (value.includes('&')) {
+    value = value.replace(AMP_REGEX, '&');
+  }
+  if (value.includes('&#39;')) {
+    value = value.replace(QUOTE_REGEX, "'");
+  }
 
-  return newValue;
+  return value;
 }
 
 export async function fetchManifest(): Promise<FileManifest[]> {
@@ -303,14 +313,26 @@ export async function dispatchUccAction(names: string[], mode: string, threshold
 }
 
 export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
+  // Construct absolute URL relative to the current page's directory
+  // This ensures Web Workers can correctly fetch the data files
+  const baseUrl = typeof window !== 'undefined'
+    ? new URL('.', window.location.href).href
+    : 'http://localhost/';
+  const cleanPath = file.path.replace(/^\.\//, '');
+  const url = new URL(cleanPath, baseUrl).href;
+
+  console.log(`[DataService] Loading: ${url}`);
+
   return new Promise((resolve, reject) => {
-    Papa.parse(file.path, {
+    Papa.parse(url, {
       download: true,
+      worker: true,
       header: false, // Detecting headers manually for flexibility
       skipEmptyLines: 'greedy',
       complete: (results) => {
         const data = results.data as string[][];
         if (!data || data.length === 0) {
+          console.warn(`[DataService] No data found in ${file.filename}`);
           resolve([]);
           return;
         }
@@ -533,16 +555,21 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         }
 
         // 4. Row Mapping
+        const fileZip = scrubValue(file.zip || '');
+        const fileLoc = scrubValue(file.location || '');
+        const fileSource = file.filename;
+        const fileType = file.type;
+
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
           headers.forEach((h, i) => {
             obj[h] = scrubValue(row[i] || '');
           });
           
-          obj._source = file.filename;
-          obj._type = file.type;
-          obj._zip = scrubValue(file.zip || obj['Zip'] || obj['ZIP'] || '');
-          obj._location = scrubValue(file.location || obj['Location'] || '');
+          obj._source = fileSource;
+          obj._type = fileType;
+          obj._zip = fileZip || scrubValue(obj['Zip'] || obj['ZIP'] || '');
+          obj._location = fileLoc || scrubValue(obj['Location'] || '');
           obj.Score = calculateScore(obj);
           
           return obj;
@@ -556,9 +583,13 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           });
         }
 
+        console.log(`[DataService] Completed: ${file.filename} (${rows.length} rows)`);
         resolve(rows);
       },
-      error: (err) => reject(err),
+      error: (err) => {
+        console.error(`[DataService] PapaParse Error for ${url}:`, err);
+        reject(err);
+      },
     });
   });
 }
