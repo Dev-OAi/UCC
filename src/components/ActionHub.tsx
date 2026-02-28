@@ -9,7 +9,7 @@ import {
 import { BusinessLead, LeadStatus, LeadType } from '../types';
 import { Modal, Input } from './ui';
 import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
-import { generateLeadIntelligence, refineOutreachTone, OutreachTone, OutreachMode, getProductBenefitSnippet } from '../lib/aiUtils';
+import { generateLeadIntelligence, refineOutreachTone, OutreachTone } from '../lib/aiUtils';
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { getAllProducts, getProductPoints } from '../lib/productData';
 import { getScoreDetails } from '../lib/scoring';
@@ -31,7 +31,6 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || '');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
-  const [activeMode, setActiveMode] = useState<OutreachMode>('intro');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
@@ -58,12 +57,12 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const intelligence = useMemo(() => {
     if (!selectedLead) return null;
-    const intel = generateLeadIntelligence(selectedLead, selectedLead.preferredTheme || 'growth', activeMode);
+    const intel = generateLeadIntelligence(selectedLead, selectedLead.preferredTheme || 'growth');
     if (activeTone !== 'professional') {
       intel.email = refineOutreachTone(intel.email, activeTone);
     }
     return intel;
-  }, [selectedLead, activeTone, activeMode]);
+  }, [selectedLead, activeTone]);
 
   const scoreDetails = useMemo(() => {
     if (!selectedLead) return null;
@@ -218,23 +217,6 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
         : l
     );
     onUpdateLeads(updatedLeads);
-    setCustomDraft(null); // Reset draft when strategy pivots
-  };
-
-  const injectProductBenefit = (productName: string) => {
-    if (!selectedLead) return;
-    const benefit = getProductBenefitSnippet(productName);
-    const currentText = customDraft || (intelligence?.email || '');
-
-    // Logic to inject before the closing or after the first paragraph
-    const paragraphs = currentText.split('\n\n');
-    if (paragraphs.length >= 2) {
-      paragraphs.splice(2, 0, benefit);
-      setCustomDraft(paragraphs.join('\n\n'));
-    } else {
-      setCustomDraft(currentText + '\n\n' + benefit);
-    }
-    setSelectedProduct(null);
   };
 
   return (
@@ -373,35 +355,6 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     )}
                 </div>
 
-                  {industryInsight?.authorityBenchmarks && (
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center mb-4">
-                        <TrendingUp className="w-4 h-4 mr-2 text-emerald-500" />
-                        Authority Benchmarks
-                      </h3>
-                      <div className="space-y-4">
-                        {industryInsight.authorityBenchmarks.map((bench, i) => (
-                          <div key={i} className="flex items-start space-x-3">
-                            <div className="mt-1 p-1 bg-emerald-50 dark:bg-emerald-900/20 rounded text-emerald-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-[10px] font-black text-gray-400 uppercase">{bench.label}</span>
-                                <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded">
-                                  {bench.value}
-                                </span>
-                              </div>
-                              <p className="text-xs font-medium text-gray-600 dark:text-slate-400 mt-0.5 leading-relaxed italic">
-                                "{bench.insight}"
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
@@ -479,34 +432,17 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
               <div className="w-full lg:w-1/2 flex flex-col overflow-y-auto p-4 md:p-6 space-y-6">
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
                   <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
-                    <div className="flex flex-col space-y-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                          <Mail className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <select
-                          value={selectedTemplateId}
-                          onChange={(e) => setSelectedTemplateId(e.target.value)}
-                          className="bg-transparent border-none text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider focus:ring-0 cursor-pointer p-0"
-                        >
-                          {combinedTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <Mail className="w-4 h-4 text-blue-600" />
                       </div>
-                      <div className="flex bg-gray-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700 w-fit">
-                        {(['intro', 'discovery', 'followup'] as OutreachMode[]).map((mode) => (
-                          <button
-                            key={mode}
-                            onClick={() => { setActiveMode(mode); setCustomDraft(null); }}
-                            className={`px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-tight transition-all ${
-                              activeMode === mode
-                                ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                                : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                          >
-                            {mode}
-                          </button>
-                        ))}
-                      </div>
+                      <select
+                        value={selectedTemplateId}
+                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                        className="bg-transparent border-none text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider focus:ring-0 cursor-pointer p-0"
+                      >
+                        {combinedTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
@@ -658,19 +594,12 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end pt-4">
             <button
               onClick={() => setSelectedProduct(null)}
-              className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-widest"
+              className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20"
             >
-              Cancel
-            </button>
-            <button
-              onClick={() => injectProductBenefit(selectedProduct?.name)}
-              className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Smart Inject into Email</span>
+              Got it
             </button>
           </div>
         </div>
