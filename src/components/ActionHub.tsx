@@ -9,13 +9,18 @@ import {
 import { BusinessLead, LeadStatus, LeadType } from '../types';
 import { Modal, Input } from './ui';
 import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
-import { generateLeadIntelligence } from '../lib/aiUtils';
+import { generateLeadIntelligence, refineOutreachTone, OutreachTone } from '../lib/aiUtils';
 import { getInsightForCategory } from '../lib/industryKnowledge';
+import { getAllProducts, getProductPoints } from '../lib/productData';
+import { getScoreDetails } from '../lib/scoring';
 
 interface ActionHubProps {
   leads: BusinessLead[];
   onSelectLead: (lead: BusinessLead) => void;
   onUpdateLeads: (leads: BusinessLead[]) => void;
+  onAddCallLog?: (entry: any) => void;
+  onAddEmailLog?: (entry: any) => void;
+  onAddMeetingLog?: (entry: any) => void;
 }
 
 export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpdateLeads }) => {
@@ -25,6 +30,9 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [editingTemplate, setEditingTemplate] = useState<OutreachTemplate | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || '');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
+  const [customDraft, setCustomDraft] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -49,7 +57,16 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const intelligence = useMemo(() => {
     if (!selectedLead) return null;
-    return generateLeadIntelligence(selectedLead, selectedLead.preferredTheme || 'growth');
+    const intel = generateLeadIntelligence(selectedLead, selectedLead.preferredTheme || 'growth');
+    if (activeTone !== 'professional') {
+      intel.email = refineOutreachTone(intel.email, activeTone);
+    }
+    return intel;
+  }, [selectedLead, activeTone]);
+
+  const scoreDetails = useMemo(() => {
+    if (!selectedLead) return null;
+    return getScoreDetails(selectedLead);
   }, [selectedLead]);
 
   const industryInsight = useMemo(() => {
@@ -94,15 +111,102 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const handleCopyAndLog = () => {
     if (!selectedLead || !currentTemplate) return;
-    const text = replacePlaceholders(currentTemplate.body, selectedLead);
+    const text = customDraft || replacePlaceholders(currentTemplate.body, selectedLead);
     navigator.clipboard.writeText(text);
+
+    const newActivity: LeadActivity = {
+      id: `act-${Date.now()}`,
+      type: 'Email',
+      date: new Date().toISOString(),
+      notes: `Outreach email sent using template: ${currentTemplate.name}`
+    };
 
     const updatedLeads = leads.map(l =>
       l.id === selectedLead.id
-        ? { ...l, status: LeadStatus.CONTACTED, lastUpdated: new Date().toISOString() }
+        ? {
+            ...l,
+            status: LeadStatus.CONTACTED,
+            lastUpdated: new Date().toISOString(),
+            activities: [newActivity, ...(l.activities || [])]
+          }
         : l
     );
     onUpdateLeads(updatedLeads);
+
+    onAddEmailLog?.({
+      timeSent: newActivity.date,
+      client: selectedLead.businessName,
+      subject: replacePlaceholders(currentTemplate.subject, selectedLead),
+      emailType: 'Outreach',
+      responseReceived: false,
+      nextStep: 'Wait for response'
+    });
+  };
+
+  const handleLogCall = () => {
+    if (!selectedLead) return;
+
+    const newActivity: LeadActivity = {
+      id: `act-${Date.now()}`,
+      type: 'Call',
+      date: new Date().toISOString(),
+      notes: 'Outbound call logged from Action Hub'
+    };
+
+    const updatedLeads = leads.map(l =>
+      l.id === selectedLead.id
+        ? {
+            ...l,
+            lastUpdated: new Date().toISOString(),
+            activities: [newActivity, ...(l.activities || [])]
+          }
+        : l
+    );
+    onUpdateLeads(updatedLeads);
+
+    onAddCallLog?.({
+      time: newActivity.date,
+      client: selectedLead.businessName,
+      contact: selectedLead.keyPrincipal || 'N/A',
+      callType: 'Outbound',
+      outcome: 'Logged',
+      nextAction: 'Follow up',
+      followUpDate: ''
+    });
+  };
+
+  const handleLogMeeting = () => {
+    if (!selectedLead) return;
+
+    const newActivity: LeadActivity = {
+      id: `act-${Date.now()}`,
+      type: 'Appointment',
+      date: new Date().toISOString(),
+      notes: 'Appointment scheduled via Action Hub'
+    };
+
+    const updatedLeads = leads.map(l =>
+      l.id === selectedLead.id
+        ? {
+            ...l,
+            status: LeadStatus.APPOINTMENT_SET,
+            lastUpdated: new Date().toISOString(),
+            activities: [newActivity, ...(l.activities || [])]
+          }
+        : l
+    );
+    onUpdateLeads(updatedLeads);
+
+    onAddMeetingLog?.({
+      time: newActivity.date,
+      client: selectedLead.businessName,
+      attendees: selectedLead.keyPrincipal || 'Owner',
+      meetingType: 'Intro Call',
+      summary: 'Initial meeting scheduled',
+      outcome: 'Scheduled',
+      nextAction: 'Prepare materials',
+      followUpDate: ''
+    });
   };
 
   const handleThemeChange = (theme: 'growth' | 'efficiency' | 'security') => {
@@ -236,6 +340,19 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                       {intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()}
                     </div>
                   </div>
+
+                    {scoreDetails && scoreDetails.insights.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Priority Insights</label>
+                        <div className="flex flex-wrap gap-2">
+                          {scoreDetails.insights.map((insight, i) => (
+                            <span key={i} className="px-2 py-1 bg-gray-50 dark:bg-slate-800 text-[9px] font-bold text-gray-500 dark:text-slate-400 rounded-lg border border-gray-100 dark:border-slate-700">
+                              {insight.label} (+{insight.points})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
@@ -245,12 +362,24 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                       Recommended Solutions
                     </h3>
                     <div className="space-y-2">
-                      {intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => (
-                        <div key={i} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800">
-                          <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                          <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">{item.replace('- ', '').split(':')[0]}</span>
-                        </div>
-                      ))}
+                      {intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => {
+                        const productName = item.replace('- ', '').split(':')[0].trim();
+                        const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'Recommendation based on industry needs.' })}
+                            className="w-full flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                              <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
+                            </div>
+                            <ChevronRight className="w-3 h-3 text-gray-400" />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -333,18 +462,49 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                   </div>
 
                   <div className="p-6 md:p-8 font-serif text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[400px]">
-                    {currentTemplate ? replacePlaceholders(currentTemplate.body, selectedLead) : 'Template body will appear here...'}
+                    {currentTemplate ? (
+                      <textarea
+                        value={customDraft !== null ? customDraft : replacePlaceholders(currentTemplate.body, selectedLead)}
+                        onChange={(e) => setCustomDraft(e.target.value)}
+                        className="w-full h-full min-h-[350px] bg-transparent border-none focus:ring-0 p-0 resize-none"
+                      />
+                    ) : 'Template body will appear here...'}
+                  </div>
+
+                  <div className="px-6 py-3 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Modify Tone</span>
+                    <div className="flex space-x-2">
+                      {(['professional', 'friendly', 'urgent'] as OutreachTone[]).map((tone) => (
+                        <button
+                          key={tone}
+                          onClick={() => setActiveTone(tone)}
+                          className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all ${
+                            activeTone === tone
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-gray-100 dark:bg-slate-800 text-gray-500 hover:text-gray-700 dark:hover:text-slate-300'
+                          }`}
+                        >
+                          {tone}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-6 w-full md:w-auto justify-around md:justify-start">
-                      <button className="flex flex-col items-center space-y-1 group">
+                      <button
+                        onClick={handleLogCall}
+                        className="flex flex-col items-center space-y-1 group"
+                      >
                         <div className="p-2 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-blue-500 transition-colors shadow-sm">
                           <Phone className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
                         </div>
                         <span className="text-[10px] font-bold text-gray-500 group-hover:text-blue-600">Log Call</span>
                       </button>
-                      <button className="flex flex-col items-center space-y-1 group">
+                      <button
+                        onClick={handleLogMeeting}
+                        className="flex flex-col items-center space-y-1 group"
+                      >
                         <div className="p-2 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-amber-500 transition-colors shadow-sm">
                           <Calendar className="w-4 h-4 text-gray-500 group-hover:text-amber-600" />
                         </div>
@@ -392,6 +552,58 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        title="Product Details"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600">
+              <Package className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">{selectedProduct?.name}</h3>
+              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                Potential Value: {getProductPoints(selectedProduct?.name || '')} Points
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Product Summary</label>
+              <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+                {selectedProduct?.summary || selectedProduct?.details || 'Strategically recommended based on business needs and industry benchmarks.'}
+              </p>
+            </div>
+
+            {selectedProduct?.tiers && (
+              <div className="pt-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Benefit Tiers</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {selectedProduct.tiers.map((tier: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs">
+                      <span className="font-medium text-gray-600 dark:text-slate-400">{tier.tier}</span>
+                      <span className="font-bold text-blue-600">+{tier.points} PTS</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         isOpen={isTemplateModalOpen}

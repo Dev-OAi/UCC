@@ -60,6 +60,42 @@ export const generateAiManifest = (data: DataRow | BusinessLead) => {
   return manifest;
 };
 
+export type OutreachTone = 'professional' | 'friendly' | 'urgent';
+
+export const refineOutreachTone = (email: string, tone: OutreachTone): string => {
+  const lines = email.split('\n');
+  const subject = lines[0];
+  const body = lines.slice(1).join('\n');
+
+  if (tone === 'friendly') {
+    return `${subject.replace('Supporting', 'Excited for')}
+
+Hi there! Hope your week is going great.
+
+${body.replace('Dear [Contact Name],', '').replace('It was a pleasure', 'I really enjoyed').trim()}
+
+Best,
+[Your Name]`;
+  }
+
+  if (tone === 'urgent') {
+    return `${subject.replace('Supporting', 'URGENT: Growth Opportunity for')}
+
+Dear [Contact Name],
+
+I'm following up quickly as we have a limited-time window for some of our expansion financing programs that would be perfect for ${subject.split('of ')[1] || 'your business'}.
+
+${body.replace('Dear [Contact Name],', '').trim()}
+
+Time is of the essence, let's connect today!
+
+Best,
+[Your Name]`;
+  }
+
+  return email; // Professional is the default
+};
+
 export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'growth' | 'efficiency' | 'security' = 'growth') => {
   const isLead = 'status' in data;
   const industry = isLead ? (data as BusinessLead).industry : (data['Category'] || data['Category '] || '');

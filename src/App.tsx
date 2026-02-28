@@ -938,6 +938,9 @@ function App() {
                 setSelectedLeadId(lead.id);
                 setIsRightSidebarOpen(true);
               }}
+              onAddCallLog={addCallEntry}
+              onAddEmailLog={addEmailEntry}
+              onAddMeetingLog={addMeetingEntry}
             />
           ) : activeTab === 'SMB Selector' ? (
             <SmbCheckingSelector setActivePage={setActiveTab} />
