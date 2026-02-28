@@ -262,7 +262,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
           {expanded.categories && (
             <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
-              {types.map(type => (
+              {types.includes('All') && (
+                <>
+                  <button
+                    onClick={() => handleTabClick('All')}
+                    role="tab"
+                    aria-selected={activeTab === 'All'}
+                    className={`w-full flex items-center px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      activeTab === 'All'
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                        : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
+                    }`}
+                  >
+                    <Layers className={`w-3.5 h-3.5 mr-2 ${activeTab === 'All' ? 'text-blue-500' : 'text-gray-400 dark:text-slate-600'}`} />
+                    All Hub
+                  </button>
+                  <div className="mx-3 my-2 border-t border-gray-100 dark:border-slate-800" />
+                </>
+              )}
+              {types.filter(type => type !== 'All').map(type => (
                 <button
                   key={type}
                   onClick={() => handleTabClick(type)}
