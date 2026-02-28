@@ -140,16 +140,16 @@ Best regards,
 **Industry Context:** ${industryContext}
 
 **1. Strategic Focus:**
-Focus on ${insight?.quickFacts?.[2] || 'expansion opportunities'} and long-term capital strategy. As ${businessName} expands, they will need flexible financing and scalable treasury solutions to support new projects.
+Focus on ${insight?.quickFacts?.[2] || 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion (specifically into developments or new projects) while securing the relationship with a full-service banking suite. We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
 
 **2. Product Bundle:**
-- **Primary:** SBA 7(a) Financing or Secured Business Lines of Credit
-- **Secondary:** SMB Bundle 3 (AT 552) - Premier Business
-- **Value-Add:** ADP Payroll Services (to support a growing workforce).
+- **Primary:** SBA 7(a) Financing / Secured Lines of Credit (for materials & acquisition)
+- **Secondary:** SMB Bundle 3 (AT 552) - Premier Business (to grow deposits & streamline ops)
+- **Value-Add:** Treasury Solutions (ACH Positive Pay) and ADP Payroll to support workforce scaling.
 
 **3. Discussion Starters:**
-- "I've been reviewing how other firms in the ${industry || 'local'} sector are leveraging SBA programs for their expansion projects..."
-- "What are your primary financial goals for ${businessName} as you move into this next phase of growth?"
+- "I've been reviewing how other firms in the ${industry || 'local'} sector are leveraging SBA programs for their expansion into developments and property flips..."
+- "What are your primary financial goals for ${businessName}? I'd love to walk through growth strategies and financing options that can support this next phase."
 
 `;
 
@@ -157,11 +157,13 @@ Focus on ${insight?.quickFacts?.[2] || 'expansion opportunities'} and long-term 
 
 Dear [Contact Name],
 
-It was a pleasure reconnecting with you. [Bank Name] offers a wide range of business accounts and banking services specifically designed to support the expansion of small and medium-sized businesses like ${businessName}.
+It was a pleasure reconnecting with you. [Bank Name] offers a wide range of business accounts and banking services designed to support small and medium-sized businesses. From what you shared, it sounds like your primary need is financing to support operations and upcoming projects. I want to ensure we recommend the best solutions for your goals.
 
-Based on my review of the ${industry || 'local'} market, I’ve identified several growth strategies—ranging from SBA financing options to optimized scaling structures—that could support your upcoming expansion phase.
+After speaking with my business banking partners, they suggested that the next best step is to schedule a call so we can better understand your financial needs. In general, they may ask a few key questions around revenue, project plans, and long‑term business objectives to determine the right product fit.
 
-Would you be open to a brief call next week to discuss which solutions best align with your growth goals?
+Thank you again for the connecting—exciting to hear about your expansion into new construction, developments, and property flips. I’d be happy to walk through growth strategies and financing options that can support this next phase.
+
+Would you be open to a brief call next week?
 
 Best regards,
 [Your Name]`;
