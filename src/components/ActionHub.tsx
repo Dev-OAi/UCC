@@ -29,13 +29,18 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<OutreachTemplate | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || '');
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1280);
+  const [activeHubTab, setActiveHubTab] = useState<'strategy' | 'outreach'>('strategy');
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1280);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -222,7 +227,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   return (
     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-950 overflow-hidden h-full">
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+      <div className="p-3 md:p-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {isMobile && selectedLeadId && (
@@ -233,14 +238,14 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                  <ArrowLeft className="w-5 h-5" />
                </button>
             )}
-            <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/20">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/20">
+              <Zap className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-lg md:text-xl font-black text-gray-900 dark:text-white tracking-tight">
+              <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                 Action Hub
               </h2>
-              <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400">Transform high-priority leads into active appointments</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Transform high-priority leads into active appointments</p>
             </div>
           </div>
           {!isMobile && (
@@ -249,24 +254,24 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                 setEditingTemplate(null);
                 setIsTemplateModalOpen(true);
               }}
-              className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-750 transition-all shadow-sm"
+              className="flex items-center space-x-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-[10px] font-bold text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-750 transition-all shadow-sm"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               <span>Create Template</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Hot Leads Queue */}
-        <div className={`${isMobile && selectedLeadId ? 'hidden' : 'flex'} w-full lg:w-80 xl:w-96 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden`}>
-          <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
+        <div className={`${isMobile && selectedLeadId ? 'hidden' : 'flex'} w-full md:w-64 lg:w-72 xl:w-80 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden shrink-0 transition-all`}>
+          <div className="p-3 border-b border-gray-50 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
               <Clock className="w-3 h-3 mr-1.5" />
               Hot Leads Queue
             </span>
-            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">
+            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">
               {hotLeads.length} NEW
             </span>
           </div>
@@ -278,22 +283,22 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                 onClick={() => setSelectedLeadId(lead.id)}
                 className={`w-full p-4 text-left transition-all ${
                   selectedLeadId === lead.id
-                    ? 'bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-blue-600'
-                    : 'hover:bg-gray-50 dark:hover:bg-slate-800/50 border-l-4 border-transparent'
+                    ? 'bg-blue-50/50 dark:bg-blue-900/10 border-l-2 border-blue-600'
+                    : 'hover:bg-gray-50 dark:hover:bg-slate-800/50 border-l-2 border-transparent'
                 }`}
               >
-                <div className="flex items-start justify-between mb-1">
-                  <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate pr-2">
+                <div className="flex items-start justify-between mb-0.5">
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate pr-2">
                     {lead.businessName}
                   </h4>
-                  <span className="text-[9px] font-medium text-gray-400 shrink-0">
+                  <span className="text-[10px] font-medium text-gray-400 shrink-0">
                     {new Date(lead.lastUpdated).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-[10px] text-gray-500 dark:text-slate-400">{lead.industry}</span>
-                  <span className="text-[10px] text-gray-300 dark:text-slate-600">•</span>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                  <span className="text-[9px] text-gray-500 dark:text-slate-400">{lead.industry}</span>
+                  <span className="text-[9px] text-gray-300 dark:text-slate-600">•</span>
+                  <span className={`text-[8px] font-bold px-1 py-0.5 rounded uppercase ${
                     lead.status === LeadStatus.NEW ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                   }`}>
                     {lead.status}
@@ -304,27 +309,52 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
           </div>
         </div>
 
-        {/* Command Center - Side-by-Side on Desktop, Stacked on Mobile/Tablet */}
+        {/* Command Center - Side-by-Side on Desktop, Tabbed on Mobile/Tablet */}
         <div className={`${isMobile && !selectedLeadId ? 'hidden' : 'flex'} flex-1 flex flex-col bg-gray-50 dark:bg-slate-950 overflow-hidden`}>
           {selectedLead ? (
-            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            <div className="flex-1 flex flex-col xl:flex-row overflow-hidden">
+              {(isMobile || isTablet) && (
+                <div className="flex bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 shrink-0 sticky top-0 z-20">
+                  <button
+                    onClick={() => setActiveHubTab('strategy')}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${
+                      activeHubTab === 'strategy'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
+                        : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    1. Strategy & Intel
+                  </button>
+                  <button
+                    onClick={() => setActiveHubTab('outreach')}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${
+                      activeHubTab === 'outreach'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
+                        : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    2. Outreach Composer
+                  </button>
+                </div>
+              )}
+
               {/* Left Panel: Strategic Focus & Intelligence */}
-              <div className="w-full lg:w-1/2 flex flex-col border-r border-gray-200 dark:border-slate-800 overflow-y-auto p-4 md:p-6 space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-3 opacity-5">
-                    <BookOpen className="w-16 h-16" />
+              <div className={`${(isMobile || isTablet) && activeHubTab !== 'strategy' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col border-r border-gray-200 dark:border-slate-800 overflow-y-auto p-4 md:p-6 space-y-4`}>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-2 opacity-5">
+                    <BookOpen className="w-12 h-12" />
                   </div>
                   <div className="flex items-center justify-between mb-4 relative z-10">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-                      <Target className="w-4 h-4 mr-2 text-blue-600" />
+                    <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                      <Target className="w-3.5 h-3.5 mr-2 text-blue-600" />
                       Strategic Focus
                     </h3>
-                    <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700">
+                    <div className="flex bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700">
                       {(['growth', 'efficiency', 'security'] as const).map((theme) => (
                         <button
                           key={theme}
                           onClick={() => handleThemeChange(theme)}
-                          className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all ${
+                          className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight transition-all ${
                             (selectedLead.preferredTheme || 'growth') === theme
                               ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
                               : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'
@@ -336,17 +366,17 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     </div>
                   </div>
                   <div className="prose prose-sm dark:prose-invert max-w-none relative z-10">
-                    <div className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                    <div className="text-sm md:text-base text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
                       {intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()}
                     </div>
                   </div>
 
                     {scoreDetails && scoreDetails.insights.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Priority Insights</label>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800">
+                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Priority Insights</label>
+                        <div className="flex flex-wrap gap-1.5">
                           {scoreDetails.insights.map((insight, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-50 dark:bg-slate-800 text-[9px] font-bold text-gray-500 dark:text-slate-400 rounded-lg border border-gray-100 dark:border-slate-700">
+                            <span key={i} className="px-1.5 py-0.5 bg-gray-50 dark:bg-slate-800 text-[8px] font-bold text-gray-500 dark:text-slate-400 rounded-md border border-gray-100 dark:border-slate-700">
                               {insight.label} (+{insight.points})
                             </span>
                           ))}
@@ -355,10 +385,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-3">
+                  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
-                      <Package className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                      <Package className="w-3 h-3 mr-2 text-blue-500" />
                       Recommended Solutions
                     </h3>
                     <div className="space-y-2">
@@ -370,27 +400,27 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           <button
                             key={i}
                             onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'Recommendation based on industry needs.' })}
-                            className="w-full flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
+                            className="w-full flex items-center justify-between p-1.5 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
                           >
                             <div className="flex items-center space-x-2">
                               <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                              <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
+                              <span className="text-[10px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
                             </div>
-                            <ChevronRight className="w-3 h-3 text-gray-400" />
+                            <ChevronRight className="w-2.5 h-2.5 text-gray-400" />
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
-                      <MessageCircle className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                      <MessageCircle className="w-3 h-3 mr-2 text-blue-500" />
                       Discussion Starters
                     </h3>
                     <div className="space-y-2">
                       {intelligence?.strategy.split('**3. Discussion Starters:**')[1]?.trim().split('\n').filter(s => s.trim().startsWith('-')).slice(0, 3).map((starter, i) => (
-                        <div key={i} className="p-2.5 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-[10px] font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
+                        <div key={i} className="p-2 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-xs font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
                           "{starter.replace('- ', '').replace(/"/g, '')}"
                         </div>
                       ))}
@@ -399,26 +429,26 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                 </div>
 
                 {industryInsight && (
-                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-6 rounded-2xl shadow-xl shadow-blue-500/10 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                      {selectedLead.industry?.includes('Construction') ? <HardHat className="w-12 h-12" /> : <Building2 className="w-12 h-12" />}
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-4 rounded-xl shadow-xl shadow-blue-500/10 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10">
+                      {selectedLead.industry?.includes('Construction') ? <HardHat className="w-10 h-10" /> : <Building2 className="w-10 h-10" />}
                     </div>
-                    <div className="flex items-center space-x-2 mb-4">
-                      <div className="p-1.5 bg-white/20 rounded-lg">
-                        <Info className="w-4 h-4" />
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="p-1 bg-white/20 rounded-md">
+                        <Info className="w-3 h-3" />
                       </div>
-                      <h3 className="text-xs font-black uppercase tracking-widest opacity-90">
+                      <h3 className="text-[10px] font-black uppercase tracking-widest opacity-90">
                         {selectedLead.industry} Intel
                       </h3>
                     </div>
-                    <div className="space-y-4 relative z-10">
-                      <p className="text-xs font-medium leading-relaxed opacity-90">
+                    <div className="space-y-3 relative z-10">
+                      <p className="text-[10px] font-medium leading-relaxed opacity-90">
                         {industryInsight.overview}
                       </p>
-                      <div className="flex flex-wrap gap-2 pt-2">
+                      <div className="flex flex-wrap gap-1.5 pt-1">
                         {industryInsight.quickFacts?.slice(0, 2).map((fact, i) => (
-                          <div key={i} className="flex items-center space-x-2 px-3 py-1.5 bg-white/10 rounded-xl text-[10px] font-bold backdrop-blur-sm border border-white/5">
-                            <TrendingUp className="w-3 h-3 text-blue-200" />
+                          <div key={i} className="flex items-center space-x-1.5 px-2 py-1 bg-white/10 rounded-lg text-[9px] font-bold backdrop-blur-sm border border-white/5">
+                            <TrendingUp className="w-2.5 h-2.5 text-blue-200" />
                             <span>{fact}</span>
                           </div>
                         ))}
@@ -429,39 +459,39 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
               </div>
 
               {/* Right Panel: Outreach Composer */}
-              <div className="w-full lg:w-1/2 flex flex-col overflow-y-auto p-4 md:p-6 space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
-                  <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <Mail className="w-4 h-4 text-blue-600" />
+              <div className={`${(isMobile || isTablet) && activeHubTab !== 'outreach' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col overflow-y-auto p-4 md:p-6 space-y-4`}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
+                  <div className="p-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
+                    <div className="flex items-center space-x-2">
+                      <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <Mail className="w-3.5 h-3.5 text-blue-600" />
                       </div>
                       <select
                         value={selectedTemplateId}
                         onChange={(e) => setSelectedTemplateId(e.target.value)}
-                        className="bg-transparent border-none text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider focus:ring-0 cursor-pointer p-0"
+                        className="bg-transparent border-none text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-wider focus:ring-0 cursor-pointer p-0"
                       >
                         {combinedTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                       </select>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
                       <button
                         onClick={() => currentTemplate && setEditingTemplate(currentTemplate)}
-                        className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="p-6 border-b border-gray-50 dark:border-slate-800/50">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Subject Line</label>
-                    <div className="text-sm font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-800">
+                  <div className="p-4 border-b border-gray-50 dark:border-slate-800/50">
+                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Subject Line</label>
+                    <div className="text-xs font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800/50 p-2 rounded-lg border border-gray-100 dark:border-slate-800">
                       {currentTemplate ? replacePlaceholders(currentTemplate.subject, selectedLead) : 'Select a template'}
                     </div>
                   </div>
 
-                  <div className="p-6 md:p-8 font-serif text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[400px]">
+                  <div className="p-6 md:p-8 font-serif text-sm md:text-base text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap min-h-[400px]">
                     {currentTemplate ? (
                       <textarea
                         value={customDraft !== null ? customDraft : replacePlaceholders(currentTemplate.body, selectedLead)}
@@ -471,14 +501,14 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     ) : 'Template body will appear here...'}
                   </div>
 
-                  <div className="px-6 py-3 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Modify Tone</span>
-                    <div className="flex space-x-2">
+                  <div className="px-4 py-2 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Modify Tone</span>
+                    <div className="flex space-x-1.5">
                       {(['professional', 'friendly', 'urgent'] as OutreachTone[]).map((tone) => (
                         <button
                           key={tone}
                           onClick={() => setActiveTone(tone)}
-                          className={`px-2 py-1 rounded-md text-[9px] font-bold uppercase transition-all ${
+                          className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase transition-all ${
                             activeTone === tone
                               ? 'bg-blue-600 text-white shadow-sm'
                               : 'bg-gray-100 dark:bg-slate-800 text-gray-500 hover:text-gray-700 dark:hover:text-slate-300'
@@ -490,51 +520,46 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     </div>
                   </div>
 
-                  <div className="p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center space-x-6 w-full md:w-auto justify-around md:justify-start">
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center space-x-4 w-full md:w-auto justify-around md:justify-start">
                       <button
                         onClick={handleLogCall}
-                        className="flex flex-col items-center space-y-1 group"
+                        className="flex flex-col items-center space-y-0.5 group"
                       >
-                        <div className="p-2 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-blue-500 transition-colors shadow-sm">
-                          <Phone className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                        <div className="p-1.5 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-blue-500 transition-colors shadow-sm">
+                          <Phone className="w-3.5 h-3.5 text-gray-500 group-hover:text-blue-600" />
                         </div>
-                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-blue-600">Log Call</span>
+                        <span className="text-[8px] font-bold text-gray-500 group-hover:text-blue-600">Log Call</span>
                       </button>
                       <button
                         onClick={handleLogMeeting}
-                        className="flex flex-col items-center space-y-1 group"
+                        className="flex flex-col items-center space-y-0.5 group"
                       >
-                        <div className="p-2 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-amber-500 transition-colors shadow-sm">
-                          <Calendar className="w-4 h-4 text-gray-500 group-hover:text-amber-600" />
+                        <div className="p-1.5 bg-white dark:bg-slate-800 rounded-full border border-gray-200 dark:border-slate-700 group-hover:border-amber-500 transition-colors shadow-sm">
+                          <Calendar className="w-3.5 h-3.5 text-gray-500 group-hover:text-amber-600" />
                         </div>
-                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-amber-600">Schedule</span>
+                        <span className="text-[8px] font-bold text-gray-500 group-hover:text-amber-600">Schedule</span>
                       </button>
                     </div>
                     <button
                       onClick={handleCopyAndLog}
-                      className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
+                      className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center justify-center"
                     >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Copy & Claim Lead
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                      Copy & Claim
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-amber-50 dark:bg-amber-900/10 rounded-2xl p-4 border border-amber-100 dark:border-amber-900/20 flex items-start space-x-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-2">
+                <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-3 border border-amber-100 dark:border-amber-900/20 flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
                     <div>
-                      <h4 className="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-tight mb-1">Banker Tip</h4>
-                      <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed font-medium">
+                      <h4 className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-tight mb-0.5">Banker Tip</h4>
+                      <p className="text-[9px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed font-medium">
                         {selectedLead.industry?.includes('Construction')
                           ? 'Construction clients prioritize speed of funding. Mention our streamlined SBA process to secure the appointment.'
-                          : 'Balance strategic relationship building with specific high-point product triggers like SMB Bundle 3 or ACH Positive Pay.'}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-amber-200/50 dark:border-amber-900/30">
-                      <p className="text-[10px] text-amber-600 dark:text-amber-500 font-bold italic">
-                        Tip: Use the theme selector to pivot the strategy, or 'Edit' to make manual changes to the script.
+                          : 'Balance relationship building with triggers like SMB Bundle 3 or ACH Positive Pay.'}
                       </p>
                     </div>
                   </div>
