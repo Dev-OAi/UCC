@@ -5,6 +5,7 @@ export interface IndustryInsight {
   industryStructure?: string;
   profitsAndOperations?: string;
   geographicBreakdown?: string;
+  authorityBenchmarks?: { label: string; value: string; insight: string }[];
   financialBenchmarks?: string;
   capitalFinancing?: string;
   businessValuation?: string;
@@ -19,6 +20,11 @@ export const INDUSTRY_KNOWLEDGE: Record<string, IndustryInsight> = {
       "Requires significant working capital for materials and milestone payments.",
       "SBA 7(a) and 504 loans are primary financing vehicles for expansion.",
       "High insurance and bonding requirements are standard."
+    ],
+    authorityBenchmarks: [
+      { label: "Cash Reserves", value: "20% Higher", insight: "Firms using automated Treasury Bundles maintain 20% higher cash reserves for material spikes." },
+      { label: "Funding Speed", value: "3.5 Days", insight: "Top-tier developers prioritize banks that can approve equipment lines in under 4 days." },
+      { label: "Payroll Efficiency", value: "15% Savings", insight: "Using integrated payroll (ADP) reduces overhead costs by 15% on multi-site projects." }
     ]
   },
   "Real Estate Development": {
@@ -27,6 +33,10 @@ export const INDUSTRY_KNOWLEDGE: Record<string, IndustryInsight> = {
       "Flexible lines of credit are critical for managing acquisition timelines.",
       "Property acquisition usually requires specialized term loans.",
       "Merchant services for lease/sale deposits improve liquidity."
+    ],
+    authorityBenchmarks: [
+      { label: "Acquisition Speed", value: "48 Hours", insight: "Successful flippers require 'Proof of Funds' and earnest money wires in under 48 hours." },
+      { label: "Debt-to-Equity", value: "1.2x Industry Avg", insight: "High-growth developers maintain higher leverage by utilizing Secured Lines of Credit." }
     ]
   },
   "Abrasive Product Manufacturers": {
