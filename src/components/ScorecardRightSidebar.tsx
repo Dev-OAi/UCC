@@ -43,6 +43,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   const [editingActivityId, setEditingActivityId] = useState<string | null>(null);
   const [editingActivityText, setEditingActivityText] = useState('');
   const [aiCustomPrompt, setAiCustomPrompt] = useState<string | null>(null);
+  const [saveScriptName, setSaveScriptName] = useState<string | null>(null);
   const [isManifestCopied, setIsManifestCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -98,13 +99,54 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
   const handleAiModify = (action: string) => {
     setIsAiMenuOpen(false);
 
-    let modification = action;
     if (action === 'Custom...') {
       setAiCustomPrompt('');
       return;
     }
 
-    applyAiModification(modification);
+    if (action === 'Save as Custom...') {
+      setSaveScriptName('');
+      return;
+    }
+
+    if (['Focus on Growth', 'Focus on Efficiency', 'Focus on Security'].includes(action)) {
+       const focusMap: Record<string, 'growth' | 'efficiency' | 'security'> = {
+         'Focus on Growth': 'growth',
+         'Focus on Efficiency': 'efficiency',
+         'Focus on Security': 'security'
+       };
+       const newFocus = focusMap[action];
+       onUpdateLead({
+         ...selectedLead,
+         preferredTheme: newFocus,
+         lastUpdated: new Date().toISOString()
+       });
+       handleGenerateIntelligence(newFocus);
+       return;
+    }
+
+    // Check if it's a saved script
+    if (action.startsWith('LOAD_SAVED:')) {
+      const scriptId = action.replace('LOAD_SAVED:', '');
+      const saved = selectedLead.savedScripts?.find(s => s.id === scriptId);
+      if (saved) {
+        setScripts(prev => ({
+          ...prev,
+          strategy: saved.strategy,
+          email: saved.email
+        }));
+        onUpdateLead({
+          ...selectedLead,
+          preferredTheme: `Saved: ${saved.name}`,
+          bundleScript: saved.strategy,
+          emailScript: saved.email,
+          lastUpdated: new Date().toISOString()
+        });
+      }
+      return;
+    }
+
+    applyAiModification(action);
   };
 
   const applyAiModification = (modification: string) => {
@@ -114,6 +156,26 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
     if (activeTab === 'Strategy') setScripts(s => ({ ...s, strategy: prefix + s.strategy }));
     if (activeTab === 'Email') setScripts(s => ({ ...s, email: prefix + s.email }));
     setAiCustomPrompt(null);
+  };
+
+  const handleSaveAsCustom = (name: string) => {
+    const newSavedScript = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: name,
+      strategy: scripts.strategy,
+      email: scripts.email,
+      date: new Date().toISOString()
+    };
+
+    onUpdateLead({
+      ...selectedLead,
+      savedScripts: [...(selectedLead.savedScripts || []), newSavedScript],
+      preferredTheme: `Saved: ${name}`,
+      bundleScript: scripts.strategy,
+      emailScript: scripts.email,
+      lastUpdated: new Date().toISOString()
+    });
+    setSaveScriptName(null);
   };
 
   const handleSave = () => {
@@ -174,13 +236,15 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
     setTimeout(() => setIsManifestCopied(false), 3000);
   };
 
-  const handleGenerateIntelligence = () => {
+  const handleGenerateIntelligence = (focus?: 'growth' | 'efficiency' | 'security') => {
     if (!selectedLead) return;
     setIsGenerating(true);
 
+    const theme = focus || (selectedLead.preferredTheme as any) || 'growth';
+
     // Simulate generation delay
     setTimeout(() => {
-      const { strategy, email } = generateLeadIntelligence(selectedLead);
+      const { strategy, email } = generateLeadIntelligence(selectedLead, theme);
       setScripts(prev => ({
         ...prev,
         strategy: strategy,
@@ -241,6 +305,16 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            {/* Theme Badge */}
+            <div className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${
+              selectedLead.preferredTheme === 'efficiency' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+              selectedLead.preferredTheme === 'security' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+              selectedLead.preferredTheme?.startsWith('Saved:') ? 'bg-purple-50 text-purple-600 border-purple-100' :
+              'bg-blue-50 text-blue-600 border-blue-100'
+            }`}>
+              {selectedLead.preferredTheme || 'growth'}
+            </div>
+
             <button
               onClick={() => openSearch('linkedin')}
               className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-colors"
@@ -326,7 +400,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={handleGenerateIntelligence}
+                    onClick={() => handleGenerateIntelligence()}
                     disabled={isGenerating}
                     className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all disabled:opacity-50"
                   >
@@ -345,7 +419,53 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                     </button>
 
                   {isAiMenuOpen && (
-                    <div className="absolute left-0 top-full mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 py-1">
+                    <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 py-1">
+                      <div className="px-4 py-1 border-b border-slate-50 dark:border-slate-700">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Theme Switcher</span>
+                      </div>
+                      {['Focus on Growth', 'Focus on Efficiency', 'Focus on Security'].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => handleAiModify(opt)}
+                          className="w-full text-left px-4 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center"
+                        >
+                          <Zap className="w-3 h-3 mr-2" />
+                          {opt}
+                        </button>
+                      ))}
+
+                      {selectedLead.savedScripts && selectedLead.savedScripts.length > 0 && (
+                        <>
+                          <div className="px-4 py-1 border-b border-t border-slate-50 dark:border-slate-700 mt-1">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Load Saved</span>
+                          </div>
+                          {selectedLead.savedScripts.map(script => (
+                            <button
+                              key={script.id}
+                              onClick={() => handleAiModify(`LOAD_SAVED:${script.id}`)}
+                              className="w-full text-left px-4 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center"
+                            >
+                              <Save className="w-3 h-3 mr-2" />
+                              {script.name}
+                            </button>
+                          ))}
+                        </>
+                      )}
+
+                      <div className="px-4 py-1 border-b border-t border-slate-50 dark:border-slate-700 mt-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Customization</span>
+                      </div>
+                      <button
+                        onClick={() => handleAiModify('Save as Custom...')}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center"
+                      >
+                        <Save className="w-3 h-3 mr-2" />
+                        Save current as Custom...
+                      </button>
+
+                      <div className="px-4 py-1 border-b border-t border-slate-50 dark:border-slate-700 mt-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Refine Tone</span>
+                      </div>
                       {['Rephrase', 'Shorten', 'Elaborate', 'More Formal', 'More Casual', 'Custom...'].map(opt => (
                         <button
                           key={opt}
@@ -398,7 +518,7 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                     className="absolute bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center space-x-2"
                   >
                     <Save className="w-3.5 h-3.5" />
-                    <span>Save Template</span>
+                    <span>Save Changes</span>
                   </button>
                 )}
               </div>
@@ -650,8 +770,11 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
                     {[
                       { name: 'SMB Bundle 3 (AT 552) - Premier Business', benefit: 'Highest value bundle for complex operational needs.' },
                       { name: 'Business Line of Credit (Secured)', benefit: 'Flexible working capital to manage seasonal cash flow.' },
+                      { name: 'SBA 7(a) Financing', benefit: 'Support for equipment, acquisition, or working capital.' },
+                      { name: 'Fiserv Merchant Services', benefit: 'Streamline payment collection and improve cash flow.' },
                       { name: 'ACH Positive Pay', benefit: 'Critical fraud prevention for outgoing business payments.' },
-                      { name: 'Business Credit Card', benefit: '1% cash back on all operational spend.' }
+                      { name: 'Business Credit Card', benefit: '1% cash back on all operational spend to maximize returns.' },
+                      { name: 'ADP Payroll Services', benefit: 'Automated payroll and tax compliance for your team.' }
                     ].map((prod, i) => {
                       const isAssigned = selectedLead.productsSold?.includes(prod.name);
                       if (metrics.some(m => m.name === prod.name)) return null; // Don't duplicate if already in scorecard
@@ -719,43 +842,80 @@ export const ScorecardRightSidebar: React.FC<ScorecardRightSidebarProps> = ({
           />
         </div>
       </Modal>
+
+      <Modal
+        isOpen={saveScriptName !== null}
+        onClose={() => setSaveScriptName(null)}
+        title="Save as Custom Template"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <button onClick={() => setSaveScriptName(null)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-widest transition-colors">Cancel</button>
+            <button
+              onClick={() => saveScriptName && handleSaveAsCustom(saveScriptName)}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all uppercase tracking-widest"
+              disabled={!saveScriptName}
+            >
+              Save Template
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Enter a name for this custom strategy/email pair</p>
+          <Input
+            value={saveScriptName || ''}
+            onChange={(e) => setSaveScriptName(e.target.value)}
+            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 outline-none transition-all dark:text-white"
+            placeholder="e.g., 'Construction Expansion Focus', 'Q4 Efficiency Pitch'"
+            autoFocus
+          />
+        </div>
+      </Modal>
     </>
   );
 };
 
 // Helper functions for default scripts
 function getDefaultIntroScript(lead: BusinessLead) {
-  return `### 📞 The Script: 5-Step Framework
+  return `### 📞 The Script: Educational Growth Framework
 
-**Objective:** Schedule a 'Business Financial Check-up' to discuss Efficiency & Protection.
+**Objective:** Schedule a meeting to understand financial needs and support growth.
 
-#### Step 1: The "Expert" Introduction
-"Good morning/afternoon, [Contact Name], my name is [My Name] and I'm a Business Banker with [Bank Name]. I work proactively with business owners like yourself, especially those in the ${lead.industry || 'local business'} space, to help them streamline operations and safeguard their finances. I was particularly impressed by the name '${lead.businessName}' – it speaks volumes about the quality and protection you offer."
+#### Step 1: The Collaborative Reconnection
+"Hi ${lead.keyPrincipal || 'Business Owner'}, it was a pleasure reconnecting with you. [Bank Name] offers a wide range of business accounts and banking services designed to support businesses like ${lead.businessName}. From what we've discussed, I'd love to ensure we recommend the best solutions for your goals."
 
-#### Step 2: The Hook (Value/Efficiency)
-"I'm reaching out because I work with a lot of ${lead.industry || 'similar'} firms, and I know that managing **inconsistent cash flow** and **protecting against payment fraud** are major headaches right now."`;
+#### Step 2: The Value Hook (Growth & Support)
+"I've been speaking with my business banking partners, and they're excited to hear about your latest projects. We’d be happy to walk through growth strategies and financing options—like SBA programs or flexible lines of credit—that can support your next phase of expansion."`;
 }
 
 function getDefaultStrategyScript(lead: BusinessLead) {
-  return `### 🎯 Pre-Call Strategy: Industry Expertise
+  return `### 🎯 Pre-Call Strategy: Full-Service Banking
 
-*Assuming "${lead.businessName}" operates in the ${lead.industry || 'general business'} sector.*
+*Strategic focus for ${lead.businessName} (${lead.industry || 'General Business'}):*
 
-1. **Fluctuating Project Cash Flow:** Managing the unpredictable nature of business cycles can create cash flow gaps, especially between milestone payments.
-2. **Payment Fraud & Security:** Protecting against fraudulent checks, ACH debits, or credit card chargebacks is critical, given the potential for high-value transactions.
-3. **Inefficient Payment Collection & Processing:** Delays or manual processes in collecting payments from customers can tie up working capital and reduce operational efficiency.`;
+1. **Growth Financing:** Evaluate SBA Financing and Term Loans for equipment or property acquisition.
+2. **Operational Liquidity:** Review Business Lines of Credit to support cash flow and project timelines.
+3. **Treasury Efficiency:** Implement structures designed for expanding development-focused businesses (e.g., ACH Positive Pay, Merchant Services).
+4. **Relationship Discovery:** Identify key questions around revenue and long-term objectives to determine the right product fit.`;
 }
 
 function getDefaultEmailScript(lead: BusinessLead) {
-  return `Subject: Strategic Financial Efficiency for ${lead.businessName}
+  return `Subject: Supporting the Growth of ${lead.businessName}
 
-Dear [Contact Name],
+Dear ${lead.keyPrincipal || 'Business Owner'},
 
-As ${lead.businessName} continues to grow, navigating the complexities of operational efficiency and financial security becomes increasingly vital.
+It was a pleasure reconnecting with you. [Bank Name] offers a wide range of business accounts and banking services designed to support small and medium-sized businesses. From our conversation, it sounds like your primary need is financing to support operations and upcoming projects.
 
-I've worked with many organizations in the ${lead.industry || 'same'} industry to optimize their cash flow and implement robust fraud protection measures. I'd love to share how [Bank Name]'s specialized business solutions could support your current goals.
+After speaking with my business banking partners, they suggested that the next best step is to schedule a call so we can better understand your financial needs. We can review:
 
-Would you be open to a brief 5-minute conversation next week?
+• SBA Financing & Qualification
+• Business Lines of Credit for Cash Flow
+• Term Loans for Equipment or Property
+• Growth Planning & Banking Structures
+
+Can you give me a few days and times you are available? I’ll coordinate a meeting with my business banker at your convenience.
+
+Looking forward to supporting your continued growth.
 
 Best regards,
 
