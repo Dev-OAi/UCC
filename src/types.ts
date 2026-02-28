@@ -137,4 +137,13 @@ export interface BusinessLead {
   relatedBusinesses?: string[];
 
   score?: number;
+
+  preferredTheme?: 'growth' | 'efficiency' | 'security' | string;
+  savedScripts?: {
+    id: string;
+    name: string;
+    strategy: string;
+    email: string;
+    date: string;
+  }[];
 }

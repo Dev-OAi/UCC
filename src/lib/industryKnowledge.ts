@@ -13,6 +13,22 @@ export interface IndustryInsight {
 }
 
 export const INDUSTRY_KNOWLEDGE: Record<string, IndustryInsight> = {
+  "Construction & Development": {
+    overview: "The construction industry involves the design, development, and building of residential, commercial, and industrial structures. Current trends show a shift toward sustainable building and high-demand multi-family developments.",
+    quickFacts: [
+      "Requires significant working capital for materials and milestone payments.",
+      "SBA 7(a) and 504 loans are primary financing vehicles for expansion.",
+      "High insurance and bonding requirements are standard."
+    ]
+  },
+  "Real Estate Development": {
+    overview: "Real estate development involves purchasing land, developing it into housing or commercial buildings, and selling or leasing it. Property flipping and renovation projects are significant sub-sectors.",
+    quickFacts: [
+      "Flexible lines of credit are critical for managing acquisition timelines.",
+      "Property acquisition usually requires specialized term loans.",
+      "Merchant services for lease/sale deposits improve liquidity."
+    ]
+  },
   "Abrasive Product Manufacturers": {
     overview: "This industry comprises establishments primarily engaged in manufacturing abrasive grinding wheels of natural or synthetic materials, abrasive-coated products, and other abrasive products.",
     quickFacts: [
