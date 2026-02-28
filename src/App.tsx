@@ -50,34 +50,39 @@ const DEFAULT_METRICS: ScorecardMetric[] = [
   { id: 'outreach', name: 'Outreach', target: 100, type: 'built-in', isVisible: true },
 ];
 
+function safeJsonParse<T>(key: string, fallback: T): T {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return fallback;
+    return JSON.parse(saved) as T;
+  } catch (err) {
+    console.error(`Error parsing localStorage key "${key}":`, err);
+    return fallback;
+  }
+}
+
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
-  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() => {
-    const saved = localStorage.getItem('productGuides');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() => {
-    const saved = localStorage.getItem('scorecardLeads');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() => {
-    const saved = localStorage.getItem('scorecardMetrics');
-    return saved ? JSON.parse(saved) : DEFAULT_METRICS;
-  });
+  const [productGuides, setProductGuides] = useState<ProductGuide[]>(() =>
+    safeJsonParse('productGuides', [])
+  );
+  const [scorecardLeads, setScorecardLeads] = useState<BusinessLead[]>(() =>
+    safeJsonParse('scorecardLeads', [])
+  );
+  const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() =>
+    safeJsonParse('scorecardMetrics', DEFAULT_METRICS)
+  );
 
   // Activity Log State
-  const [callEntries, setCallEntries] = useState<CallEntry[]>(() => {
-    const saved = localStorage.getItem('sales_callEntries');
-    return saved ? JSON.parse(saved) : initialCallEntries;
-  });
-  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() => {
-    const saved = localStorage.getItem('sales_emailEntries');
-    return saved ? JSON.parse(saved) : initialEmailEntries;
-  });
-  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() => {
-    const saved = localStorage.getItem('sales_meetingEntries');
-    return saved ? JSON.parse(saved) : initialMeetingEntries;
-  });
+  const [callEntries, setCallEntries] = useState<CallEntry[]>(() =>
+    safeJsonParse('sales_callEntries', initialCallEntries)
+  );
+  const [emailEntries, setEmailEntries] = useState<EmailEntry[]>(() =>
+    safeJsonParse('sales_emailEntries', initialEmailEntries)
+  );
+  const [meetingEntries, setMeetingEntries] = useState<MeetingEntry[]>(() =>
+    safeJsonParse('sales_meetingEntries', initialMeetingEntries)
+  );
 
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
@@ -496,9 +501,12 @@ function App() {
 
   // Data Loading
   useEffect(() => {
+    let isMounted = true;
+
     async function init() {
       try {
         const m = await fetchManifest();
+        if (!isMounted) return;
         setManifest(m);
 
         // Load Product Guide if not in localStorage
@@ -507,7 +515,7 @@ function App() {
           const guideFile = m.find(f => f.path.includes('initial.json'));
           if (guideFile) {
             const response = await fetch(`./${guideFile.path}`);
-            if (response.ok) {
+            if (response.ok && isMounted) {
               const initialGuides = await response.json();
               setProductGuides(initialGuides);
             }
@@ -516,73 +524,173 @@ function App() {
 
         // Exclude PDFs and JSON from CSV loading
         const csvFiles = m.filter(f => f.type !== 'PDF' && f.type !== 'JSON');
-        setLoadProgress({ current: 0, total: csvFiles.length });
-        setLoading(false); // Enable immediate interaction
+        if (isMounted) {
+          setLoadProgress({ current: 0, total: csvFiles.length });
+          setLoading(false); // Enable immediate interaction
+        }
 
-        // Load incrementally in small batches
-        const batchSize = 2;
+        // Load incrementally in larger batches
+        const batchSize = 8;
         for (let i = 0; i < csvFiles.length; i += batchSize) {
+          if (!isMounted) break;
+
           try {
             const batch = csvFiles.slice(i, i + batchSize);
-            const batchResults = await Promise.all(batch.map(file => loadCsv(file)));
-            setAllData(prev => [...prev, ...batchResults.flat()]);
-            setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
+            console.log(`[App] Loading batch ${i/batchSize + 1}: ${batch.map(f => f.filename).join(', ')}`);
+
+            const batchResults = await Promise.all(
+              batch.map(file => loadCsv(file).catch(err => {
+                console.error(`[App] Critical error loading ${file.path}:`, err);
+                return [];
+              }))
+            );
+
+            if (isMounted) {
+              const flatResults = batchResults.flat();
+              if (flatResults.length > 0) {
+                setAllData(prev => [...prev, ...flatResults]);
+              }
+              setLoadProgress(prev => ({ ...prev, current: Math.min(csvFiles.length, i + batchSize) }));
+            }
           } catch (err) {
-            console.warn(`Failed to load a batch starting at index ${i}`, err);
+            console.error(`[App] Batch processing failed at index ${i}:`, err);
           }
         }
       } catch (err) {
-        console.error(err);
-        setError('Failed to load data. Please check manifest.json.');
-        setLoading(false);
-      }
-    }
-    init();
-  }, []);
-
-  // Column Management
-  const allColumns = useMemo(() => {
-    if (allData.length === 0) return [];
-    const keys = new Set<string>();
-    const samples = new Map<string, DataRow>();
-    const expectedTypesCount = new Set(manifest.filter(m => !['PDF', 'JSON'].includes(m.type)).map(m => m.type)).size;
-
-    for (let i = 0; i < allData.length; i++) {
-      const row = allData[i];
-      if (row._type && !samples.has(row._type)) {
-        samples.set(row._type, row);
-        if (samples.size === expectedTypesCount) break;
-      }
-    }
-
-    samples.forEach(sample => {
-      Object.keys(sample).forEach(key => {
-        if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location') keys.add(key);
-      });
-    });
-
-    return [...Array.from(keys), 'Location', 'Zip'];
-  }, [allData, manifest]);
-
-  const nonEmptyColumns = useMemo(() => {
-    if (allData.length === 0) return new Set<string>();
-    const found = new Set<string>();
-    const cols = allColumns;
-
-    for (let i = 0; i < allData.length; i++) {
-      const row = allData[i];
-      for (let j = 0; j < cols.length; j++) {
-        const col = cols[j];
-        if (found.has(col)) continue;
-        const val = col === 'Location' ? row._location : col === 'Zip' ? row._zip : row[col];
-        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
-          found.add(col);
+        if (isMounted) {
+          console.error(err);
+          setError('Failed to load data. Please check manifest.json.');
+          setLoading(false);
         }
       }
-      if (found.size === cols.length) break;
     }
-    return found;
-  }, [allData, allColumns]);
+
+    // Reset state before starting new load
+    setAllData([]);
+    processedCountRef.current = 0;
+    discoveredTypesRef.current.clear();
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Metadata States
+  const [allColumns, setAllColumns] = useState<string[]>([]);
+  const [nonEmptyColumns, setNonEmptyColumns] = useState<Set<string>>(new Set());
+  const [types, setTypes] = useState<string[]>(['All']);
+  const [zips, setZips] = useState<string[]>(['All']);
+  const [locations, setLocations] = useState<string[]>(['All']);
+
+  const processedCountRef = React.useRef(0);
+  const discoveredTypesRef = React.useRef(new Set<string>());
+
+  // Incremental Metadata Processing
+  useEffect(() => {
+    if (allData.length === 0) {
+      processedCountRef.current = 0;
+      discoveredTypesRef.current.clear();
+      setAllColumns([]);
+      setNonEmptyColumns(new Set());
+      setTypes(['All']);
+      setZips(['All']);
+      setLocations(['All']);
+      return;
+    }
+
+    if (allData.length <= processedCountRef.current) return;
+
+    const newRows = allData.slice(processedCountRef.current);
+    processedCountRef.current = allData.length;
+
+    // 1. Update Types
+    setTypes(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._type && !nextSet.has(r._type)) {
+          nextSet.add(r._type);
+          changed = true;
+        }
+      });
+      return changed ? Array.from(nextSet).sort() : prev;
+    });
+
+    // 2. Update Zips
+    setZips(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._zip && !nextSet.has(r._zip)) {
+          nextSet.add(r._zip);
+          changed = true;
+        }
+      });
+      return changed ? Array.from(nextSet).sort() : prev;
+    });
+
+    // 3. Update Locations
+    setLocations(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._location && !nextSet.has(r._location)) {
+          nextSet.add(r._location);
+          changed = true;
+        }
+      });
+      return changed ? Array.from(nextSet).sort() : prev;
+    });
+
+    // 4. Update Columns (Samples based)
+    setAllColumns(prev => {
+      const nextSet = new Set(prev);
+      let changed = false;
+      newRows.forEach(r => {
+        if (r._type && !discoveredTypesRef.current.has(r._type)) {
+          discoveredTypesRef.current.add(r._type);
+          Object.keys(r).forEach(key => {
+            if (!key.startsWith('_') && key !== 'Zip' && key !== 'Location' && !nextSet.has(key)) {
+              nextSet.add(key);
+              changed = true;
+            }
+          });
+        }
+      });
+      if (changed) {
+        const cols = Array.from(nextSet).filter(c => c !== 'Location' && c !== 'Zip');
+        return [...cols, 'Location', 'Zip'];
+      }
+      return prev;
+    });
+
+    // 5. Update Non-Empty Column Detection
+    setNonEmptyColumns(prev => {
+      const next = new Set(prev);
+      let changed = false;
+      newRows.forEach(row => {
+        Object.keys(row).forEach(key => {
+          if (next.has(key)) return;
+          const val = row[key];
+          if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+            next.add(key);
+            changed = true;
+          }
+        });
+        if (!next.has('Location') && row._location && row._location !== 'N/A' && row._location !== '') {
+          next.add('Location');
+          changed = true;
+        }
+        if (!next.has('Zip') && row._zip && row._zip !== 'N/A' && row._zip !== '') {
+          next.add('Zip');
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [allData]);
 
   const currentColumnOrder = useMemo(() => {
     const customOrder = customColumnOrders[activeTab];
@@ -654,20 +762,6 @@ function App() {
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
 
-  const types = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._type).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const zips = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._zip).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
-
-  const locations = useMemo(() => {
-    const discovered = Array.from(new Set(debouncedAllData.map(d => d._location).filter(Boolean) as string[])).sort();
-    return ['All', ...discovered];
-  }, [debouncedAllData]);
 
   const onFilterChange = (col: string, val: string[]) => {
     setColumnFilters(p => ({ ...p, [col]: val }));
@@ -848,7 +942,23 @@ function App() {
     link.click();
   };
 
-  if (error) return <div className="p-8 text-red-500">{error}</div>;
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950 p-6">
+      <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-red-100 dark:border-red-900/30 text-center space-y-4">
+        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+          <Database className="w-8 h-8 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Error</h2>
+        <p className="text-gray-500 dark:text-slate-400">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors">
