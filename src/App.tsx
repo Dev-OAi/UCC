@@ -326,6 +326,26 @@ function App() {
       "Document Type",
       "Document Pages"
     ],
+    '5. OR': [
+      "Corporate Name (Search)",
+      "Document Number (Search)",
+      "Status (Search)",
+      "Zip",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Filings Completed Through",
+      "UCC Number",
+      "Filing Events",
+      "Secured Party 1 Name",
+      "Secured Party 1 Address",
+      "Debtor Name",
+      "Debtor Address",
+      "Document Type",
+      "Document Pages",
+      "Match Score",
+      "Source File"
+    ],
     '33480': [
       "businessName",
       "Sunbiz Status",
@@ -1200,6 +1220,7 @@ function App() {
                   }}
                   columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
+                    activeTab={activeTab}
                 />
               </div>
             </div>
