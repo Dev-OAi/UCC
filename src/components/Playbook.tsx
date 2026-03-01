@@ -266,7 +266,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
                     onClick={() => onAddToScorecard(row)}
                     className="px-4 py-2 bg-blue-600 text-white text-[10px] font-black rounded-lg uppercase tracking-wider shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all"
                   >
-                    Claim Lead
+                    Add to Scorecard Pipeline
                   </button>
                 </div>
               </div>

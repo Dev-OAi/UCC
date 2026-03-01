@@ -59,6 +59,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const [activeSectionId, setActiveSectionId] = React.useState<string | null>(null);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
   const [isManifestCopied, setIsManifestCopied] = React.useState(false);
+  const [isOutreachCopied, setIsOutreachCopied] = React.useState(false);
   const [generatedIntel, setGeneratedIntel] = React.useState<{ strategy: string, email: string } | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>('');
 
@@ -410,13 +411,26 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(personalizedBody);
-                      if (onAddToScorecard) onAddToScorecard(selectedRow);
-                      alert(`Copied outreach and added ${selectedRow.businessName || 'lead'} to Scorecard pipeline.`);
+                      setIsOutreachCopied(true);
+                      setTimeout(() => setIsOutreachCopied(false), 2000);
                     }}
-                    className="w-full flex items-center justify-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-widest"
+                    className={`w-full flex items-center justify-center py-2.5 text-[11px] font-black rounded-xl transition-all uppercase tracking-widest border ${
+                      isOutreachCopied
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800'
+                        : 'bg-gray-50 dark:bg-slate-800/40 border-gray-100 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'
+                    }`}
                   >
-                    <Copy className="w-3.5 h-3.5 mr-2" />
-                    Copy & Claim Lead
+                    {isOutreachCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 mr-2" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 mr-2" />
+                        Copy Outreach
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
