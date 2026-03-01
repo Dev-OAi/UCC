@@ -404,8 +404,17 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         }
         // PRIORITY 3.4: 5. OR HUB (Matches original CSV exactly)
         else if (file.type === '5. OR') {
-          // Use exact headers from the CSV
-          headers = firstRow.map(h => scrubValue(h));
+          const counts: Record<string, number> = {};
+          headers = firstRow.map(h => {
+            const scrubbed = scrubValue(h);
+            if (counts[scrubbed] === undefined) {
+              counts[scrubbed] = 0;
+              return scrubbed;
+            } else {
+              counts[scrubbed]++;
+              return `${scrubbed} (${counts[scrubbed]})`;
+            }
+          });
           startIndex++;
         }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
