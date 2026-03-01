@@ -331,30 +331,20 @@ function App() {
       "Document Number (Search)",
       "Status (Search)",
       "Zip",
-      "Source File",
-      "Match Score",
       "UCC Status",
       "Date Filed",
       "Expires",
       "Filings Completed Through",
       "UCC Number",
       "Filing Events",
-      "Secured Parties Count",
       "Secured Party 1 Name",
       "Secured Party 1 Address",
-      "Secured Party 2 Name",
-      "Secured Party 2 Address",
-      "Secured Party 3 Name",
-      "Secured Party 3 Address",
-      "Secured Party 4 Name",
-      "Secured Party 4 Address",
-      "Secured Party 5 Name",
-      "Secured Party 5 Address",
-      "Debtor Parties Count",
       "Debtor Name",
       "Debtor Address",
       "Document Type",
-      "Document Pages"
+      "Document Pages",
+      "Match Score",
+      "Source File"
     ],
     '33480': [
       "businessName",
@@ -1230,6 +1220,7 @@ function App() {
                   }}
                   columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
+                    activeTab={activeTab}
                 />
               </div>
             </div>
