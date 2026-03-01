@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { MapPin, TrendingUp, Users, Target, ChevronRight, Layers, Maximize2, Filter, Search, Plus, Minus, Navigation } from 'lucide-react';
+import { MapPin, TrendingUp, Users, Target, ChevronRight, Layers, Maximize2, Filter, Search, Plus, Minus, Navigation, Lock, Unlock } from 'lucide-react';
 
 interface TerritoryMapProps {
   data: any[];
@@ -10,23 +10,30 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   const [viewMode, setViewMode] = useState<'volume' | 'growth'>('volume');
   const [hoveredZip, setHoveredZip] = useState<string | null>(null);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1.2);
+  const [scale, setScale] = useState(1.1);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const centerMap = () => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
-      // Center the territories (approx center x: 710, y: 575 in SVG space)
-      const targetX = 710;
-      const targetY = 575;
+      // Center on Boca Raton (755, 410)
+      const targetX = 755;
+      const targetY = 410;
       setPan({
         x: (width / 2) - (targetX * scale),
         y: (height / 2) - (targetY * scale)
       });
     }
+  };
+
+  useEffect(() => {
+    centerMap();
+    window.addEventListener('resize', centerMap);
+    return () => window.removeEventListener('resize', centerMap);
   }, [scale]);
 
   // Key Zip Codes from the data
@@ -134,12 +141,13 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   ];
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isLocked) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isLocked) return;
     setPan({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
@@ -151,13 +159,15 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isLocked) return;
     setIsDragging(true);
     const touch = e.touches[0];
     setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isLocked) return;
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     setPan({
       x: touch.clientX - dragStart.x,
@@ -234,10 +244,15 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
         }}></div>
 
         <div
-          className="relative w-full h-full flex items-center justify-center transition-transform duration-75"
-          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transformOrigin: '0 0' }}
+          className="relative transition-transform duration-75"
+          style={{
+            width: '1000px',
+            height: '1200px',
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+            transformOrigin: '0 0'
+          }}
         >
-          <svg viewBox="0 0 1000 1200" className="w-full h-full max-h-[1200px] drop-shadow-2xl">
+          <svg viewBox="0 0 1000 1200" className="w-full h-full drop-shadow-2xl pointer-events-auto">
             {/* Intra-coastal Waterway (Background) */}
             <path
               d="M 820 0 L 840 300 L 825 600 L 835 1200 L 1000 1200 L 1000 0 Z"
@@ -350,53 +365,65 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
             ))}
           </svg>
 
-          {/* Hover Tooltip Overlay (Map Style) */}
-          {hoveredZip && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[120%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 md:p-4 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 w-56 md:w-64 animate-in zoom-in-95 duration-200 z-30">
-              <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-r border-b border-gray-100 dark:border-slate-800 rotate-45"></div>
-
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="flex items-center">
-                  <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/20">
-                    <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] md:text-xs font-black text-gray-900 dark:text-white block">{ZIP_PATHS.find(z => z.id === hoveredZip)?.name}</span>
-                    <span className="text-[9px] md:text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">{hoveredZip}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-1.5 md:gap-2 mb-3 md:mb-4">
-                <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-slate-800 rounded-xl">
-                  <span className="text-[8px] md:text-[9px] text-gray-400 uppercase font-bold block mb-0.5 md:mb-1">Vol</span>
-                  <span className="text-xs md:text-sm font-black text-gray-900 dark:text-white">{stats[hoveredZip]?.volume.toLocaleString()}</span>
-                </div>
-                <div className="p-1.5 md:p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-                  <span className="text-[8px] md:text-[9px] text-emerald-600 uppercase font-bold block mb-0.5 md:mb-1">New</span>
-                  <span className="text-xs md:text-sm font-black text-emerald-600">+{stats[hoveredZip]?.growth}</span>
-                </div>
-                <div className="p-1.5 md:p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <span className="text-[8px] md:text-[9px] text-blue-600 uppercase font-bold block mb-0.5 md:mb-1">Score</span>
-                  <span className="text-xs md:text-sm font-black text-blue-600">{stats[hoveredZip]?.avgScore}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => onSelectZip(hoveredZip)}
-                className="w-full py-1.5 md:py-2 bg-gray-900 dark:bg-blue-600 text-white rounded-xl text-[11px] md:text-xs font-bold hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors flex items-center justify-center"
-              >
-                Go to Hub <ChevronRight className="w-2.5 h-2.5 md:w-3 md:h-3 ml-1" />
-              </button>
-            </div>
-          )}
         </div>
+
+        {/* Hover Tooltip Overlay (Map Style) - Moved outside scaled div to stay centered in viewport */}
+        {hoveredZip && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[120%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 md:p-4 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 w-56 md:w-64 animate-in zoom-in-95 duration-200 z-30 pointer-events-auto">
+            <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-r border-b border-gray-100 dark:border-slate-800 rotate-45"></div>
+
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <div className="flex items-center">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/20">
+                  <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] md:text-xs font-black text-gray-900 dark:text-white block">{ZIP_PATHS.find(z => z.id === hoveredZip)?.name}</span>
+                  <span className="text-[9px] md:text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">{hoveredZip}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 md:gap-2 mb-3 md:mb-4">
+              <div className="p-1.5 md:p-2 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                <span className="text-[8px] md:text-[9px] text-gray-400 uppercase font-bold block mb-0.5 md:mb-1">Vol</span>
+                <span className="text-xs md:text-sm font-black text-gray-900 dark:text-white">{stats[hoveredZip]?.volume.toLocaleString()}</span>
+              </div>
+              <div className="p-1.5 md:p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                <span className="text-[8px] md:text-[9px] text-emerald-600 uppercase font-bold block mb-0.5 md:mb-1">New</span>
+                <span className="text-xs md:text-sm font-black text-emerald-600">+{stats[hoveredZip]?.growth}</span>
+              </div>
+              <div className="p-1.5 md:p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <span className="text-[8px] md:text-[9px] text-blue-600 uppercase font-bold block mb-0.5 md:mb-1">Score</span>
+                <span className="text-xs md:text-sm font-black text-blue-600">{stats[hoveredZip]?.avgScore}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onSelectZip(hoveredZip)}
+              className="w-full py-1.5 md:py-2 bg-gray-900 dark:bg-blue-600 text-white rounded-xl text-[11px] md:text-xs font-bold hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors flex items-center justify-center"
+            >
+              Go to Hub <ChevronRight className="w-2.5 h-2.5 md:w-3 md:h-3 ml-1" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Map Control Cluster (Bottom Right) */}
       <div className="absolute bottom-6 right-6 z-20 flex flex-col items-end space-y-4">
         {/* Zoom Controls */}
         <div className="flex flex-col space-y-2">
+           <button
+             onClick={() => setIsLocked(!isLocked)}
+             className={`p-3 backdrop-blur-md rounded-xl shadow-lg border transition-all ${
+               isLocked
+                 ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/20'
+                 : 'bg-white/90 dark:bg-slate-900/90 text-gray-600 dark:text-slate-400 border-gray-100 dark:border-slate-800'
+             }`}
+             title={isLocked ? "Unlock Panning" : "Lock Panning"}
+           >
+             {isLocked ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+           </button>
            <button
              onClick={() => setScale(s => Math.min(s + 0.2, 3))}
              className="p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-blue-600 transition-all"
@@ -411,15 +438,8 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
            </button>
            <button
              onClick={() => {
-               if (containerRef.current) {
-                 const { width, height } = containerRef.current.getBoundingClientRect();
-                 const newScale = 1.2;
-                 setScale(newScale);
-                 setPan({
-                   x: (width / 2) - (710 * newScale),
-                   y: (height / 2) - (575 * newScale)
-                 });
-               }
+               setScale(1.1);
+               centerMap();
              }}
              className="p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-blue-600 transition-all"
            >
