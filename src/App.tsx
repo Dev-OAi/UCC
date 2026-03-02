@@ -331,20 +331,64 @@ function App() {
       "Document Number (Search)",
       "Status (Search)",
       "Zip",
-      "UCC Status",
+      "Corporate URL",
+      "Detail Link",
+      "Entity Type",
+      "Corporate Name (Detail)",
+      "Document Number (Detail)",
+      "FEI/EIN Number",
       "Date Filed",
+      "Effective Date",
+      "State (Detail)",
+      "Status (Detail)",
+      "Principal Address",
+      "Principal Address Changed Date",
+      "Mailing Address",
+      "Mailing Address Changed Date",
+      "Registered Agent Name",
+      "Registered Agent Address",
+      "Registered Agent Name Changed Date",
+      "Registered Agent Address Changed Date",
+      "Auth Person 1 Title",
+      "Auth Person 1 Name & Address",
+      "Auth Person 2 Title",
+      "Auth Person 2 Name & Address",
+      "Auth Person 3 Title",
+      "Auth Person 3 Name & Address",
+      "Latest Report Year",
+      "Latest Report Filed Date",
+      "2nd Latest Report Year",
+      "2nd Latest Report Filed Date",
+      "3rd Latest Report Year",
+      "All Authorized Persons (JSON)",
+      "All Annual Reports (JSON)",
+      "Source File",
+      "Match Score",
+      "UCC Status",
+      "Status (UCC)",
+      "Date Filed (1)",
       "Expires",
       "Filings Completed Through",
       "UCC Number",
       "Filing Events",
+      "Secured Parties Count",
       "Secured Party 1 Name",
       "Secured Party 1 Address",
+      "Secured Party 2 Name",
+      "Secured Party 2 Address",
+      "Secured Party 3 Name",
+      "Secured Party 3 Address",
+      "Secured Party 4 Name",
+      "Secured Party 4 Address",
+      "Secured Party 5 Name",
+      "Secured Party 5 Address",
+      "Debtor Parties Count",
       "Debtor Name",
       "Debtor Address",
       "Document Type",
       "Document Pages",
-      "Match Score",
-      "Source File"
+      "Document Number",
+      "Filing Date"
     ],
     '33480': [
       "businessName",
@@ -602,6 +646,27 @@ function App() {
   // Metadata States
   const [allColumns, setAllColumns] = useState<string[]>([]);
   const [nonEmptyColumns, setNonEmptyColumns] = useState<Set<string>>(new Set());
+
+  const hubNonEmptyColumns = useMemo(() => {
+    const hubData = activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights'
+      ? allData
+      : allData.filter(row => row._type === activeTab);
+
+    const next = new Set<string>();
+    hubData.forEach(row => {
+      Object.keys(row).forEach(key => {
+        if (next.has(key)) return;
+        const val = row[key];
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          next.add(key);
+        }
+      });
+      if (row._location && row._location !== 'N/A' && row._location !== '') next.add('Location');
+      if (row._zip && row._zip !== 'N/A' && row._zip !== '') next.add('Zip');
+    });
+    return next;
+  }, [allData, activeTab]);
+
   const [types, setTypes] = useState<string[]>(['All']);
   const [zips, setZips] = useState<string[]>(['All']);
   const [locations, setLocations] = useState<string[]>(['All']);
@@ -739,7 +804,9 @@ function App() {
       setVisibleColumns(activeCols);
     } 
     else if (customColumnOrders[activeTab]) {
-      setVisibleColumns(customColumnOrders[activeTab]);
+      // Use hub-specific non-empty columns to filter visible columns
+      const activeCols = customColumnOrders[activeTab].filter(col => hubNonEmptyColumns.has(col));
+      setVisibleColumns(activeCols);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
