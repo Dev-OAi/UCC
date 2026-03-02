@@ -1,23 +1,154 @@
-Corporate Name (Search),Document Number (Search),Status (Search),Zip,Source File,Match Score,UCC Status,Date Filed,Expires,Filings Completed Through,UCC Number,Filing Events,Secured Parties Count,Secured Party 1 Name,Secured Party 1 Address,Secured Party 2 Name,Secured Party 2 Address,Secured Party 3 Name,Secured Party 3 Address,Secured Party 4 Name,Secured Party 4 Address,Secured Party 5 Name,Secured Party 5 Address,Debtor Parties Count,Debtor Name,Debtor Address,Document Type,Document Pages
-JUPITER MARINE CORPORATION,H13637,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER MARINE, INC.",P93000017547,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-JUPITER MINI STORAGE LIMITED PARTNERSHIP,A99000000625,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER OCEAN AND RACQUET CLUB TENNIS CENTER,INC",G12903,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER PALM PLACE, LLC",L10000080396,INACT/UA,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER RIVERFRONT, INC.",V64993,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER-TEQUESTA SCUBA SPORTS &amp; MARINE SUPPLY, INC.",F09050,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-JURIFUND CORPORATION,P03000021678,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUST B GOLF, LLC",L07000027475,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-JUST DEVINE MARKETING INC.,P01000012602,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUST FOR SHOW, INC.",P09000080341,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUST FOR YOU EXERCISE &amp; RESOURCE CENTRE, INC.",P97000054014,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUSTICE CANINE TRAINING CENTER, INC.",J45875,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUSTICE RESEARCH, LLC",L08000071135,INACT,,U2Test_V2.csv,,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,
-"JUPITER LANDWORKS, LLC.",L23000190465,Active,,U2Test_V2.csv,,,,,,,,,,,,,,,,,,,,,,,
-"JURIED ART SERVICES, LLC",L04000047004,Active,,U2Test_V2.csv,,,,,,,,,,,,,,,,,,,,,,,
-JUST A SIP CORP,P18000056604,Active,,U2Test_V2.csv,,,,,,,,,,,,,,,,,,,,,,,
-JUSTCPNOTSPECIAL LLC,L23000213832,Active,,U2Test_V2.csv,,,,,,,,,,,,,,,,,,,,,,,
-"JUPITER LANDWORKS, LLC.",L23000190465,Active,,U2Test_V2.csv,,No close match,,,,,,,,,,,,,,,,,,,,,
-"JURIED ART SERVICES, LLC",L04000047004,Active,,U2Test_V2.csv,1.00,Filed,2020-06-04T04:00:00Z,2030-06-04T04:00:00Z,2026-02-25T05:00:00Z,20200201078X,1,1,,,,,,,,,,,1,JURIED ART SERVICES LLC,"THE FLAMINGO BUILDING, 433 FLAMINGO DRIVE, WEST PALM BEACH, FL, 33401",UCC1,1
-JUST A SIP CORP,P18000056604,Active,,U2Test_V2.csv,,No close match,,,,,,,,,,,,,,,,,,,,,
-JUSTCPNOTSPECIAL LLC,L23000213832,Active,,U2Test_V2.csv,,No close match,,,,,,,,,,,,,,,,,,,,,
+Corporate Name (Search),Document Number (Search),Status (Search),Zip,Corporate URL,Detail Link,Entity Type,Corporate Name (Detail),Document Number (Detail),FEI/EIN Number,Date Filed,Effective Date,State (Detail),Status (Detail),Principal Address,Principal Address Changed Date,Mailing Address,Mailing Address Changed Date,Registered Agent Name,Registered Agent Address,Registered Agent Name Changed Date,Registered Agent Address Changed Date,Auth Person 1 Title,Auth Person 1 Name & Address,Auth Person 2 Title,Auth Person 2 Name & Address,Auth Person 3 Title,Auth Person 3 Name & Address,Latest Report Year,Latest Report Filed Date,2nd Latest Report Year,2nd Latest Report Filed Date,3rd Latest Report Year,All Authorized Persons (JSON),All Annual Reports (JSON),Source File,Status (UCC),Date Filed,Expires,Filings Completed Through,UCC Number,Filing Events,Secured Parties Count,Secured Party 1 Name,Secured Party 1 Address,Secured Party 2 Name,Secured Party 2 Address,Secured Party 3 Name,Secured Party 3 Address,Secured Party 4 Name,Secured Party 4 Address,Secured Party 5 Name,Secured Party 5 Address,Debtor Parties Count,Debtor Name,Debtor Address,Document Type,Document Pages,Document Number,Filing Date
+1000 E 15 ST. LLC,L12000139220,INACT,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1000E15ST%20L120001392200&aggregateId=flal-l12000139220-7eeea3bc-830c-451e-862f-9b5e01b78474&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,1000 E 15 ST. LLC,L12000139220,46-2126632,,,FL,INACTIVE,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"STEVENS, MICHAEL B","1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,,MGR,"Stevens, Michael B 1420 OCEAN WAY APT 12A JUPITER, FL 33477",,,,,2016,02/25/2016,2016,12/05/2016,01/15/2015,"[{""Title"":""MGR"",""NameAddress"":""Stevens, Michael B 1420 OCEAN WAY APT 12A JUPITER, FL 33477""}]","[{""Report Year"":""2016"",""Filed Date"":""02/25/2016""},{""Report Year"":""2016"",""Filed Date"":""12/05/2016""},{""Report Year"":""2015"",""Filed Date"":""01/15/2015""}]",SUNBIZ_33477_TestExample.csv,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,,,
+1025 E 16TH ST. LLC,L12000139224,INACT,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1025E16THST%20L120001392240&aggregateId=flal-l12000139224-77026f80-9f78-4349-ba74-249966a8280e&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,1025 E 16TH ST. LLC,L12000139224,46-2126632,,,FL,INACTIVE,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"STEVENS, MICHAEL B","1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,,MGR,"Stevens, Michael B 1420 OCEAN WAY APT 12A JUPITER, FL 33477",,,,,2016,02/25/2016,2016,12/05/2016,01/15/2015,"[{""Title"":""MGR"",""NameAddress"":""Stevens, Michael B 1420 OCEAN WAY APT 12A JUPITER, FL 33477""}]","[{""Report Year"":""2016"",""Filed Date"":""02/25/2016""},{""Report Year"":""2016"",""Filed Date"":""12/05/2016""},{""Report Year"":""2015"",""Filed Date"":""01/15/2015""}]",SUNBIZ_33477_TestExample.csv,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,,,
+"105 W TARPON LANE, LLC",L21000355001,INACT,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=105WTARPONLANE%20L210003550010&aggregateId=flal-l21000355001-1295c71a-9620-4d0a-8eeb-f868bc293d4a&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"105 W TARPON LANE, LLC",L21000355001,NONE,,,FL,INACTIVE,"105 W TARPON LANE
+JUPITER, FL 33477",,"105 W TARPON LANE
+JUPITER, FL 33477",,THE PRESSER LAW FIRM P.A.,"6199 NORTH FEDERAL HIGHWAY
+BOCA RATON, FL 33487",,,MGR,"HAND, KIMBERLY 105 W TARPON LANE JUPITER, FL 33477",,,,,,,,,,"[{""Title"":""MGR"",""NameAddress"":""HAND, KIMBERLY 105 W TARPON LANE JUPITER, FL 33477""}]",[],SUNBIZ_33477_TestExample.csv,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,,,
+"106 GOLDFISH LN, LLC",L21000279224,INACT,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=106GOLDFISHLN%20L210002792240&aggregateId=flal-l21000279224-9f77e8cc-4c95-4037-bc7b-796099b1eb9e&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"106 GOLDFISH LN, LLC",L21000279224,87-1239435,,,FL,INACTIVE,"106 GOLDFISH LN
+JUPITER, FL 33477",,"106 GOLDFISH LN
+JUPITER, FL 33477",,"VANCE, TODD","121 E BONFISH CIRCLE
+JUPITER, FL 33477",,,MGR,"NICKLAUS, MICHAEL 4389 RIVERVIEW DRIVE PEACHTREE CORNERS, GA 30097",MGR,"STRICKLAND, JIM 1065 SAYE CREEK DRIVE MADISON, GA 30650",Manager,"Holland, John 106 GOLDFISH LN JUPITER, FL 33477",2023,01/19/2023,2022,04/26/2022,,"[{""Title"":""MGR"",""NameAddress"":""NICKLAUS, MICHAEL 4389 RIVERVIEW DRIVE PEACHTREE CORNERS, GA 30097""},{""Title"":""MGR"",""NameAddress"":""STRICKLAND, JIM 1065 SAYE CREEK DRIVE MADISON, GA 30650""},{""Title"":""Manager"",""NameAddress"":""Holland, John 106 GOLDFISH LN JUPITER, FL 33477""}]","[{""Report Year"":""2023"",""Filed Date"":""01/19/2023""},{""Report Year"":""2022"",""Filed Date"":""04/26/2022""}]",SUNBIZ_33477_TestExample.csv,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,,,
+1085 E 13TH ST. LLC,L12000139221,INACT,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1085E13THST%20L120001392210&aggregateId=flal-l12000139221-715366bd-cc8c-453a-9a57-0816c14f253a&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,1085 E 13TH ST. LLC,L12000139221,46-2126632,,,FL,INACTIVE,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,"STEVENS, MICHAEL B","1420 OCEAN WAY
+APT 12A
+JUPITER, FL 33477",,,MGRM,"JSS Family Trust 1420 OCEAN WAY #12-A JUPITER, FL 33477",,,,,2017,04/28/2017,2016,02/25/2016,01/15/2015,"[{""Title"":""MGRM"",""NameAddress"":""JSS Family Trust 1420 OCEAN WAY #12-A JUPITER, FL 33477""}]","[{""Report Year"":""2017"",""Filed Date"":""04/28/2017""},{""Report Year"":""2016"",""Filed Date"":""02/25/2016""},{""Report Year"":""2015"",""Filed Date"":""01/15/2015""}]",SUNBIZ_33477_TestExample.csv,Skipped - Inactive,,,,,,,,,,,,,,,,,,,,,,,
+"1000 NORTH CONSULTING, LLC",L21000321273,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1000NORTHCONSULTING%20L210003212730&aggregateId=flal-l21000321273-163dfd8d-7faa-40bf-a872-bc121548e62f&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1000 NORTH CONSULTING, LLC",L21000321273,87-1685857,07/14/2021,07/13/2021,FL,ACTIVE,"1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",,"1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",,"FRYER, AMANDA","1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",10/15/2025,,MGR,"FRYER, AMANDA 1000 N US HIGHWAY 1, APT 713 JUPITER, FL 33477",,,,,2025,10/15/2025,2024,03/05/2024,07/25/2023,"[{""Title"":""MGR"",""NameAddress"":""FRYER, AMANDA 1000 N US HIGHWAY 1, APT 713 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""10/15/2025""},{""Report Year"":""2024"",""Filed Date"":""03/05/2024""},{""Report Year"":""2023"",""Filed Date"":""07/25/2023""}]",SUNBIZ_33477_TestExample.csv,,07/14/2021,,,,,,,,,,,,,,,,,,,,,,
+"1009 MOJICAN BLVD, L.L.C.",L24000150889,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1009MOJICANBLVD%20L240001508890&aggregateId=flal-l24000150889-029e45a4-f3f4-4617-8f5b-bc8315f88bb9&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1009 MOJICAN BLVD, L.L.C.",L24000150889,99-2194810,03/28/2024,3/25/2024,FL,ACTIVE,"4300 S US HIGHWAY 1
+SUITE 203-247
+JUPITER, FL 33477",,"4300 S US HIGHWAY 1
+SUITE 203-247
+JUPITER, FL 33477",,"MENDEZ, MIGUEL A, JR, ESQ","1802 N ALAFAYA TRAIL
+ORLANDO, FL 32826",,,MGMR,"COLON, ROBERT D 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477",MGMR,"COLON, ALLISON B 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477",,,2025,04/15/2025,,,,"[{""Title"":""MGMR"",""NameAddress"":""COLON, ROBERT D 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477""},{""Title"":""MGMR"",""NameAddress"":""COLON, ALLISON B 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/15/2025""}]",SUNBIZ_33477_TestExample.csv,,03/28/2024,,,,,,,,,,,,,,,,,,,,,,
+"100 EGANFUSKEE, LLC",L17000033606,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100EGANFUSKEE%20L170000336060&aggregateId=flal-l17000033606-ac9befb9-6a33-4125-b149-6fb155698c7a&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 EGANFUSKEE, LLC",L17000033606,N/A,02/10/2017,02/05/2017,FL,ACTIVE,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",04/04/2018,INDEX MANAGEMENT SERVICES LLC,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",,,MGR,"BORG, JOACIM 1000 N US HWY ONE Suite 902 JUPITER, FL 33477",,,,,2025,03/11/2025,2024,02/15/2024,01/26/2023,"[{""Title"":""MGR"",""NameAddress"":""BORG, JOACIM 1000 N US HWY ONE Suite 902 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/11/2025""},{""Report Year"":""2024"",""Filed Date"":""02/15/2024""},{""Report Year"":""2023"",""Filed Date"":""01/26/2023""}]",SUNBIZ_33477_TestExample.csv,,02/10/2017,,,,,,,,,,,,,,,,,,,,,,
+"100 ELSA ROAD, LLC",L18000035862,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100ELSAROAD%20L180000358620&aggregateId=flal-l18000035862-f39a3981-2fe9-4cc7-9f1a-202e47d294d7&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 ELSA ROAD, LLC",L18000035862,N/A,02/09/2018,,FL,ACTIVE,"101 ELSA ROAD
+JUPITER, FL 33477",,"101 ELSA ROAD
+JUPITER, FL 33477",,"PERKO, PHIL","101 ELSA ROAD
+JUPITER, FL 33477",,,MGR,"PERKO, PHIL 101 ELSA ROAD JUPITER, FL 33477",,,,,2025,04/24/2025,2024,04/03/2024,04/28/2023,"[{""Title"":""MGR"",""NameAddress"":""PERKO, PHIL 101 ELSA ROAD JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/24/2025""},{""Report Year"":""2024"",""Filed Date"":""04/03/2024""},{""Report Year"":""2023"",""Filed Date"":""04/28/2023""}]",SUNBIZ_33477_TestExample.csv,,02/09/2018,,,,,,,,,,,,,,,,,,,,,,
+"100 OCEAN TRAIL 1010, LLC",L25000040119,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100OCEANTRAIL1010%20L250000401190&aggregateId=flal-l25000040119-b4b81aef-8f98-4218-bbc1-3c2fd2118c5c&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 OCEAN TRAIL 1010, LLC",L25000040119,33-3413139,01/22/2025,01/22/2025,FL,ACTIVE,"100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,"100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,"FABRIZI, KEVIN J","100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,,President,"Fabrizi, Kevin J. 100 OCEAN TRAIL WAY UNIT 1010 JUPITER, FL 33477",,,,,2026,01/07/2026,,,,"[{""Title"":""President"",""NameAddress"":""Fabrizi, Kevin J. 100 OCEAN TRAIL WAY UNIT 1010 JUPITER, FL 33477""}]","[{""Report Year"":""2026"",""Filed Date"":""01/07/2026""}]",SUNBIZ_33477_TestExample.csv,,01/22/2025,,,,,,,,,,,,,,,,,,,,,,
+102 HARVEST MOON CT LLC,L21000509860,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=102HARVESTMOONCT%20L210005098600&aggregateId=flal-l21000509860-0c347951-9c6b-468d-89b5-b2f8ab3ba744&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,102 HARVEST MOON CT LLC,L21000509860,87-3863503,12/01/2021,,FL,ACTIVE,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"KEMPE, JOSEPH C, ESQ","941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,,MGR,"MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477",,,,,2025,04/30/2025,2024,03/08/2024,04/06/2023,"[{""Title"":""MGR"",""NameAddress"":""MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/08/2024""},{""Report Year"":""2023"",""Filed Date"":""04/06/2023""}]",SUNBIZ_33477_TestExample.csv,,12/01/2021,,,,,,,,,,,,,,,,,,,,,,
+"1031 CROWN PROPERTY OWNER, LLC",L24000484633,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1031CROWNPROPERTYOWNER%20L240004846330&aggregateId=flal-l24000484633-12548641-5e24-48fd-9705-babd0101115e&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1031 CROWN PROPERTY OWNER, LLC",L24000484633,33-2116081,11/19/2024,,FL,ACTIVE,"2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,"2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,"LEVITT, ERIC M","2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,,MGR,"LEVITT, ERIC M 2141 S ALTERNATE A1A, SUITE 440 JUPITER, FL 33477",,,,,2025,02/24/2025,,,,"[{""Title"":""MGR"",""NameAddress"":""LEVITT, ERIC M 2141 S ALTERNATE A1A, SUITE 440 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""02/24/2025""}]",SUNBIZ_33477_TestExample.csv,,11/19/2024,,,,,,,,,,,,,,,,,,,,,,
+"10491 FUSSEL ROAD, LLC",L20000017546,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=10491FUSSELROAD%20L200000175460&aggregateId=flal-l20000017546-a887e9d8-705d-4fb2-9568-3c7183363b44&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"10491 FUSSEL ROAD, LLC",L20000017546,84-4636387,01/10/2020,,FL,ACTIVE,"140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",,"140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",04/30/2025,"Torres, John","140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",04/30/2025,,MGR,"TORRES, JOHN 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477",MGR,"TORRES, PATRICIA 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477",,,2025,04/30/2025,2024,03/15/2024,07/14/2023,"[{""Title"":""MGR"",""NameAddress"":""TORRES, JOHN 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477""},{""Title"":""MGR"",""NameAddress"":""TORRES, PATRICIA 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/15/2024""},{""Report Year"":""2023"",""Filed Date"":""07/14/2023""}]",SUNBIZ_33477_TestExample.csv,,01/10/2020,,,,,,,,,,,,,,,,,,,,,,
+105 HARVEST MOON CT LLC,L21000506243,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=105HARVESTMOONCT%20L210005062430&aggregateId=flal-l21000506243-828862aa-79ca-4606-b95b-06487e3e3059&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,105 HARVEST MOON CT LLC,L21000506243,87-3836856,11/29/2021,,FL,ACTIVE,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"JOSEPH C. KEMPE, P.A.","941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,,MGR,"MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477",,,,,2025,04/30/2025,2024,03/08/2024,04/06/2023,"[{""Title"":""MGR"",""NameAddress"":""MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/08/2024""},{""Report Year"":""2023"",""Filed Date"":""04/06/2023""}]",SUNBIZ_33477_TestExample.csv,,11/29/2021,,,,,,,,,,,,,,,,,,,,,,
+"107 ALBACORE, LLC",L21000355004,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=107ALBACORE%20L210003550040&aggregateId=flal-l21000355004-728a5c53-70ca-4d0b-ba16-f6d44e272d23&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"107 ALBACORE, LLC",L21000355004,87-2076981,8/5/2021,,FL,ACTIVE,"105 W TARPON LN
+JUPITER, FL 33477",,"105 W TARPON LN
+JUPITER, FL 33477",,"Hand , Kimberly","105 W TARPON LN
+JUPITER, FL 33477",12/01/2022,,MGR,"HAND, KIMBERLY 105 W TARPON LN JUPITER, FL 33477",,,,,2025,03/17/2025,2024,4/30/2024,02/06/2023,"[{""Title"":""MGR"",""NameAddress"":""HAND, KIMBERLY 105 W TARPON LN JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/17/2025""},{""Report Year"":""2024"",""Filed Date"":""04/30/2024""},{""Report Year"":""2023"",""Filed Date"":""02/06/2023""}]",SUNBIZ_33477_TestExample.csv,,8/5/2021,,,,,,,,,,,,,,,,,,,,,,
+"10887 NORTH MILITARY, LLC",L12000091055,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=10887NORTHMILITARY%20L120000910550&aggregateId=flal-l12000091055-a7556fa8-0d1a-4ae7-82e4-6190c15daa6b&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"10887 NORTH MILITARY, LLC",L12000091055,46-0605430,7/12/2012,,FL,ACTIVE,"132 Pegasus Drive
+Jupiter, FL 33477",,"132 Pegasus Drive
+Jupiter, FL 33477",01/18/2023,"Severson, John","400 Columbia Drive
+west palm beach, FL 33409",04/08/2013,,MGRM,"Mark James Hollenbeck Trust u/a James E. Hollenbeck dtd Sept. 29, 2011 132 Pegasus Drive Jupiter, FL 33477",,,,,2025,03/04/2025,2024,01/15/2024,01/18/2023,"[{""Title"":""MGRM"",""NameAddress"":""Mark James Hollenbeck Trust u/a James E. Hollenbeck dtd Sept. 29, 2011 132 Pegasus Drive Jupiter, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/04/2025""},{""Report Year"":""2024"",""Filed Date"":""01/15/2024""},{""Report Year"":""2023"",""Filed Date"":""01/18/2023""}]",SUNBIZ_33477_TestExample.csv,,7/12/2012,,,,,,,,,,,,,,,,,,,,,,
+"108 BEACH WALK, L.L.C.",L11000112015,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=108BEACHWALK%20L110001120150&aggregateId=flal-l11000112015-be109ab2-3d88-4c40-896d-b1e25375b821&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"108 BEACH WALK, L.L.C.",L11000112015,22-3378849,09/29/2011,,FL,ACTIVE,"108 BEACH WALK
+JUPITER, FL 33477",,"108 BEACH WALK
+JUPITER, FL 33477",,"LUCAS, F. JOSEPH JR","108 BEACH WALK
+JUPITER, FL 33477",,,MGR,"LUCAS, F. JOSEPH JR 108 BEACH WALK JUPITER, FL 33477",,,,,2025,01/24/2025,2024,01/31/2024,02/03/2023,"[{""Title"":""MGR"",""NameAddress"":""LUCAS, F. JOSEPH JR 108 BEACH WALK JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""01/24/2025""},{""Report Year"":""2024"",""Filed Date"":""01/31/2024""},{""Report Year"":""2023"",""Filed Date"":""02/03/2023""}]",SUNBIZ_33477_TestExample.csv,,09/29/2011,,,,,,,,,,,,,,,,,,,,,,
+"1000 NORTH CONSULTING, LLC",L21000321273,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1000NORTHCONSULTING%20L210003212730&aggregateId=flal-l21000321273-163dfd8d-7faa-40bf-a872-bc121548e62f&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1000 NORTH CONSULTING, LLC",L21000321273,87-1685857,,07/13/2021,FL,ACTIVE,"1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",,"1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",,"FRYER, AMANDA","1000 N US HIGHWAY 1
+APT 713
+JUPITER, FL 33477",10/15/2025,,MGR,"FRYER, AMANDA 1000 N US HIGHWAY 1, APT 713 JUPITER, FL 33477",,,,,2025,10/15/2025,2024,03/05/2024,07/25/2023,"[{""Title"":""MGR"",""NameAddress"":""FRYER, AMANDA 1000 N US HIGHWAY 1, APT 713 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""10/15/2025""},{""Report Year"":""2024"",""Filed Date"":""03/05/2024""},{""Report Year"":""2023"",""Filed Date"":""07/25/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"1009 MOJICAN BLVD, L.L.C.",L24000150889,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1009MOJICANBLVD%20L240001508890&aggregateId=flal-l24000150889-029e45a4-f3f4-4617-8f5b-bc8315f88bb9&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1009 MOJICAN BLVD, L.L.C.",L24000150889,99-2194810,,3/25/2024,FL,ACTIVE,"4300 S US HIGHWAY 1
+SUITE 203-247
+JUPITER, FL 33477",,"4300 S US HIGHWAY 1
+SUITE 203-247
+JUPITER, FL 33477",,"MENDEZ, MIGUEL A, JR, ESQ","1802 N ALAFAYA TRAIL
+ORLANDO, FL 32826",,,MGMR,"COLON, ROBERT D 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477",MGMR,"COLON, ALLISON B 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477",,,2025,04/15/2025,,,,"[{""Title"":""MGMR"",""NameAddress"":""COLON, ROBERT D 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477""},{""Title"":""MGMR"",""NameAddress"":""COLON, ALLISON B 4300 S US HIGHWAY 1 SUITE 203 247 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/15/2025""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"100 EGANFUSKEE, LLC",L17000033606,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100EGANFUSKEE%20L170000336060&aggregateId=flal-l17000033606-ac9befb9-6a33-4125-b149-6fb155698c7a&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 EGANFUSKEE, LLC",L17000033606,N/A,,02/05/2017,FL,ACTIVE,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",04/04/2018,INDEX MANAGEMENT SERVICES LLC,"1000 N US HWY ONE
+Suite 902
+JUPITER, FL 33477",,,MGR,"BORG, JOACIM 1000 N US HWY ONE Suite 902 JUPITER, FL 33477",,,,,2025,03/11/2025,2024,02/15/2024,01/26/2023,"[{""Title"":""MGR"",""NameAddress"":""BORG, JOACIM 1000 N US HWY ONE Suite 902 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/11/2025""},{""Report Year"":""2024"",""Filed Date"":""02/15/2024""},{""Report Year"":""2023"",""Filed Date"":""01/26/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"100 ELSA ROAD, LLC",L18000035862,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100ELSAROAD%20L180000358620&aggregateId=flal-l18000035862-f39a3981-2fe9-4cc7-9f1a-202e47d294d7&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 ELSA ROAD, LLC",L18000035862,N/A,,,FL,ACTIVE,"101 ELSA ROAD
+JUPITER, FL 33477",,"101 ELSA ROAD
+JUPITER, FL 33477",,"PERKO, PHIL","101 ELSA ROAD
+JUPITER, FL 33477",,,MGR,"PERKO, PHIL 101 ELSA ROAD JUPITER, FL 33477",,,,,2025,04/24/2025,2024,04/03/2024,04/28/2023,"[{""Title"":""MGR"",""NameAddress"":""PERKO, PHIL 101 ELSA ROAD JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/24/2025""},{""Report Year"":""2024"",""Filed Date"":""04/03/2024""},{""Report Year"":""2023"",""Filed Date"":""04/28/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"100 OCEAN TRAIL 1010, LLC",L25000040119,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=100OCEANTRAIL1010%20L250000401190&aggregateId=flal-l25000040119-b4b81aef-8f98-4218-bbc1-3c2fd2118c5c&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"100 OCEAN TRAIL 1010, LLC",L25000040119,33-3413139,,01/22/2025,FL,ACTIVE,"100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,"100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,"FABRIZI, KEVIN J","100 OCEAN TRAIL WAY
+UNIT 1010
+JUPITER, FL 33477",,,President,"Fabrizi, Kevin J. 100 OCEAN TRAIL WAY UNIT 1010 JUPITER, FL 33477",,,,,2026,01/07/2026,,,,"[{""Title"":""President"",""NameAddress"":""Fabrizi, Kevin J. 100 OCEAN TRAIL WAY UNIT 1010 JUPITER, FL 33477""}]","[{""Report Year"":""2026"",""Filed Date"":""01/07/2026""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+102 HARVEST MOON CT LLC,L21000509860,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=102HARVESTMOONCT%20L210005098600&aggregateId=flal-l21000509860-0c347951-9c6b-468d-89b5-b2f8ab3ba744&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,102 HARVEST MOON CT LLC,L21000509860,87-3863503,,,FL,ACTIVE,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"KEMPE, JOSEPH C, ESQ","941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,,MGR,"MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477",,,,,2025,04/30/2025,2024,03/08/2024,04/06/2023,"[{""Title"":""MGR"",""NameAddress"":""MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/08/2024""},{""Report Year"":""2023"",""Filed Date"":""04/06/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"1031 CROWN PROPERTY OWNER, LLC",L24000484633,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=1031CROWNPROPERTYOWNER%20L240004846330&aggregateId=flal-l24000484633-12548641-5e24-48fd-9705-babd0101115e&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"1031 CROWN PROPERTY OWNER, LLC",L24000484633,33-2116081,02/03/2025,,FL,ACTIVE,"2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,"2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,"LEVITT, ERIC M","2141 S ALTERNATE A1A, SUITE 440
+JUPITER, FL 33477",,,MGR,"LEVITT, ERIC M 2141 S ALTERNATE A1A, SUITE 440 JUPITER, FL 33477",,,,,2025,02/24/2025,,,,"[{""Title"":""MGR"",""NameAddress"":""LEVITT, ERIC M 2141 S ALTERNATE A1A, SUITE 440 JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""02/24/2025""}]",SUNBIZ_33477_TestExample.csv,Filed,02/03/2025,02/03/2030,02/25/2026,202500281114,1,1,,,,,,,,,,,5,"127 SUMMERFIELD PROPERTY OWNER, LLC","2141 ALTERNATE A1A, STE 440, JUPITER, FL, 33477",UCC1,7,,02/03/2025
+"10491 FUSSEL ROAD, LLC",L20000017546,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=10491FUSSELROAD%20L200000175460&aggregateId=flal-l20000017546-a887e9d8-705d-4fb2-9568-3c7183363b44&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"10491 FUSSEL ROAD, LLC",L20000017546,84-4636387,,,FL,ACTIVE,"140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",,"140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",04/30/2025,"Torres, John","140 Intracoastal Pointe Drive
+Suite 301
+Jupiter, FL 33477",04/30/2025,,MGR,"TORRES, JOHN 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477",MGR,"TORRES, PATRICIA 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477",,,2025,04/30/2025,2024,03/15/2024,07/14/2023,"[{""Title"":""MGR"",""NameAddress"":""TORRES, JOHN 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477""},{""Title"":""MGR"",""NameAddress"":""TORRES, PATRICIA 140 Intracoastal Pointe Drive Suite 301 Jupiter, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/15/2024""},{""Report Year"":""2023"",""Filed Date"":""07/14/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+105 HARVEST MOON CT LLC,L21000506243,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=105HARVESTMOONCT%20L210005062430&aggregateId=flal-l21000506243-828862aa-79ca-4606-b95b-06487e3e3059&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,105 HARVEST MOON CT LLC,L21000506243,87-3836856,,,FL,ACTIVE,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,"JOSEPH C. KEMPE, P.A.","941 NORTH HIGHWAY A1A
+JUPITER, FL 33477",,,MGR,"MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477",,,,,2025,04/30/2025,2024,03/08/2024,04/06/2023,"[{""Title"":""MGR"",""NameAddress"":""MOON ARROW INVESTMENT TRUST 941 NORTH HIGHWAY A1A JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""04/30/2025""},{""Report Year"":""2024"",""Filed Date"":""03/08/2024""},{""Report Year"":""2023"",""Filed Date"":""04/06/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"107 ALBACORE, LLC",L21000355004,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=107ALBACORE%20L210003550040&aggregateId=flal-l21000355004-728a5c53-70ca-4d0b-ba16-f6d44e272d23&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"107 ALBACORE, LLC",L21000355004,87-2076981,,,FL,ACTIVE,"105 W TARPON LN
+JUPITER, FL 33477",,"105 W TARPON LN
+JUPITER, FL 33477",,"Hand , Kimberly","105 W TARPON LN
+JUPITER, FL 33477",12/01/2022,,MGR,"HAND, KIMBERLY 105 W TARPON LN JUPITER, FL 33477",,,,,2025,03/17/2025,2024,4/30/2024,02/06/2023,"[{""Title"":""MGR"",""NameAddress"":""HAND, KIMBERLY 105 W TARPON LN JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/17/2025""},{""Report Year"":""2024"",""Filed Date"":""04/30/2024""},{""Report Year"":""2023"",""Filed Date"":""02/06/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"10887 NORTH MILITARY, LLC",L12000091055,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=10887NORTHMILITARY%20L120000910550&aggregateId=flal-l12000091055-a7556fa8-0d1a-4ae7-82e4-6190c15daa6b&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"10887 NORTH MILITARY, LLC",L12000091055,46-0605430,,,FL,ACTIVE,"132 Pegasus Drive
+Jupiter, FL 33477",,"132 Pegasus Drive
+Jupiter, FL 33477",01/18/2023,"Severson, John","400 Columbia Drive
+west palm beach, FL 33409",04/08/2013,,MGRM,"Mark James Hollenbeck Trust u/a James E. Hollenbeck dtd Sept. 29, 2011 132 Pegasus Drive Jupiter, FL 33477",,,,,2025,03/04/2025,2024,01/15/2024,01/18/2023,"[{""Title"":""MGRM"",""NameAddress"":""Mark James Hollenbeck Trust u/a James E. Hollenbeck dtd Sept. 29, 2011 132 Pegasus Drive Jupiter, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""03/04/2025""},{""Report Year"":""2024"",""Filed Date"":""01/15/2024""},{""Report Year"":""2023"",""Filed Date"":""01/18/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
+"108 BEACH WALK, L.L.C.",L11000112015,Active,33477,https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=ZipCode&directionType=Initial&searchNameOrder=108BEACHWALK%20L110001120150&aggregateId=flal-l11000112015-be109ab2-3d88-4c40-896d-b1e25375b821&searchTerm=33477&listNameOrder=1000E15ST%20L120001392200,Link,Florida Limited Liability Company,"108 BEACH WALK, L.L.C.",L11000112015,22-3378849,,,FL,ACTIVE,"108 BEACH WALK
+JUPITER, FL 33477",,"108 BEACH WALK
+JUPITER, FL 33477",,"LUCAS, F. JOSEPH JR","108 BEACH WALK
+JUPITER, FL 33477",,,MGR,"LUCAS, F. JOSEPH JR 108 BEACH WALK JUPITER, FL 33477",,,,,2025,01/24/2025,2024,01/31/2024,02/03/2023,"[{""Title"":""MGR"",""NameAddress"":""LUCAS, F. JOSEPH JR 108 BEACH WALK JUPITER, FL 33477""}]","[{""Report Year"":""2025"",""Filed Date"":""01/24/2025""},{""Report Year"":""2024"",""Filed Date"":""01/31/2024""},{""Report Year"":""2023"",""Filed Date"":""02/03/2023""}]",SUNBIZ_33477_TestExample.csv,No close match,,,,,,,,,,,,,,,,,,,,,,,
