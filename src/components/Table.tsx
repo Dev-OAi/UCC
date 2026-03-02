@@ -14,6 +14,7 @@ interface TableProps {
   onFilterChange: (column: string, values: string[]) => void;
   sortConfig: { key: string, direction: 'asc' | 'desc' } | null;
   onSortChange: (config: { key: string, direction: 'asc' | 'desc' } | null) => void;
+  activeTab?: string;
 }
 
 export const Table: React.FC<TableProps> = ({
@@ -25,7 +26,8 @@ export const Table: React.FC<TableProps> = ({
   columnFilters,
   onFilterChange,
   sortConfig,
-  onSortChange
+  onSortChange,
+  activeTab
 }) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const columns = visibleColumns;
@@ -124,6 +126,8 @@ export const Table: React.FC<TableProps> = ({
                      col === 'Phone' ? 'Phone Number' :
                      col === 'Filings Completed Through' ? 'Filings Completed' :
                      col === 'Summary For Filing' ? 'Summary for Filing' :
+                     (col === 'UCC Number' && activeTab === '5. OR') ? 'Summary For Filing' :
+                   (activeTab === '5. OR') ? col.replace(/ \(Search\)| \(Detail\)| \(\d+\)/g, '') :
                      col}
                   </span>
                   <ChevronDown className={`w-3 h-3 shrink-0 transition-transform ${openDropdown === col ? 'rotate-180' : ''}`} />

@@ -402,6 +402,21 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[45] = 'Summary For Filing';
           m[55] = 'Florida UCC Link';
         }
+        // PRIORITY 3.4: 5. OR HUB (Matches original CSV exactly)
+        else if (file.type === '5. OR') {
+          const counts: Record<string, number> = {};
+          headers = firstRow.map(h => {
+            const scrubbed = scrubValue(h);
+            if (counts[scrubbed] === undefined) {
+              counts[scrubbed] = 0;
+              return scrubbed;
+            } else {
+              counts[scrubbed]++;
+              return `${scrubbed} (${counts[scrubbed]})`;
+            }
+          });
+          startIndex++;
+        }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
         else if (colCount >= 25 && colCount < 30) {
           m[0] = 'UCC Status';
@@ -499,7 +514,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         }
 
         // 3. Dynamic Pattern Matching for remaining gaps
-        if (Object.keys(m).length > 0) {
+        if (Object.keys(m).length > 0 && headers.length === 0) {
           firstRow.forEach((cell, idx) => {
             const val = String(cell || '').trim();
             if (!val || m[idx]) return;
@@ -566,6 +581,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             obj[h] = scrubValue(row[i] || '');
           });
           
+          // Compat mapping for 5. OR hub to ensure sidebar and scoring work
+          if (file.type === '5. OR' && obj['Corporate Name (Search)']) {
+            obj.businessName = obj['Corporate Name (Search)'];
+          }
+
           obj._source = fileSource;
           obj._type = fileType;
           obj._zip = fileZip || scrubValue(obj['Zip'] || obj['ZIP'] || '');

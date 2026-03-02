@@ -41,6 +41,35 @@ const initialMeetingEntries: MeetingEntry[] = [
   { id: 'meeting-1', time: '14:00', client: 'Global Tech', attendees: 'Sarah Brown, Mike Lee', meetingType: 'Closing', summary: 'Finalized contract terms. Positive outcome.', outcome: 'Deal closed.', nextAction: 'Send final contract for signature.', followUpDate: '2026-11-11' }
 ];
 
+const DEFAULT_HIDDEN_COLUMNS: Record<string, string[]> = {
+  '5. OR': [
+    "Principal Address",
+    "Mailing Address",
+    "Mailing Address Changed Date",
+    "Registered Agent Name",
+    "Registered Agent Address",
+    "Registered Agent Name Changed Date",
+    "Auth Person 1 Title",
+    "Auth Person 1 Name & Address",
+    "Auth Person 2 Title",
+    "Auth Person 2 Name & Address",
+    "Auth Person 3 Title",
+    "Auth Person 3 Name & Address",
+    "Latest Report Year",
+    "Latest Report Filed Date",
+    "2nd Latest Report Year",
+    "2nd Latest Report Filed Date",
+    "3rd Latest Report Year",
+    "All Authorized Persons (JSON)",
+    "All Annual Reports (JSON)",
+    "Filing Events",
+    "Secured Parties Count",
+    "Debtor Parties Count",
+    "Document Pages",
+    "Filing Date"
+  ]
+};
+
 const DEFAULT_METRICS: ScorecardMetric[] = [
   { id: 'new-accts', name: 'New Accts', target: 50, type: 'built-in', isVisible: true },
   { id: 'cards-sold', name: 'Cards Sold', target: 100, type: 'built-in', isVisible: true },
@@ -326,6 +355,70 @@ function App() {
       "Document Type",
       "Document Pages"
     ],
+    '5. OR': [
+      "Corporate Name (Search)",
+      "Document Number (Search)",
+      "Status (Search)",
+      "Zip",
+      "Corporate URL",
+      "Detail Link",
+      "Entity Type",
+      "Corporate Name (Detail)",
+      "Document Number (Detail)",
+      "FEI/EIN Number",
+      "Date Filed",
+      "Effective Date",
+      "State (Detail)",
+      "Status (Detail)",
+      "Principal Address",
+      "Principal Address Changed Date",
+      "Mailing Address",
+      "Mailing Address Changed Date",
+      "Registered Agent Name",
+      "Registered Agent Address",
+      "Registered Agent Name Changed Date",
+      "Registered Agent Address Changed Date",
+      "Auth Person 1 Title",
+      "Auth Person 1 Name & Address",
+      "Auth Person 2 Title",
+      "Auth Person 2 Name & Address",
+      "Auth Person 3 Title",
+      "Auth Person 3 Name & Address",
+      "Latest Report Year",
+      "Latest Report Filed Date",
+      "2nd Latest Report Year",
+      "2nd Latest Report Filed Date",
+      "3rd Latest Report Year",
+      "All Authorized Persons (JSON)",
+      "All Annual Reports (JSON)",
+      "Source File",
+      "Match Score",
+      "UCC Status",
+      "Status (UCC)",
+      "Date Filed (1)",
+      "Expires",
+      "Filings Completed Through",
+      "UCC Number",
+      "Filing Events",
+      "Secured Parties Count",
+      "Secured Party 1 Name",
+      "Secured Party 1 Address",
+      "Secured Party 2 Name",
+      "Secured Party 2 Address",
+      "Secured Party 3 Name",
+      "Secured Party 3 Address",
+      "Secured Party 4 Name",
+      "Secured Party 4 Address",
+      "Secured Party 5 Name",
+      "Secured Party 5 Address",
+      "Debtor Parties Count",
+      "Debtor Name",
+      "Debtor Address",
+      "Document Type",
+      "Document Pages",
+      "Document Number",
+      "Filing Date"
+    ],
     '33480': [
       "businessName",
       "Sunbiz Status",
@@ -582,6 +675,27 @@ function App() {
   // Metadata States
   const [allColumns, setAllColumns] = useState<string[]>([]);
   const [nonEmptyColumns, setNonEmptyColumns] = useState<Set<string>>(new Set());
+
+  const hubNonEmptyColumns = useMemo(() => {
+    const hubData = activeTab === 'All' || activeTab === 'Home' || activeTab === 'Insights'
+      ? allData
+      : allData.filter(row => row._type === activeTab);
+
+    const next = new Set<string>();
+    hubData.forEach(row => {
+      Object.keys(row).forEach(key => {
+        if (next.has(key)) return;
+        const val = row[key];
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          next.add(key);
+        }
+      });
+      if (row._location && row._location !== 'N/A' && row._location !== '') next.add('Location');
+      if (row._zip && row._zip !== 'N/A' && row._zip !== '') next.add('Zip');
+    });
+    return next;
+  }, [allData, activeTab]);
+
   const [types, setTypes] = useState<string[]>(['All']);
   const [zips, setZips] = useState<string[]>(['All']);
   const [locations, setLocations] = useState<string[]>(['All']);
@@ -719,7 +833,16 @@ function App() {
       setVisibleColumns(activeCols);
     } 
     else if (customColumnOrders[activeTab]) {
-      setVisibleColumns(customColumnOrders[activeTab]);
+      // Use hub-specific non-empty columns to filter visible columns
+      let activeCols = customColumnOrders[activeTab].filter(col => hubNonEmptyColumns.has(col));
+
+      // Filter out default hidden columns for this hub
+      const hidden = DEFAULT_HIDDEN_COLUMNS[activeTab] || [];
+      if (hidden.length > 0) {
+        activeCols = activeCols.filter(col => !hidden.includes(col));
+      }
+
+      setVisibleColumns(activeCols);
     } else {
       const sample = allData.find(d => d._type === activeTab);
       if (sample) {
@@ -1200,6 +1323,7 @@ function App() {
                   }}
                   columnFilters={columnFilters} onFilterChange={onFilterChange}
                   sortConfig={sortConfig} onSortChange={setSortConfig}
+                    activeTab={activeTab}
                 />
               </div>
             </div>
