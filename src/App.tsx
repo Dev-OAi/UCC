@@ -41,6 +41,35 @@ const initialMeetingEntries: MeetingEntry[] = [
   { id: 'meeting-1', time: '14:00', client: 'Global Tech', attendees: 'Sarah Brown, Mike Lee', meetingType: 'Closing', summary: 'Finalized contract terms. Positive outcome.', outcome: 'Deal closed.', nextAction: 'Send final contract for signature.', followUpDate: '2026-11-11' }
 ];
 
+const DEFAULT_HIDDEN_COLUMNS: Record<string, string[]> = {
+  '5. OR': [
+    "Principal Address",
+    "Mailing Address",
+    "Mailing Address Changed Date",
+    "Registered Agent Name",
+    "Registered Agent Address",
+    "Registered Agent Name Changed Date",
+    "Auth Person 1 Title",
+    "Auth Person 1 Name & Address",
+    "Auth Person 2 Title",
+    "Auth Person 2 Name & Address",
+    "Auth Person 3 Title",
+    "Auth Person 3 Name & Address",
+    "Latest Report Year",
+    "Latest Report Filed Date",
+    "2nd Latest Report Year",
+    "2nd Latest Report Filed Date",
+    "3rd Latest Report Year",
+    "All Authorized Persons (JSON)",
+    "All Annual Reports (JSON)",
+    "Filing Events",
+    "Secured Parties Count",
+    "Debtor Parties Count",
+    "Document Pages",
+    "Filing Date"
+  ]
+};
+
 const DEFAULT_METRICS: ScorecardMetric[] = [
   { id: 'new-accts', name: 'New Accts', target: 50, type: 'built-in', isVisible: true },
   { id: 'cards-sold', name: 'Cards Sold', target: 100, type: 'built-in', isVisible: true },
@@ -805,7 +834,14 @@ function App() {
     } 
     else if (customColumnOrders[activeTab]) {
       // Use hub-specific non-empty columns to filter visible columns
-      const activeCols = customColumnOrders[activeTab].filter(col => hubNonEmptyColumns.has(col));
+      let activeCols = customColumnOrders[activeTab].filter(col => hubNonEmptyColumns.has(col));
+
+      // Filter out default hidden columns for this hub
+      const hidden = DEFAULT_HIDDEN_COLUMNS[activeTab] || [];
+      if (hidden.length > 0) {
+        activeCols = activeCols.filter(col => !hidden.includes(col));
+      }
+
       setVisibleColumns(activeCols);
     } else {
       const sample = allData.find(d => d._type === activeTab);
