@@ -19,6 +19,7 @@ import { ActivityLog } from './components/ActivityLog';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
+import { Roleplay } from './components/Roleplay';
 import ProductGuideRenderer from './components/ProductGuideRenderer';
 import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, CallEntry, EmailEntry, MeetingEntry } from './types';
 import { SearchResult } from './components/SearchDropdown';
@@ -27,7 +28,7 @@ import { calculateScore } from './lib/scoring';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
 import Papa from 'papaparse';
 
-export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | string;
+export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | 'Roleplay' | string;
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -1259,6 +1260,8 @@ function App() {
               }}
               selectedLeadId={selectedLeadId}
             />
+          ) : activeTab === 'Roleplay' ? (
+            <Roleplay />
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="px-6 py-4 flex items-center justify-between shrink-0">
