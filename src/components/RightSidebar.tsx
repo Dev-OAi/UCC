@@ -4,8 +4,9 @@ import {
   Fingerprint, Calendar, Activity, ShieldCheck, HelpCircle,
   ExternalLink, FileText, Lightbulb, ChevronDown, ChevronRight,
   Copy, Check, Target, ChevronLeft, Sparkles, Mail, TrendingUp,
-  Zap
+  Zap, Search, Eye
 } from 'lucide-react';
+import { DISCOVERY_GUIDE } from '../lib/discoveryData';
 import { DataRow, FileManifest } from '../lib/dataService';
 import { SalesHooks } from './SalesHooks';
 import { getInsightForCategory } from '../lib/industryKnowledge';
@@ -62,6 +63,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const [isOutreachCopied, setIsOutreachCopied] = React.useState(false);
   const [generatedIntel, setGeneratedIntel] = React.useState<{ strategy: string, email: string } | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>('');
+  const [isDiscoveryExpanded, setIsDiscoveryExpanded] = React.useState(false);
 
   const templates = React.useMemo(() => getStoredTemplates(), []);
 
@@ -386,6 +388,57 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
             <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
               <SalesHooks leadData={selectedRow} />
+            </div>
+
+            {/* Discovery Guide Quick Access */}
+            <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+               <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setIsDiscoveryExpanded(!isDiscoveryExpanded)}
+                    className="w-full flex items-center justify-between p-4 text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <Search className="w-3.5 h-3.5 mr-2" />
+                      Discovery Guide
+                    </div>
+                    {isDiscoveryExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+
+                  {isDiscoveryExpanded && (
+                    <div className="px-4 pb-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div>
+                        <h5 className="text-[9px] font-black text-emerald-600/60 uppercase tracking-tighter mb-2 flex items-center">
+                          <HelpCircle className="w-3 h-3 mr-1" /> Discovery Questions
+                        </h5>
+                        <div className="space-y-1.5">
+                          {DISCOVERY_GUIDE.discoveryQuestions.items.slice(0, 2).map((q, i) => (
+                            <p key={i} className="text-[10px] text-emerald-800 dark:text-emerald-300 italic leading-relaxed">"{q}"</p>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h5 className="text-[9px] font-black text-emerald-600/60 uppercase tracking-tighter mb-2 flex items-center">
+                          <Zap className="w-3 h-3 mr-1" /> Trigger Phrases
+                        </h5>
+                        <div className="flex flex-wrap gap-1.5">
+                          {DISCOVERY_GUIDE.triggerPhrases.items.slice(0, 4).map((p, i) => (
+                            <span key={i} className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-emerald-100 dark:border-emerald-900/30 rounded text-[9px] text-emerald-700 dark:text-emerald-400 font-bold">
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('switchTab', { detail: 'Action Hub' }))}
+                        className="w-full py-2 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all"
+                      >
+                        Open Full Discovery Hub
+                      </button>
+                    </div>
+                  )}
+               </div>
             </div>
 
             {selectedRow && (

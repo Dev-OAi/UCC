@@ -484,6 +484,17 @@ function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
+    const handleSwitchTab = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        handleTabChange(customEvent.detail);
+      }
+    };
+    window.addEventListener('switchTab', handleSwitchTab);
+    return () => window.removeEventListener('switchTab', handleSwitchTab);
+  }, []);
+
+  useEffect(() => {
     if (productGuides.length > 0) {
       localStorage.setItem('productGuides', JSON.stringify(productGuides));
     }

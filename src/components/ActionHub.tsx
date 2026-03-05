@@ -3,8 +3,10 @@ import {
   Zap, Mail, Phone, MessageSquare, Plus, ChevronRight, Target, Clock,
   CheckCircle2, AlertCircle, Sparkles, FileText, Edit3,
   BookOpen, Package, MessageCircle, ArrowLeft,
-  Building2, HardHat, TrendingUp, Calendar, Info
+  Building2, HardHat, TrendingUp, Calendar, Info,
+  Search, Eye, HelpCircle, UserPlus, Activity
 } from 'lucide-react';
+import { DISCOVERY_GUIDE } from '../lib/discoveryData';
 import { BusinessLead, LeadStatus, LeadType, LeadActivity } from '../types';
 import { Modal, Input } from './ui';
 import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
@@ -31,7 +33,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1280);
   const [activeHubTab, setActiveHubTab] = useState<'strategy' | 'outreach'>('strategy');
-  const [activeStrategyTab, setActiveStrategyTab] = useState<'focus' | 'solutions' | 'starters' | 'history'>('focus');
+  const [activeStrategyTab, setActiveStrategyTab] = useState<'focus' | 'solutions' | 'starters' | 'discovery' | 'history'>('focus');
   const [outreachChannel, setOutreachChannel] = useState<'Email' | 'SMS' | 'LinkedIn'>('Email');
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
@@ -353,7 +355,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
               {/* Left Panel: Strategy */}
               <div className={`${(isMobile || isTablet) && activeHubTab !== 'strategy' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col border-r border-gray-200 dark:border-slate-800 overflow-hidden`}>
                 <div className="flex bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shrink-0 px-4">
-                  {(['focus', 'solutions', 'starters', 'history'] as const).map((tab) => (
+                  {(['focus', 'solutions', 'starters', 'discovery', 'history'] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveStrategyTab(tab)}
@@ -442,17 +444,117 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                   )}
 
                   {activeStrategyTab === 'starters' && (
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
-                        <MessageCircle className="w-3 h-3 mr-2 text-blue-500" />
-                        Discussion Starters
-                      </h3>
-                      <div className="space-y-3">
-                        {intelligence?.strategy.split('**3. Discussion Starters:**')[1]?.trim().split('\n').filter(s => s.trim().startsWith('-')).slice(0, 5).map((starter, i) => (
-                          <div key={i} className="p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
-                            "{starter.replace('- ', '').replace(/"/g, '')}"
+                    <div className="space-y-4">
+                      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
+                          <MessageCircle className="w-3 h-3 mr-2 text-blue-500" />
+                          Contextual Starters
+                        </h3>
+                        <div className="space-y-3">
+                          {intelligence?.strategy.split('**3. Discussion Starters:**')[1]?.trim().split('\n').filter(s => s.trim().startsWith('-')).slice(0, 5).map((starter, i) => (
+                            <div key={i} className="p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
+                              "{starter.replace('- ', '').replace(/"/g, '')}"
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                        <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center mb-3">
+                          <UserPlus className="w-3 h-3 mr-2" />
+                          Partner Positioning Starters
+                        </h3>
+                        <div className="space-y-2">
+                          {DISCOVERY_GUIDE.partnerPositioning.items.slice(0, 3).map((item, i) => (
+                            <div key={i} className="text-[11px] text-amber-800 dark:text-amber-400/90 font-medium leading-relaxed bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-amber-100/50 dark:border-amber-900/30 italic">
+                              "{item}"
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeStrategyTab === 'discovery' && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                          <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center mb-3">
+                            <Search className="w-3 h-3 mr-2" />
+                            Trigger Phrases
+                          </h3>
+                          <div className="space-y-2">
+                            {DISCOVERY_GUIDE.triggerPhrases.items.map((item, i) => (
+                              <div key={i} className="flex items-center space-x-2 text-[11px] text-gray-600 dark:text-slate-400 font-medium">
+                                <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                          <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center mb-3">
+                            <HelpCircle className="w-3 h-3 mr-2" />
+                            Discovery Questions
+                          </h3>
+                          <div className="space-y-2">
+                            {DISCOVERY_GUIDE.discoveryQuestions.items.map((item, i) => (
+                              <div key={i} className="text-[11px] text-emerald-700 dark:text-emerald-400/90 font-bold bg-emerald-50/50 dark:bg-emerald-900/10 p-2 rounded-lg border border-emerald-100/30 italic">
+                                "{item}"
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                          <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center mb-3">
+                            <Eye className="w-3 h-3 mr-2" />
+                            Operational Cues
+                          </h3>
+                          <div className="space-y-2">
+                            {DISCOVERY_GUIDE.operationalCues.items.map((item, i) => (
+                              <div key={i} className="flex items-center space-x-2 text-[11px] text-gray-600 dark:text-slate-400 font-medium">
+                                <div className="w-1 h-1 bg-amber-400 rounded-full" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                          <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-widest flex items-center mb-3">
+                            <Activity className="w-3 h-3 mr-2" />
+                            Financial Behaviors
+                          </h3>
+                          <div className="space-y-2">
+                            {DISCOVERY_GUIDE.financialBehaviors.items.map((item, i) => (
+                              <div key={i} className="flex items-center space-x-2 text-[11px] text-gray-600 dark:text-slate-400 font-medium">
+                                <div className="w-1 h-1 bg-purple-400 rounded-full" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-blue-600 text-white p-5 rounded-xl shadow-xl shadow-blue-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <Target className="w-16 h-16" />
+                        </div>
+                        <h3 className="text-[11px] font-black uppercase tracking-widest mb-4 opacity-90 flex items-center">
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Partner Positioning (All Tiers)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                          {DISCOVERY_GUIDE.partnerPositioning.items.slice(3).map((item, i) => (
+                            <div key={i} className="text-xs font-medium leading-relaxed bg-white/10 backdrop-blur-md p-3 rounded-lg border border-white/10 italic">
+                              "{item}"
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
