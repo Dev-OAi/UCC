@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { productData } from '../lib/productData';
+import { LendingResources } from './LendingResources';
+import { Info, LayoutList, FileSpreadsheet, DollarSign, FileText } from 'lucide-react';
 
 interface ProductsProps {
   highlightedProductId?: string | null;
 }
 
 export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
+  const [viewMode, setViewMode] = useState<'list' | 'resources'>('list');
+  const [resourceTab, setResourceTab] = useState<'fees' | 'docs'>('fees');
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -26,9 +30,40 @@ export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white dark:bg-slate-900 overflow-hidden">
+        {/* Header Toggle */}
+        <div className="h-14 border-b border-gray-100 dark:border-slate-800 flex items-center justify-center px-6 shrink-0 bg-gray-50/50 dark:bg-slate-900/50">
+            <div className="flex p-1 bg-gray-200/50 dark:bg-slate-800 rounded-lg">
+                <button
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center space-x-2 px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${
+                        viewMode === 'list'
+                            ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
+                    }`}
+                >
+                    <LayoutList className="w-3.5 h-3.5" />
+                    <span>Product List</span>
+                </button>
+                <button
+                    onClick={() => setViewMode('resources')}
+                    className={`flex items-center space-x-2 px-4 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all ${
+                        viewMode === 'resources'
+                            ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
+                    }`}
+                >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>Lending Resources</span>
+                </button>
+            </div>
+        </div>
+
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6 scroll-smooth">
-            <div className="max-w-6xl mx-auto space-y-12 pb-12">
+        <div className="flex-1 overflow-auto scroll-smooth">
+          {viewMode === 'resources' ? (
+            <LendingResources initialTab={resourceTab} />
+          ) : (
+            <div className="max-w-6xl mx-auto space-y-12 pb-12 p-6">
                 {productData.map((section, sIdx) => (
                     <div key={sIdx} className="space-y-6">
                         <div className="text-center border-b-2 border-blue-600/20 pb-4">
@@ -83,7 +118,33 @@ export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
                                                                     className={`${isEffectivelyHighlighted ? 'bg-blue-100/50 dark:bg-blue-900/30' : ''} transition-all duration-300`}
                                                                 >
                                                                     <td rowSpan={rowSpan} className="px-4 py-4 font-semibold text-gray-900 dark:text-white border-r border-gray-100 dark:border-slate-800 align-middle">
-                                                                        {product.name}
+                                                                        <div className="flex items-center justify-between group/name">
+                                                                            <span>{product.name}</span>
+                                                                            {(section.title.includes('LOAN') || product.name.toLowerCase().includes('loan') || product.name.toLowerCase().includes('credit')) && (
+                                                                                <div className="flex items-center space-x-1 opacity-0 group-hover/name:opacity-100 transition-opacity">
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            setResourceTab('fees');
+                                                                                            setViewMode('resources');
+                                                                                        }}
+                                                                                        className="p-1 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+                                                                                        title="View Fee Schedule"
+                                                                                    >
+                                                                                        <DollarSign className="w-4 h-4" />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            setResourceTab('docs');
+                                                                                            setViewMode('resources');
+                                                                                        }}
+                                                                                        className="p-1 text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300"
+                                                                                        title="View Documentation Requirements"
+                                                                                    >
+                                                                                        <FileText className="w-4 h-4" />
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
                                                                     </td>
                                                                     <td rowSpan={rowSpan} className="px-4 py-4 text-center text-gray-500 dark:text-slate-400 border-r border-gray-100 dark:border-slate-800 align-middle font-medium">
                                                                         {product.points ?? 'N/A'}
@@ -135,7 +196,7 @@ export const Products: React.FC<ProductsProps> = ({ highlightedProductId }) => {
                     </div>
                 ))}
             </div>
-
+          )}
         </div>
     </div>
   );
