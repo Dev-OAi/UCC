@@ -140,7 +140,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
                     <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-red-600 font-bold text-xs mb-2 relative">
                       {String(row['businessName'] || 'U').charAt(0).toUpperCase()}
                       <div className="absolute -bottom-1 -right-1 px-1 bg-white dark:bg-slate-900 rounded text-[7px] font-black border border-red-100 dark:border-red-900/30 text-red-500">
-                        {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : 'UCC'}
+                        {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : row._type?.includes('Search1600') ? 'S16' : 'UCC'}
                       </div>
                     </div>
                     <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded uppercase">
@@ -235,7 +235,7 @@ export const Playbook: React.FC<PlaybookProps> = ({
               <div key={i} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-blue-500 transition-all">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 text-[10px] font-black shrink-0 uppercase tracking-tighter">
-                    {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : 'UCC'}
+                    {row._type?.includes('SB') ? 'SB' : row._type?.includes('YP') ? 'YP' : row._type?.includes('Search1600') ? 'S16' : 'UCC'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
