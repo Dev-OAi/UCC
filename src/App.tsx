@@ -16,6 +16,7 @@ import { Products } from './components/Products';
 import { TerritoryMap } from './components/TerritoryMap';
 import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
+import { MarketIntelligence } from './components/MarketIntelligence';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
@@ -25,7 +26,7 @@ import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, Call
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { calculateScore } from './lib/scoring';
-import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
+import { Search, Filter, Database, MapPin, Download, FilterX, Copy, Globe } from 'lucide-react';
 import Papa from 'papaparse';
 
 export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | 'Roleplay' | string;
@@ -1171,6 +1172,8 @@ function App() {
               onNavigate={handleTabChange}
               onFilterChange={onFilterChange}
             />
+          ) : activeTab === 'Market Intelligence' ? (
+            <MarketIntelligence />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}

@@ -146,4 +146,12 @@ export interface BusinessLead {
     email: string;
     date: string;
   }[];
+  aiIntelligence?: {
+    products: string[];
+    intelligence: string;
+    signals: string[];
+    script: string;
+    naics: string;
+  };
+  researchConfidence?: string;
 }
