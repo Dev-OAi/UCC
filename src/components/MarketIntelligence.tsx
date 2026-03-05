@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Search, Filter } from 'lucide-react';
 
 interface MarketData {
   summary: string;
@@ -31,6 +32,18 @@ export const MarketIntelligence: React.FC = () => {
   }, []);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredFindings = useMemo(() => {
+    if (!data) return [];
+    if (!searchTerm) return data.recent_findings;
+    const query = searchTerm.toLowerCase();
+    return data.recent_findings.filter(item =>
+      item['Business Name'].toLowerCase().includes(query) ||
+      item['NAICS_Code'].toString().includes(query) ||
+      item['Industry_Pain_Point'].toLowerCase().includes(query)
+    );
+  }, [data, searchTerm]);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-slate-950">
@@ -139,31 +152,56 @@ export const MarketIntelligence: React.FC = () => {
 
               {/* Recent Findings Feed */}
               <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm flex flex-col">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
                     <Users className="w-4 h-4 mr-2 text-blue-600" />
-                    Deep Research Feed
+                    Strategic Intelligence Log
                   </h3>
-                  <span className="text-[10px] font-bold text-blue-600">Last 10 Scans</span>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search intelligence..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 pr-4 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg text-[10px] focus:ring-2 focus:ring-blue-500/20 outline-none w-full sm:w-48"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1 space-y-4 overflow-y-auto">
-                  {data?.recent_findings.map((item, i) => (
-                    <div key={i} className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-800">
+                <div className="flex-1 space-y-4 overflow-y-auto max-h-[400px] pr-2">
+                  {filteredFindings.map((item, i) => (
+                    <div key={i} className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900 transition-colors">
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm font-black text-gray-900 dark:text-white leading-tight">{item['Business Name']}</p>
-                          <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tight">NAICS: {item['NAICS_Code']}</p>
+                          <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tight mt-0.5">NAICS: {item['NAICS_Code']}</p>
                         </div>
                         <div className="flex items-center space-x-1">
                            <MapPin className="w-3 h-3 text-gray-400" />
-                           <span className="text-[10px] font-bold text-gray-400">FL</span>
+                           <span className="text-[10px] font-bold text-gray-400 uppercase">FL Intelligence</span>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-slate-400 line-clamp-2 leading-relaxed italic">
-                        "{item['Industry_Pain_Point']}"
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-600 dark:text-slate-400 leading-relaxed italic border-l-2 border-blue-500 pl-3">
+                          "{item['Industry_Pain_Point']}"
+                        </p>
+                        {item['Suppliers_Customers'] && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {item['Suppliers_Customers'].split(',').map((sig: string, idx: number) => (
+                              <span key={idx} className="px-1.5 py-0.5 bg-blue-100/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[8px] font-black uppercase rounded">
+                                {sig.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
+                  {filteredFindings.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No matching findings</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

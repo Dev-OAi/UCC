@@ -118,6 +118,7 @@ function App() {
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bridgeStatus, setBridgeStatus] = useState<'online' | 'offline'>('offline');
   const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
 
@@ -682,7 +683,21 @@ function App() {
 
     init();
 
+    // Check Bridge Status periodically
+    const checkBridge = async () => {
+      try {
+        const res = await fetch('http://localhost:5001/health');
+        if (res.ok) setBridgeStatus('online');
+        else setBridgeStatus('offline');
+      } catch {
+        setBridgeStatus('offline');
+      }
+    };
+    checkBridge();
+    const interval = setInterval(checkBridge, 10000);
+
     return () => {
+      clearInterval(interval);
       isMounted = false;
     };
   }, []);
@@ -1152,6 +1167,7 @@ function App() {
           onGoHome={() => handleTabChange('Home')}
           allDataCount={allData.length}
           isSyncing={loadProgress.current < loadProgress.total}
+          bridgeStatus={bridgeStatus}
         />
 
         <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">

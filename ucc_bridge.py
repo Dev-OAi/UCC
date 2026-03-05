@@ -6,8 +6,11 @@ import json
 import os
 import re
 import requests
+import pandas as pd
+from fpdf import FPDF
 from bs4 import BeautifulSoup
 from werkzeug.utils import secure_filename
+from flask import send_from_directory
 import ollama
 
 app = Flask(__name__)
@@ -16,9 +19,11 @@ CORS(app)
 UPLOAD_FOLDER = "public/Uploads"
 COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
 STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
+LEAD_BRIEFS_DIR = "Lead_Insight_Briefs"
+INTEL_FILE = "Business_Intelligence.csv"
 
 # Ensure directories exist
-for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR]:
+for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR]:
     os.makedirs(d, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
@@ -316,6 +321,21 @@ def research_lead():
         json_match = re.search(r'\{.*\}', ai_text, re.DOTALL)
         if json_match:
             ai_data = json.loads(json_match.group())
+
+            # Save to Business_Intelligence.csv
+            new_intel = {
+                'Business Name': business_name,
+                'NAICS_Code': ai_data.get('naics', '000000'),
+                'Industry_Pain_Point': ai_data.get('intelligence', ''),
+                'Suppliers_Customers': ", ".join(ai_data.get('signals', []))
+            }
+
+            if not os.path.exists(INTEL_FILE):
+                pd.DataFrame(columns=['Business Name', 'NAICS_Code', 'Industry_Pain_Point', 'Suppliers_Customers']).to_csv(INTEL_FILE, index=False)
+
+            intel_df = pd.read_csv(INTEL_FILE)
+            intel_df = pd.concat([intel_df, pd.DataFrame([new_intel])], ignore_index=True)
+            intel_df.to_csv(INTEL_FILE, index=False)
         else:
             ai_data = {"error": "AI response format invalid"}
 
@@ -323,6 +343,88 @@ def research_lead():
             "businessName": business_name,
             "ai": ai_data,
             "raw_content_preview": content[:200]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/briefs/<filename>', methods=['GET'])
+def get_brief(filename):
+    return send_from_directory(LEAD_BRIEFS_DIR, filename)
+
+@app.route('/generate-brief', methods=['POST'])
+def generate_brief():
+    data = request.json
+    if not data or 'businessName' not in data or 'ai' not in data:
+        return jsonify({"error": "Missing data for brief generation"}), 400
+
+    business_name = data['businessName']
+    ai_res = data['ai']
+    industry = data.get('industry', 'Business')
+    website = data.get('website', 'N/A')
+
+    try:
+        # Clean business name for filename
+        safe_name = re.sub(r'[^a-zA-Z0-9]', '_', business_name)
+        pdf_filename = f"{safe_name}_Insight_Brief.pdf"
+        pdf_path = os.path.join(LEAD_BRIEFS_DIR, pdf_filename)
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, txt="Valley Bank: Lead Insight Brief", ln=True, align='C')
+        pdf.ln(5)
+
+        # Business Basics - Header
+        pdf.set_font("Arial", 'B', 12)
+        pdf.set_fill_color(220, 230, 240)
+        pdf.cell(0, 10, txt=f"TARGET: {business_name}", ln=True, fill=True)
+        pdf.ln(2)
+
+        # Helper for wrapped field layout
+        def field(label, value):
+            pdf.set_font("Arial", 'B', 10)
+            pdf.cell(0, 8, txt=f"{label}:", ln=True)
+            pdf.set_font("Arial", '', 10)
+            pdf.multi_cell(0, 7, txt=str(value))
+            pdf.ln(1)
+
+        field("Website", website)
+        field("Industry", industry)
+        pdf.ln(2)
+
+        # Intelligence Section
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 10, txt="Strategic Intelligence", ln=True, border='B')
+        pdf.ln(2)
+
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(0, 8, txt=f"NAICS Code: {ai_res.get('naics', 'N/A')}", ln=True)
+
+        field("Detected Triggers & Pain Points", ai_res.get('intelligence', 'Standard industry needs.'))
+        field("Signals Detected", ", ".join(ai_res.get('signals', [])))
+        pdf.ln(2)
+
+        # Expert Matching
+        pdf.set_font("Arial", 'B', 12)
+        pdf.set_text_color(0, 102, 204) # Professional Blue
+        pdf.set_fill_color(245, 245, 245)
+        pdf.cell(0, 12, txt=f"EXPERT PROPOSED SOLUTIONS: {', '.join(ai_res.get('products', []))}", ln=True, fill=True)
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(4)
+
+        # Conversion Starter
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 10, txt="Conversation Starter", ln=True, border='B')
+        pdf.ln(2)
+        pdf.set_font("Arial", 'I', 10)
+        pdf.multi_cell(0, 7, txt=ai_res.get('script', 'N/A'))
+
+        pdf.output(pdf_path)
+
+        return jsonify({
+            "status": "Brief generated",
+            "filename": pdf_filename,
+            "path": pdf_path
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

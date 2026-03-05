@@ -4,7 +4,7 @@ import {
   CheckCircle2, AlertCircle, Sparkles, FileText, Edit3,
   BookOpen, Package, MessageCircle, ArrowLeft,
   Building2, HardHat, TrendingUp, Calendar, Info,
-  Search, Eye, HelpCircle, UserPlus, Activity, Loader2
+  Search, Eye, HelpCircle, UserPlus, Activity, Loader2, Download
 } from 'lucide-react';
 import { DISCOVERY_GUIDE } from '../lib/discoveryData';
 import { BusinessLead, LeadStatus, LeadType, LeadActivity } from '../types';
@@ -39,6 +39,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [customDraft, setCustomDraft] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isResearching, setIsResearching] = useState(false);
+  const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [researchError, setResearchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -280,6 +281,34 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     }
   };
 
+  const handleGenerateBrief = async () => {
+    if (!selectedLead || !selectedLead.aiIntelligence) return;
+    setIsGeneratingBrief(true);
+    try {
+      const response = await fetch('http://localhost:5001/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: selectedLead.businessName,
+          ai: selectedLead.aiIntelligence,
+          industry: selectedLead.industry,
+          website: selectedLead.website
+        })
+      });
+
+      if (!response.ok) throw new Error('Brief generation failed');
+      const data = await response.json();
+
+      // Download the generated PDF
+      window.open(`http://localhost:5001/briefs/${data.filename}`, '_blank');
+    } catch (err) {
+      console.error('Brief error:', err);
+      alert('Failed to generate PDF brief. Check if the bridge is running.');
+    } finally {
+      setIsGeneratingBrief(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-950 overflow-hidden h-full">
       {/* Header */}
@@ -463,7 +492,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         )}
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10">
+                      <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10 space-y-3">
                         <button
                           onClick={handleDeepDive}
                           disabled={isResearching}
@@ -481,10 +510,33 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           ) : (
                             <>
                               <Sparkles className="w-4 h-4" />
-                              <span>Get AI Intelligence Brief</span>
+                              <span>{selectedLead.aiIntelligence ? 'Refresh AI Intelligence' : 'Get AI Intelligence Brief'}</span>
                             </>
                           )}
                         </button>
+
+                        {selectedLead.aiIntelligence && (
+                          <button
+                            onClick={handleGenerateBrief}
+                            disabled={isGeneratingBrief}
+                            className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
+                              isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            {isGeneratingBrief ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Generating PDF...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4" />
+                                <span>Download PDF Insight Brief</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+
                         {researchError && (
                           <p className="mt-2 text-[10px] text-red-500 font-bold text-center">
                             {researchError}

@@ -18,6 +18,7 @@ interface SidebarProps {
   onClose?: () => void;
   allDataCount?: number;
   isSyncing?: boolean;
+  bridgeStatus?: 'online' | 'offline';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   allDataCount = 0,
   isSyncing = false,
+  bridgeStatus = 'offline',
 }) => {
   const [expanded, setExpanded] = useState({
     categories: true,
@@ -371,18 +373,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {allDataCount > 0 && (
-        <div className="px-6 py-4 mt-auto border-t border-gray-100 dark:border-slate-800">
-          <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
-            <span>Status</span>
-            {isSyncing ? (
-              <span className="text-blue-500 animate-pulse">Syncing</span>
-            ) : (
-              <span className="text-green-500">Ready</span>
-            )}
+        <div className="px-6 py-4 mt-auto border-t border-gray-100 dark:border-slate-800 space-y-3">
+          <div>
+            <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+              <span>Database Sync</span>
+              {isSyncing ? (
+                <span className="text-blue-500 animate-pulse">Syncing</span>
+              ) : (
+                <span className="text-green-500">Ready</span>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">
+              {allDataCount.toLocaleString()} records loaded
+            </p>
           </div>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 font-medium">
-            {allDataCount.toLocaleString()} records loaded
-          </p>
+
+          <div>
+            <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+              <span>Intelligence Suite</span>
+              <span className={bridgeStatus === 'online' ? 'text-blue-500' : 'text-amber-500'}>
+                {bridgeStatus === 'online' ? 'Online' : 'Offline'}
+              </span>
+            </div>
+            <p className="text-[9px] text-gray-400 italic">
+              {bridgeStatus === 'online'
+                ? 'AI Research & Ollama active'
+                : 'Start bridge to enable AI'}
+            </p>
+          </div>
         </div>
       )}
       </aside>
