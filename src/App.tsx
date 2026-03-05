@@ -579,6 +579,8 @@ function App() {
       setSortConfig({ key: 'Record Date', direction: 'desc' });
     } else if (activeTab === 'All') {
       setSortConfig({ key: 'Date Filed', direction: 'desc' });
+    } else if (activeTab === 'B UCC') {
+      setSortConfig({ key: 'RecordDate', direction: 'desc' });
     } else {
       setSortConfig(null);
     }
@@ -920,7 +922,7 @@ function App() {
 
     if (sortConfig) {
       const { key, direction } = sortConfig;
-      const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+      const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}(\s.*)?$/;
 
       data = [...data].sort((a, b) => {
         const aVal = key === 'Location' ? a._location : key === 'Zip' ? a._zip : a[key];
