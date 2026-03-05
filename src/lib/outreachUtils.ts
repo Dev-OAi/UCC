@@ -45,6 +45,20 @@ export const DEFAULT_TEMPLATES: OutreachTemplate[] = [
     subject: 'Efficiency Insights for {{businessName}}',
     body: 'Hello {{contactName}},\n\nI was recently reviewing industry benchmarks for the {{industry}} sector and noticed some interesting trends in operational efficiency that could impact {{businessName}}.\n\nI\'d love to share these insights with you and discuss how [Bank Name] is helping similar firms optimize their cash flow.\n\nBest regards,\n[My Name]',
     category: 'Email'
+  },
+  {
+    id: 'temp-5',
+    name: 'Growth Partner Intro',
+    subject: 'Supporting the Growth of {{businessName}}',
+    body: 'Hi {{contactName}},\n\nWhen businesses are growing, we often help them with expansion financing. What’s growth look like for {{businessName}} right now?\n\nMany of our business clients use a line of credit for flexibility – Is that something you’ve considered? Even if you do not have any current borrowing needs, it’s good to know what options are available to you before you need them.\n\nI’d like to introduce you to our small business banking team to see how we can best partner with you.\n\nBest regards,\n[My Name]',
+    category: 'Email'
+  },
+  {
+    id: 'temp-6',
+    name: 'Financial Efficiency Review',
+    subject: 'Optimizing Cash Flow for {{businessName}}',
+    body: 'Hello {{contactName}},\n\nWe’ve seen businesses refinance high-interest loans or credit cards to free up cash flow. Sometimes business can save significantly by restructuring debt.\n\nWould you like us to take a look at your current financing for {{businessName}}? We have a dedicated team that specializes in businesses like yours, finding solutions that most owners don’t realize exist.\n\nBest regards,\n[My Name]',
+    category: 'Email'
   }
 ];
 
