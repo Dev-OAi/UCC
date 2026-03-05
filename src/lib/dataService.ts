@@ -417,6 +417,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           });
           startIndex++;
         }
+        // PRIORITY 3.7: 6. Search1600 HUB
+        else if (file.type === '6. Search1600') {
+          headers = firstRow.map(h => scrubValue(h));
+          startIndex++;
+        }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
         else if (colCount >= 25 && colCount < 30) {
           m[0] = 'UCC Status';
@@ -581,9 +586,12 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             obj[h] = scrubValue(row[i] || '');
           });
           
-          // Compat mapping for 5. OR hub to ensure sidebar and scoring work
+          // Compat mapping for specific hubs to ensure sidebar and scoring work
           if (file.type === '5. OR' && obj['Corporate Name (Search)']) {
             obj.businessName = obj['Corporate Name (Search)'];
+          }
+          if (file.type === '6. Search1600') {
+            obj.businessName = obj['LEGALNAME'] || obj['Corporate Name (Search)'] || obj['COMPANY'] || '';
           }
 
           obj._source = fileSource;
