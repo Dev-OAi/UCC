@@ -98,7 +98,7 @@ export function getScoreDetails(item: DataRow | BusinessLead): ScoreResult {
   }
 
   // 4. Data Completeness (Max 10 points)
-  const principal = getVal(['Key Principal', 'Officer/Director', 'keyPrincipal', 'DirectName']);
+  const principal = getVal(['Key Principal', 'Officer/Director', 'keyPrincipal', 'DirectName', 'CONTACTNAMECOMP']);
   if (principal) {
     total += 10;
     insights.push({ label: 'Key principal identified', points: 10 });

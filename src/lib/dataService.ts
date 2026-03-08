@@ -413,11 +413,23 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[45] = 'Summary For Filing';
           m[55] = 'Florida UCC Link';
         }
-        // PRIORITY 3.4: 5. OR HUB (Matches original CSV exactly)
-        else if (file.type === '5. OR') {
+        // PRIORITY 3.4: 5. OR & 33477 HUB (Matches original CSV exactly)
+        else if (file.type === '5. OR' || file.type === '33477') {
           const counts: Record<string, number> = {};
           headers = firstRow.map(h => {
             const scrubbed = scrubValue(h);
+            if (scrubbed === 'Date Filed') {
+              if (counts[scrubbed] === undefined) {
+                counts[scrubbed] = 0;
+                return 'Date Filed (Sunbiz)';
+              } else {
+                return 'Date Filed (UCC)';
+              }
+            }
+            if (scrubbed === 'Document Number' && file.type === '33477') {
+              return 'Document Number (UCC)';
+            }
+
             if (counts[scrubbed] === undefined) {
               counts[scrubbed] = 0;
               return scrubbed;
@@ -426,6 +438,11 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
               return `${scrubbed} (${counts[scrubbed]})`;
             }
           });
+          startIndex++;
+        }
+        // PRIORITY 3.7: 6. Search1600 HUB
+        else if (file.type === '6. Search1600') {
+          headers = firstRow.map(h => scrubValue(h));
           startIndex++;
         }
         // PRIORITY 3: UCC LAST 90 DAYS (26 Columns)
@@ -592,9 +609,12 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
             obj[h] = scrubValue(row[i] || '');
           });
           
-          // Compat mapping for 5. OR hub to ensure sidebar and scoring work
-          if (file.type === '5. OR' && obj['Corporate Name (Search)']) {
+          // Compat mapping for specific hubs to ensure sidebar and scoring work
+          if ((file.type === '5. OR' || file.type === '33477') && obj['Corporate Name (Search)']) {
             obj.businessName = obj['Corporate Name (Search)'];
+          }
+          if (file.type === '6. Search1600') {
+            obj.businessName = obj['LEGALNAME'] || obj['Corporate Name (Search)'] || obj['COMPANY'] || '';
           }
 
           obj._source = fileSource;

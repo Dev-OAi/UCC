@@ -28,6 +28,13 @@
     "filename": "33408 PGA.csv"
   },
   {
+    "path": "Data/33477/33477 Jupiter.csv",
+    "type": "33477",
+    "zip": "33477",
+    "location": "33477 Jupiter",
+    "filename": "33477 Jupiter.csv"
+  },
+  {
     "path": "Data/33480/33480 Palm Beach.csv",
     "type": "33480",
     "zip": "33480",
@@ -75,6 +82,13 @@
     "zip": "",
     "location": "output_results",
     "filename": "output_results.csv"
+  },
+  {
+    "path": "Data/6. Search1600/Search1600 output_results.csv",
+    "type": "6. Search1600",
+    "zip": "",
+    "location": "Search1600 output_results",
+    "filename": "Search1600 output_results.csv"
   },
   {
     "path": "Data/B UCC/BUCC 125.csv",
