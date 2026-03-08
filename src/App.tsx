@@ -743,6 +743,8 @@ function App() {
       setSortConfig({ key: 'Date Filed', direction: 'desc' });
     } else if (activeTab === 'B UCC') {
       setSortConfig({ key: 'RecordDate', direction: 'desc' });
+    } else if (activeTab === '33477') {
+      setSortConfig({ key: 'Expires', direction: 'desc' });
     } else {
       setSortConfig(null);
     }
