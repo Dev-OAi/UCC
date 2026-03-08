@@ -143,6 +143,19 @@ function safeJsonParse<T>(key: string, fallback: T): T {
   }
 }
 
+function getHubDefaultSort(tab: string): { key: string, direction: 'asc' | 'desc' } | null {
+  if (tab === 'Last 90 Days') {
+    return { key: 'Record Date', direction: 'desc' };
+  } else if (tab === 'All') {
+    return { key: 'Date Filed', direction: 'desc' };
+  } else if (tab === 'B UCC') {
+    return { key: 'RecordDate', direction: 'desc' };
+  } else if (tab === '33477') {
+    return { key: 'Expires', direction: 'desc' };
+  }
+  return null;
+}
+
 function App() {
   const [manifest, setManifest] = useState<FileManifest[]>([]);
   const [productGuides, setProductGuides] = useState<ProductGuide[]>(() =>
@@ -737,17 +750,7 @@ function App() {
     if (activeTab !== 'Scorecard') {
       setIsRightSidebarOpen(false);
     }
-    if (activeTab === 'Last 90 Days') {
-      setSortConfig({ key: 'Record Date', direction: 'desc' });
-    } else if (activeTab === 'All') {
-      setSortConfig({ key: 'Date Filed', direction: 'desc' });
-    } else if (activeTab === 'B UCC') {
-      setSortConfig({ key: 'RecordDate', direction: 'desc' });
-    } else if (activeTab === '33477') {
-      setSortConfig({ key: 'Expires', direction: 'desc' });
-    } else {
-      setSortConfig(null);
-    }
+    setSortConfig(getHubDefaultSort(activeTab));
   }, [activeTab]);
 
   // Auto-open right sidebar on selection
@@ -1067,8 +1070,7 @@ function App() {
   const clearFilters = () => {
     setSearchTerm('');
     setColumnFilters({});
-    setSortConfig(null);
-    setActiveTab('Home');
+    setSortConfig(getHubDefaultSort(activeTab));
   };
 
   const isFiltered = searchTerm !== '' || Object.values(columnFilters).some(v => v.length > 0) || !['All', 'Home', 'Insights'].includes(activeTab);
