@@ -229,18 +229,29 @@ BANKING_RULES = """
 """
 
 def web_search_fallback(query):
-    try:
-        url = f"https://www.google.com/search?q={query}&gbv=1"
-        headers = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1'}
-        res = requests.get(url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
-            results = soup.find_all(['div', 'h3'], class_=['kCrYT', 'BNeawe'])
-            if results:
-                return " | ".join([r.get_text() for r in results[:4]])
-    except:
-        pass
-    return ""
+    # Multi-Vector Fallback: News, Growth, and Basic Info
+    vectors = [
+        f"{query} news growth",
+        f"{query} owner linkedin",
+        f"{query} locations"
+    ]
+    all_clues = []
+
+    for v in vectors:
+        try:
+            url = f"https://www.google.com/search?q={v}&gbv=1"
+            headers = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)'}
+            res = requests.get(url, headers=headers, timeout=8)
+            if res.status_code == 200:
+                soup = BeautifulSoup(res.text, 'html.parser')
+                results = soup.find_all(['div', 'h3'], class_=['kCrYT', 'BNeawe'])
+                if results:
+                    all_clues.append(" ".join([r.get_text() for r in results[:3]]))
+            time.sleep(1) # Be gentle
+        except:
+            continue
+
+    return " | ".join(all_clues) if all_clues else ""
 
 def get_website_content(url, business_name=None):
     if not url or str(url).lower() in ["n/a", "none", ""]:
@@ -281,6 +292,7 @@ def research_lead():
     industry = data.get('industry', 'Business')
     city = data.get('city', '')
     zip_code = data.get('zip', '')
+    manual_context = data.get('manualContext', '')
 
     # 1. THE EYES (Research)
     content, sub_links = get_website_content(website, business_name)
@@ -295,10 +307,12 @@ def research_lead():
 
     RESEARCH DATA:
     - Business: {business_name}
-    - Found Context: {content[:4000]}
+    - Found Web Context: {content[:4000]}
+    - BANKER'S MANUAL OBSERVATION: {manual_context}
 
     TASK:
-    1. Identify exact products from BANKING RULES.
+    1. Weigh the 'BANKER'S MANUAL OBSERVATION' extremely highly. If the banker mentions growth or hiring, prioritize ADP and SBA products regardless of what the web says.
+    2. Identify exact products from BANKING RULES.
     2. Provide a 3-sentence 'Strategic Intelligence' summary.
     3. Detect 'Signals' (hiring, expansion, etc).
     4. Write a personalized 3-sentence outreach script.

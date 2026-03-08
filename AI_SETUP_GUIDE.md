@@ -1,6 +1,8 @@
 # 🤖 AI Intelligence Suite Setup Guide
 
-This project now features a "Real-Time Intelligence" system that uses your local computer to research leads and generate banking strategies. Here is how to get everything running.
+This project features a "Local-First" AI Intelligence system. Strategic reasoning and deep lead analysis happen **entirely on your local machine** using Ollama. No lead data or strategic insights are sent to external AI providers or GitHub.
+
+---
 
 ---
 
@@ -38,8 +40,9 @@ Now that the Brain and Messenger are active, you can use the new features:
 #### 1. The "Deep Dive" (For Bankers)
 - Go to the **Action Hub**.
 - Select any lead from the queue.
+- **Manual Context:** Use the "Manual Banker Context" box to add observations from networking or calls (e.g., "Owner mentioned they are hiring").
 - Click the blue **"Get AI Intelligence Brief"** button.
-- **What happens:** The Bridge will scrape the lead's website, find "growth signals," and Ollama will write a custom strategy card and email for you.
+- **What happens:** The Bridge performs a multi-vector search (News, Locations, Social) and combines it with your manual context. Ollama then writes a custom strategy card and email for you.
 - **New Feature:** Click **"Download PDF Insight Brief"** to generate a professional 1-page summary for your files or to share with team members.
 
 #### 2. Market Intelligence (For Managers)

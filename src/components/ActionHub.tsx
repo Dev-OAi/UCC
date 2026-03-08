@@ -38,6 +38,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [manualContext, setManualContext] = useState<string>('');
   const [isResearching, setIsResearching] = useState(false);
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
   const [researchError, setResearchError] = useState<string | null>(null);
@@ -252,7 +253,8 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
           website: selectedLead.website,
           industry: selectedLead.industry,
           city: selectedLead.city || '',
-          zip: selectedLead.zip || ''
+          zip: selectedLead.zip || '',
+          manualContext: manualContext
         })
       });
 
@@ -473,6 +475,21 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           ))}
                         </div>
                       </div>
+                      <div className="space-y-4 mb-6 relative z-10">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                            <Edit3 className="w-3 h-3 mr-1.5" />
+                            Manual Banker Context / Observations
+                          </label>
+                          <textarea
+                            value={manualContext}
+                            onChange={(e) => setManualContext(e.target.value)}
+                            placeholder="e.g. Spoke to owner at Chamber event; they are opening a 3rd site next month."
+                            className="w-full h-16 p-3 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-600"
+                          />
+                        </div>
+                      </div>
+
                       <div className="text-sm md:text-base text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed relative z-10">
                         {selectedLead.aiIntelligence ? (
                           <div className="space-y-3">

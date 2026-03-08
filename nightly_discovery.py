@@ -6,6 +6,8 @@ import re
 from datetime import datetime, timedelta
 
 # Configuration
+# Note: This script runs in GitHub Actions and uses basic keyword discovery.
+# It does NOT use Ollama to ensure it runs reliably in the cloud without local AI dependencies.
 INPUT_FILE = "Data/UCC Results/all_results.csv"
 OUTPUT_FILE = "Business_Intelligence.csv"
 
@@ -50,9 +52,9 @@ def main():
         print("Date Filed column missing.")
         return
 
-    # Filter for last 48 hours to be safe
+    # Filter for last 72 hours to be safe in GitHub Action runs
     df['Date Filed'] = pd.to_datetime(df['Date Filed'], errors='coerce')
-    cutoff = datetime.now() - timedelta(days=2)
+    cutoff = datetime.now() - timedelta(days=3)
     recent_leads = df[df['Date Filed'] >= cutoff]
 
     if recent_leads.empty:
