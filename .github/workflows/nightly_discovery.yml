@@ -37,6 +37,8 @@ jobs:
         run: |
           git config --global user.name "Market Discovery Bot"
           git config --global user.email "bot@marketintel.com"
-          git add "Business_Intelligence.csv"
-          git commit -m "Nightly Discovery Sync: $(date +'%Y-%m-%d')" || echo "No new clues found tonight"
+          # Add the new directory and file
+          git add "Data/Intelligence/Business_Intelligence.csv"
+          # Only commit if there are changes to avoid failing the workflow on "nothing to commit"
+          git diff-index --quiet HEAD || git commit -m "Nightly Discovery Sync: $(date +'%Y-%m-%d')"
           git push
