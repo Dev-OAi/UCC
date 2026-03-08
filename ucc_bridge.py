@@ -199,7 +199,7 @@ def system_restart():
 # =================================================================
 
 BANKING_RULES = """
-- ROLE: You are a Senior Valley Bank Expert Commercial Banker with 20+ years of experience.
+- ROLE: You are a Senior Bank Expert Commercial Banker with 20+ years of experience.
 - CORE PRODUCTS (High-Value Vertical Focus):
     * SMB Bundle 3 (Premier Business) - [30 POINTS] Lead with this for established firms.
     * SBA 7(a) & 504 Loans - Critical for expansion, building purchases, or business acquisition.
@@ -211,7 +211,7 @@ BANKING_RULES = """
     * Merchant Services (Fiserv): Lead with this for any B2C retail/service business.
     * Partner Referrals:
         - ADP Payroll: [25 POINTS] Essential if 'Hiring' or 'Scale' is mentioned.
-        - Valley National Title & Insurance: Vital for Storage, Real Estate, or Property Management.
+        - National Title & Insurance: Vital for Storage, Real Estate, or Property Management.
         - Specialized: Escrow/IOLTA (Law Firms), HOA (Prop Management).
     * Commercial & Industrial (C&I) / Lines of Credit: For raw material inventory or working capital cycles.
 
@@ -221,7 +221,7 @@ BANKING_RULES = """
     * If Industry is 'Manufacturing' -> Suggest Business Analysis Checking + RDC + Positive Pay (Fraud Protection).
     * If Industry is 'Retail', 'Automotive', 'Food Services', or 'Hospitality' -> Suggest Fiserv Merchant Services + Analysis Checking.
     * If Industry is 'Professional Services' (Law/Accounting) -> Suggest IOLTA/Escrow + Bill Pay. **(STRICT: IOLTA is ONLY for Law Firms).**
-    * If Industry is 'Storage' or 'Real Estate' -> Suggest SBA 504 + Valley National Title + Insurance.
+    * If Industry is 'Storage' or 'Real Estate' -> Suggest SBA 504 + National Title + Insurance.
     * If multiple physical locations detected -> Suggest Remote Deposit Capture (RDC).
     * If HIGH Transaction Volume detected -> Suggest Analysis Checking to offset fees with Earnings Credit.
 
@@ -299,7 +299,7 @@ def research_lead():
 
     # 2. THE BRAIN (Ollama)
     prompt = f"""
-    ROLE: Senior Valley Bank Expert Product Matching Agent.
+    ROLE: Senior Bank Expert Product Matching Agent.
     CONTEXT: Analyzing business '{business_name}' in industry '{industry}'.
 
     BANKING RULES:
@@ -385,7 +385,7 @@ def generate_brief():
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", 'B', 16)
-        pdf.cell(0, 10, txt="Valley Bank: Lead Insight Brief", ln=True, align='C')
+        pdf.cell(0, 10, txt="Bank: Lead Insight Brief", ln=True, align='C')
         pdf.ln(5)
 
         # Business Basics - Header
