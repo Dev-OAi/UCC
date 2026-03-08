@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot, GraduationCap } from 'lucide-react';
+import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot, GraduationCap, Globe } from 'lucide-react';
+import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface SidebarProps {
   types: string[];
@@ -18,6 +19,7 @@ interface SidebarProps {
   onClose?: () => void;
   allDataCount?: number;
   isSyncing?: boolean;
+  bridgeStatus?: 'online' | 'offline';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -37,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   allDataCount = 0,
   isSyncing = false,
+  bridgeStatus = 'offline',
 }) => {
   const [expanded, setExpanded] = useState({
     categories: true,
@@ -127,6 +130,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <BarChart3 className="w-4 h-4" />
             <span className="text-sm font-medium">Insights</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('Market Intelligence')}
+            role="tab"
+            aria-selected={activeTab === 'Market Intelligence'}
+            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+              activeTab === 'Market Intelligence'
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
+            }`}
+          >
+            <Globe className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium font-bold">Market Intelligence</span>
           </button>
 
           <button
@@ -357,18 +374,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {allDataCount > 0 && (
-        <div className="px-6 py-4 mt-auto border-t border-gray-100 dark:border-slate-800">
-          <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
-            <span>Status</span>
-            {isSyncing ? (
-              <span className="text-blue-500 animate-pulse">Syncing</span>
-            ) : (
-              <span className="text-green-500">Ready</span>
-            )}
+        <div className="px-6 py-4 mt-auto border-t border-gray-100 dark:border-slate-800 space-y-3">
+          <div>
+            <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+              <span>Database Sync</span>
+              {isSyncing ? (
+                <span className="text-blue-500 animate-pulse">Syncing</span>
+              ) : (
+                <span className="text-green-500">Ready</span>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">
+              {allDataCount.toLocaleString()} records loaded
+            </p>
           </div>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 font-medium">
-            {allDataCount.toLocaleString()} records loaded
-          </p>
+
+          {getBridgeBaseUrl() && (
+            <div>
+              <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+                <span>Intelligence Suite</span>
+                <span className={bridgeStatus === 'online' ? 'text-blue-500' : 'text-amber-500'}>
+                  {bridgeStatus === 'online' ? 'Online' : 'Offline'}
+                </span>
+              </div>
+              <div className="group relative">
+                <p className="text-[9px] text-gray-400 italic cursor-help">
+                  {bridgeStatus === 'online'
+                    ? 'AI Research & Ollama active'
+                    : 'Start bridge to enable AI'}
+                </p>
+                {bridgeStatus === 'offline' && (
+                  <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-slate-200 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50">
+                    If running locally, ensure <b>ucc_bridge.py</b> is started. If on Chrome, click <b>"Allow"</b> on the security popup to connect. <b>Lead data remains private on your machine.</b>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
       </aside>

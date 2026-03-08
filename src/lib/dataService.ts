@@ -116,12 +116,23 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
-const getBridgeUrl = (path: string) => {
-  // PAUSED: Only allow bridge calls if explicitly on localhost to prevent security popups on hosted sites
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (!isLocalhost) return null;
+export function getBridgeBaseUrl(): string | null {
+  // Check if we are running on localhost
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    !(window as any).__is_simulated_hosted;
 
-  const baseUrl = './api/bridge';
+  // If on localhost, use the Vite proxy
+  if (isLocalhost) return './api/bridge';
+
+  // To prevent Chrome's "Access other apps and services on this device" popup
+  // on hosted sites, we DISABLE bridge connectivity when not on localhost.
+  return null;
+}
+
+const getBridgeUrl = (path: string) => {
+  const baseUrl = getBridgeBaseUrl();
+  if (!baseUrl) return null;
   return `${baseUrl}${path}`;
 };
 
@@ -610,7 +621,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           });
           
           // Compat mapping for specific hubs to ensure sidebar and scoring work
-          if (file.type === '5. OR' && obj['Corporate Name (Search)']) {
+          if ((file.type === '5. OR' || file.type === '33477') && obj['Corporate Name (Search)']) {
             obj.businessName = obj['Corporate Name (Search)'];
           }
           if (file.type === '6. Search1600') {

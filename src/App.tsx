@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
+import { fetchManifest, loadCsv, FileManifest, DataRow, getBridgeBaseUrl } from './lib/dataService';
 import { Table } from './components/Table';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -16,6 +16,7 @@ import { Products } from './components/Products';
 import { TerritoryMap } from './components/TerritoryMap';
 import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
+import { MarketIntelligence } from './components/MarketIntelligence';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
@@ -25,7 +26,7 @@ import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, Call
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { calculateScore } from './lib/scoring';
-import { Search, Filter, Database, MapPin, Download, FilterX, Copy } from 'lucide-react';
+import { Search, Filter, Database, MapPin, Download, FilterX, Copy, Globe } from 'lucide-react';
 import Papa from 'papaparse';
 
 export type Page = 'Home' | 'Insights' | 'Territory Map' | 'Action Hub' | 'SMB Selector' | 'Product Guide' | 'Products' | 'Activity Log' | 'treasury-guide' | 'Playbook' | 'Roleplay' | string;
@@ -44,6 +45,7 @@ const initialMeetingEntries: MeetingEntry[] = [
 
 const DEFAULT_HIDDEN_COLUMNS: Record<string, string[]> = {
   '5. OR': [
+    "businessName",
     "Principal Address",
     "Mailing Address",
     "Mailing Address Changed Date",
@@ -129,6 +131,7 @@ function App() {
   const [allData, setAllData] = useState<DataRow[]>([]);
   const [debouncedAllData, setDebouncedAllData] = useState<DataRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bridgeStatus, setBridgeStatus] = useState<'online' | 'offline'>('offline');
   const [loadProgress, setLoadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
 
@@ -740,7 +743,26 @@ function App() {
 
     init();
 
+    // Check Bridge Status periodically
+    const checkBridge = async () => {
+      try {
+        const baseUrl = getBridgeBaseUrl();
+        if (!baseUrl) {
+          setBridgeStatus('offline');
+          return;
+        }
+        const res = await fetch(`${baseUrl}/health`);
+        if (res.ok) setBridgeStatus('online');
+        else setBridgeStatus('offline');
+      } catch {
+        setBridgeStatus('offline');
+      }
+    };
+    checkBridge();
+    const interval = setInterval(checkBridge, 10000);
+
     return () => {
+      clearInterval(interval);
       isMounted = false;
     };
   }, []);
@@ -1210,6 +1232,7 @@ function App() {
           onGoHome={() => handleTabChange('Home')}
           allDataCount={allData.length}
           isSyncing={loadProgress.current < loadProgress.total}
+          bridgeStatus={bridgeStatus}
         />
 
         <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 md:rounded-tl-2xl border-l dark:border-slate-800">
@@ -1230,6 +1253,8 @@ function App() {
               onNavigate={handleTabChange}
               onFilterChange={onFilterChange}
             />
+          ) : activeTab === 'Market Intelligence' ? (
+            <MarketIntelligence />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}
