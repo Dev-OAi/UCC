@@ -42,6 +42,7 @@ def web_search_clues(business_name):
         res = requests.get(url, headers=headers, timeout=15)
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
+            # Look for common Google result containers in GBV=1 mode
             results = soup.find_all(['div', 'h3'], class_=['kCrYT', 'BNeawe'])
             text = " ".join([r.get_text() for r in results[:8]])
 
