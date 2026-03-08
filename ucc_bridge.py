@@ -20,7 +20,7 @@ UPLOAD_FOLDER = "public/Uploads"
 COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
 STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
 LEAD_BRIEFS_DIR = "Lead_Insight_Briefs"
-INTEL_FILE = "Business_Intelligence.csv"
+INTEL_FILE = "Data/Intelligence/Business_Intelligence.csv"
 
 # Ensure directories exist
 for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR]:
