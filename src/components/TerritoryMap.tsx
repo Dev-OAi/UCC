@@ -20,9 +20,9 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   const centerMap = () => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
-      // Center on Boca Raton (755, 410)
+      // Center on Boca Raton (755, 520)
       const targetX = 755;
-      const targetY = 410;
+      const targetY = 520;
       setPan({
         x: (width / 2) - (targetX * scale),
         y: (height / 2) - (targetY * scale)
@@ -37,7 +37,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   }, [scale]);
 
   // Key Zip Codes from the data
-  const ZIP_CODES = ['33408', '33027', '33301', '33401', '33480', '33431', '33444', '33020', '33131'];
+  const ZIP_CODES = ['33477', '33408', '33027', '33301', '33401', '33480', '33431', '33444', '33020', '33131'];
 
   const stats = useMemo(() => {
     const counts: Record<string, { volume: number, growth: number, avgScore: number, totalScore: number }> = {};
@@ -85,58 +85,64 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
   // Zoomed out coordinate space: 0-1000 width, 0-1200 height
   const ZIP_PATHS = [
     {
+      id: '33477',
+      name: 'Jupiter',
+      path: 'M 700 15 L 810 10 C 813 45, 816 75, 813 110 L 703 115 L 700 15',
+      x: 755, y: 65
+    },
+    {
       id: '33408',
       name: 'PGA (North Palm Beach)',
-      path: 'M 702 15 L 812 10 C 815 40, 818 70, 815 100 L 705 105 L 702 15',
-      x: 758, y: 55
+      path: 'M 702 125 L 812 120 C 815 150, 818 180, 815 210 L 705 215 L 702 125',
+      x: 758, y: 165
     },
     {
       id: '33480',
       name: 'Palm Beach',
-      path: 'M 822 95 C 830 95, 835 150, 842 245 C 838 255, 830 252, 825 248 L 822 95',
-      x: 832, y: 175
+      path: 'M 822 205 C 830 205, 835 260, 842 355 C 838 365, 830 362, 825 358 L 822 205',
+      x: 832, y: 285
     },
     {
       id: '33401',
       name: 'West Palm Beach',
-      path: 'M 705 105 L 815 100 C 818 150, 815 200, 812 245 L 708 248 L 705 105',
-      x: 760, y: 175
+      path: 'M 705 215 L 815 210 C 818 260, 815 310, 812 355 L 708 358 L 705 215',
+      x: 760, y: 285
     },
     {
       id: '33444',
       name: 'Delray Beach',
-      path: 'M 698 265 L 802 262 C 805 300, 808 330, 802 345 L 692 342 L 698 265',
-      x: 750, y: 300
+      path: 'M 698 375 L 802 372 C 805 410, 808 440, 802 455 L 692 452 L 698 375',
+      x: 750, y: 410
     },
     {
       id: '33431',
       name: 'Boca Raton',
-      path: 'M 702 365 L 808 362 C 812 400, 815 440, 805 465 L 695 462 L 702 365',
-      x: 755, y: 410
+      path: 'M 702 475 L 808 472 C 812 510, 815 550, 805 575 L 695 572 L 702 475',
+      x: 755, y: 520
     },
     {
       id: '33301',
       name: 'Fort Lauderdale',
-      path: 'M 712 485 L 818 482 C 822 530, 825 560, 815 585 L 705 582 L 712 485',
-      x: 765, y: 530
+      path: 'M 712 595 L 818 592 C 822 640, 825 670, 815 695 L 705 692 L 712 595',
+      x: 765, y: 640
     },
     {
       id: '33020',
       name: 'Hollywood',
-      path: 'M 695 605 L 805 602 C 808 650, 810 700, 802 725 L 690 722 L 695 605',
-      x: 750, y: 660
+      path: 'M 695 715 L 805 712 C 808 760, 810 810, 802 835 L 690 832 L 695 715',
+      x: 750, y: 770
     },
     {
       id: '33027',
       name: 'Miramar',
-      path: 'M 575 755 L 705 752 C 708 810, 712 860, 702 885 L 570 882 L 575 755',
-      x: 640, y: 815
+      path: 'M 575 865 L 705 862 C 708 920, 712 970, 702 995 L 570 992 L 575 865',
+      x: 640, y: 925
     },
     {
       id: '33131',
       name: 'Miami (Brickell)',
-      path: 'M 645 925 L 755 922 C 758 980, 762 1030, 752 1055 L 640 1052 L 645 925',
-      x: 700, y: 985
+      path: 'M 645 1035 L 755 1032 C 758 1090, 762 1140, 752 1165 L 640 1162 L 645 1035',
+      x: 700, y: 1095
     },
   ];
 
@@ -298,26 +304,29 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
 
             {/* City POI Markers & Labels */}
             <g className="opacity-40">
-              <circle cx="700" cy="175" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="690" y="180" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">W. Palm Beach</text>
+              <circle cx="695" cy="65" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="685" y="70" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Jupiter</text>
 
-              <circle cx="690" cy="300" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="680" y="305" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Delray Beach</text>
+              <circle cx="700" cy="285" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="690" y="290" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">W. Palm Beach</text>
 
-              <circle cx="695" cy="410" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="685" y="415" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Boca Raton</text>
+              <circle cx="690" cy="410" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="680" y="415" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Delray Beach</text>
 
-              <circle cx="700" cy="530" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="690" y="535" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Ft. Lauderdale</text>
+              <circle cx="695" cy="520" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="685" y="525" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Boca Raton</text>
 
-              <circle cx="685" cy="660" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="675" y="665" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Hollywood</text>
+              <circle cx="700" cy="640" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="690" y="645" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Ft. Lauderdale</text>
 
-              <circle cx="570" cy="815" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="560" y="820" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Miramar</text>
+              <circle cx="685" cy="770" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="675" y="775" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Hollywood</text>
 
-              <circle cx="630" cy="985" r="4" className="fill-slate-400 dark:fill-slate-600" />
-              <text x="620" y="990" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Miami</text>
+              <circle cx="570" cy="925" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="560" y="930" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Miramar</text>
+
+              <circle cx="630" cy="1095" r="4" className="fill-slate-400 dark:fill-slate-600" />
+              <text x="620" y="1100" textAnchor="end" className="fill-slate-500 dark:fill-slate-500 text-[10px] font-black uppercase tracking-widest">Miami</text>
             </g>
 
             {/* Zip Polygons with high-fidelity paths */}
@@ -483,7 +492,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({ data, onSelectZip })
                   <span className="text-[10px] font-black uppercase tracking-widest">Active Territory</span>
                 </div>
                 <p className="text-[10px] leading-relaxed text-blue-700 dark:text-blue-400 font-medium">
-                  Zip code <b>33480 (Palm Beach)</b> is showing significant high-intent growth in the last 30 days.
+                  Zip code <b>33477 (Jupiter)</b> is showing significant high-intent growth in the last 30 days.
                 </p>
               </div>
             </div>
