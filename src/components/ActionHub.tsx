@@ -519,9 +519,9 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                       <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10 space-y-3">
                         <button
                           onClick={handleDeepDive}
-                          disabled={isResearching}
+                          disabled={isResearching || !getBridgeBaseUrl()}
                           className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                            isResearching
+                            isResearching || !getBridgeBaseUrl()
                               ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
                               : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5'
                           }`}
@@ -534,7 +534,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           ) : (
                             <>
                               <Sparkles className="w-4 h-4" />
-                              <span>{selectedLead.aiIntelligence ? 'Refresh AI Intelligence' : 'Get AI Intelligence Brief'}</span>
+                              <span>{!getBridgeBaseUrl() ? 'AI Brief (Local Only)' : (selectedLead.aiIntelligence ? 'Refresh AI Intelligence' : 'Get AI Intelligence Brief')}</span>
                             </>
                           )}
                         </button>
@@ -542,7 +542,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         {selectedLead.aiIntelligence && (
                           <button
                             onClick={handleGenerateBrief}
-                            disabled={isGeneratingBrief}
+                            disabled={isGeneratingBrief || !getBridgeBaseUrl()}
                             className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
                               isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
                             }`}

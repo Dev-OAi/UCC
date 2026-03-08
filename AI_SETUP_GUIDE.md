@@ -62,6 +62,17 @@ Now that the Brain and Messenger are active, you can use the new features:
 
 ---
 
+### 🔒 Private AI on a Public Website: How it Works
+You might notice this project is hosted on GitHub. You might wonder: *"If the website is public, is my data public too?"*
+
+**The answer is No.** Here is why:
+
+1. **The "Localhost" Rule:** The website is programmed to talk only to `localhost` (which is YOUR computer). It's like a TV that only works if it's plugged into YOUR wall.
+2. **Individual Silos:** If another banker visits the same public GitHub website, the website will try to talk to *their* computer. It cannot see your bridge, your Ollama, or your research.
+3. **No Cloud Storage:** Lead research and AI "thinking" happen inside your computer's memory and the local `Business_Intelligence.csv` file on your drive. None of this is "uploaded" to GitHub unless you manually commit and push files yourself.
+
+---
+
 ### Browser Security & Privacy
 Because this tool uses a **Local AI** strategy, your browser may ask for permission to "Access other apps and services on this device."
 
