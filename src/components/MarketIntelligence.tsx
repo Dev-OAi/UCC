@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap, Lock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Search, Filter } from 'lucide-react';
+import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface MarketData {
   summary: string;
@@ -17,8 +18,13 @@ export const MarketIntelligence: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      const baseUrl = getBridgeBaseUrl();
+      if (!baseUrl) {
+        setLoading(false);
+        return;
+      }
       try {
-        const response = await fetch('http://localhost:5001/market-intelligence');
+        const response = await fetch(`${baseUrl}/market-intelligence`);
         if (!response.ok) throw new Error('Failed to fetch market intelligence');
         const json = await response.json();
         setData(json);
@@ -55,7 +61,25 @@ export const MarketIntelligence: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 p-6 md:p-10 space-y-8">
+    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 p-6 md:p-10 space-y-8 relative">
+      {!getBridgeBaseUrl() && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-gray-50/80 dark:bg-slate-950/80 backdrop-blur-[2px]">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 text-center max-w-md animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-4">Local Access Only</h2>
+            <p className="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+              To protect lead privacy and banking strategy, the Market Intelligence dashboard is only available when running the application locally.
+            </p>
+            <div className="space-y-3">
+              <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg text-[10px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest border border-gray-100 dark:border-slate-700">
+                Connection Status: <span className="text-red-500">Restricted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 dark:border-slate-800 pb-8">

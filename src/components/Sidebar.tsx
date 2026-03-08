@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot, GraduationCap, Globe } from 'lucide-react';
+import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface SidebarProps {
   types: string[];
@@ -388,26 +389,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </p>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
-              <span>Intelligence Suite</span>
-              <span className={bridgeStatus === 'online' ? 'text-blue-500' : 'text-amber-500'}>
-                {bridgeStatus === 'online' ? 'Online' : 'Offline'}
-              </span>
+          {getBridgeBaseUrl() && (
+            <div>
+              <div className="flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+                <span>Intelligence Suite</span>
+                <span className={bridgeStatus === 'online' ? 'text-blue-500' : 'text-amber-500'}>
+                  {bridgeStatus === 'online' ? 'Online' : 'Offline'}
+                </span>
+              </div>
+              <div className="group relative">
+                <p className="text-[9px] text-gray-400 italic cursor-help">
+                  {bridgeStatus === 'online'
+                    ? 'AI Research & Ollama active'
+                    : 'Start bridge to enable AI'}
+                </p>
+                {bridgeStatus === 'offline' && (
+                  <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-slate-200 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50">
+                    If running locally, ensure <b>ucc_bridge.py</b> is started. If on Chrome, click <b>"Allow"</b> on the security popup to connect. <b>Lead data remains private on your machine.</b>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="group relative">
-              <p className="text-[9px] text-gray-400 italic cursor-help">
-                {bridgeStatus === 'online'
-                  ? 'AI Research & Ollama active'
-                  : 'Start bridge to enable AI'}
-              </p>
-              {bridgeStatus === 'offline' && (
-                <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-slate-200 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50">
-                  If running locally, ensure <b>ucc_bridge.py</b> is started. If on Chrome, click <b>"Allow"</b> on the security popup to connect. <b>Lead data remains private on your machine.</b>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       )}
       </aside>

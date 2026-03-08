@@ -455,7 +455,6 @@ def get_market_intelligence():
         }), 200
 
     try:
-        import pandas as pd
         df = pd.read_csv(intel_file)
 
         # Simple aggregation for the manager
