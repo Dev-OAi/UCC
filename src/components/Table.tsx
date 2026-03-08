@@ -126,8 +126,8 @@ export const Table: React.FC<TableProps> = ({
                      col === 'Phone' ? 'Phone Number' :
                      col === 'Filings Completed Through' ? 'Filings Completed' :
                      col === 'Summary For Filing' ? 'Summary for Filing' :
-                     (col === 'UCC Number' && activeTab === '5. OR') ? 'Summary For Filing' :
-                   (activeTab === '5. OR') ? col.replace(/ \(Search\)| \(Detail\)| \(\d+\)/g, '') :
+                     (col === 'UCC Number' && (activeTab === '5. OR' || activeTab === '33477')) ? 'Summary For Filing' :
+                     (activeTab === '5. OR' || activeTab === '33477') ? col.replace(/ \(Search\)| \(Detail\)| \(\d+\)/g, '') :
                      col}
                   </span>
                   <ChevronDown className={`w-3 h-3 shrink-0 transition-transform ${openDropdown === col ? 'rotate-180' : ''}`} />

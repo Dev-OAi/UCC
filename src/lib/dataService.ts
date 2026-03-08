@@ -402,11 +402,34 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           m[45] = 'Summary For Filing';
           m[55] = 'Florida UCC Link';
         }
-        // PRIORITY 3.4: 5. OR HUB (Matches original CSV exactly)
-        else if (file.type === '5. OR') {
+        // PRIORITY 3.4: 5. OR & 33477 HUB (Matches original CSV exactly)
+        else if (file.type === '5. OR' || file.type === '33477') {
           const counts: Record<string, number> = {};
           headers = firstRow.map(h => {
             const scrubbed = scrubValue(h);
+
+            // 33477 Hub Aliases to match 33401 structure
+            if (file.type === '33477') {
+              if (scrubbed === 'Corporate Name (Search)') return 'businessName';
+              if (scrubbed === 'Status (Search)') return 'Sunbiz Status';
+              if (scrubbed === 'Corporate URL') return 'Sunbiz Link';
+              if (scrubbed === 'Status (UCC)') return 'UCC Status';
+              if (scrubbed === 'UCC URL (Search)') return 'Florida UCC Link';
+            }
+
+            if (scrubbed === 'Date Filed') {
+              if (counts[scrubbed] === undefined) {
+                counts[scrubbed] = 0;
+                return 'Date Filed (Sunbiz)';
+              } else {
+                // For 33477, the second Date Filed (UCC) is the primary "Date Filed" to match 33401
+                return file.type === '33477' ? 'Date Filed' : 'Date Filed (UCC)';
+              }
+            }
+            if (scrubbed === 'Document Number' && file.type === '33477') {
+              return 'Document Number (UCC)';
+            }
+
             if (counts[scrubbed] === undefined) {
               counts[scrubbed] = 0;
               return scrubbed;

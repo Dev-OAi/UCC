@@ -67,7 +67,7 @@ const DEFAULT_HIDDEN_COLUMNS: Record<string, string[]> = {
     "Secured Parties Count",
     "Debtor Parties Count",
     "Document Pages",
-    "Filing Date"
+    "Date Filed (UCC)"
   ],
   '6. Search1600': [
     "Score",
@@ -379,7 +379,7 @@ function App() {
       "Corporate Name (Detail)",
       "Document Number (Detail)",
       "FEI/EIN Number",
-      "Date Filed",
+      "Date Filed (Sunbiz)",
       "Effective Date",
       "State (Detail)",
       "Status (Detail)",
@@ -408,7 +408,7 @@ function App() {
       "Match Score",
       "UCC Status",
       "Status (UCC)",
-      "Date Filed (1)",
+      "Date Filed (UCC)",
       "Expires",
       "Filings Completed Through",
       "UCC Number",
@@ -431,6 +431,16 @@ function App() {
       "Document Pages",
       "Document Number",
       "Filing Date"
+    ],
+    '33477': [
+      "businessName",
+      "Sunbiz Status",
+      "FEI/EIN Number",
+      "Sunbiz Link",
+      "UCC Status",
+      "Date Filed",
+      "Expires",
+      "Florida UCC Link"
     ],
     '6. Search1600': [
       "COMPANY",
@@ -639,6 +649,8 @@ function App() {
       setSortConfig({ key: 'Date Filed', direction: 'desc' });
     } else if (activeTab === 'B UCC') {
       setSortConfig({ key: 'RecordDate', direction: 'desc' });
+    } else if (activeTab === '33477') {
+      setSortConfig({ key: 'Expires', direction: 'desc' });
     } else {
       setSortConfig(null);
     }
