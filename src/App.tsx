@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { fetchManifest, loadCsv, FileManifest, DataRow } from './lib/dataService';
+import { fetchManifest, loadCsv, FileManifest, DataRow, getBridgeBaseUrl } from './lib/dataService';
 import { Table } from './components/Table';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -686,7 +686,12 @@ function App() {
     // Check Bridge Status periodically
     const checkBridge = async () => {
       try {
-        const res = await fetch('http://localhost:5001/health');
+        const baseUrl = getBridgeBaseUrl();
+        if (!baseUrl) {
+          setBridgeStatus('offline');
+          return;
+        }
+        const res = await fetch(`${baseUrl}/health`);
         if (res.ok) setBridgeStatus('online');
         else setBridgeStatus('offline');
       } catch {

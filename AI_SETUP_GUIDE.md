@@ -26,10 +26,11 @@ The "Bridge" is a Python script that lets your browser talk to Ollama and search
    ```bash
    pip install flask flask-cors ollama beautifulsoup4 pandas requests fpdf
    ```
-2. **Launch the Bridge:** Run this command in your project folder:
+2. **Launch the Bridge:** Open **Command Prompt (CMD)** or Terminal, navigate to the project's root folder, and run:
    ```bash
    python3 ucc_bridge.py
    ```
+   *(Note: The bridge file `ucc_bridge.py` is located in the main folder of this project.)*
    *You should see: `Running on http://0.0.0.0:5001`*
 
 ---
@@ -58,3 +59,12 @@ Now that the Brain and Messenger are active, you can use the new features:
 ### Troubleshooting
 - **"Bridge Offline" Error:** Make sure you ran `python3 ucc_bridge.py`.
 - **"AI Error":** Ensure Ollama is running and you have pulled the `lfm2.5-thinking:1.2b` model.
+
+---
+
+### Browser Security & Privacy
+Because this tool uses a **Local AI** strategy, your browser may ask for permission to "Access other apps and services on this device."
+
+1. **Is it safe?** Yes. This is Chrome's way of saying "this website is trying to talk to a tool on your computer." Since YOU are running the tool (`ucc_bridge.py`), it is completely safe.
+2. **Why do I need to click Allow?** If you don't, the website cannot "talk" to Ollama, and the AI features will stay Offline.
+3. **Data Privacy:** Your lead data and strategy notes **never leave your computer**. They are sent to your local bridge, processed by your local Ollama, and displayed back to you. Nothing is sent to external AI servers.

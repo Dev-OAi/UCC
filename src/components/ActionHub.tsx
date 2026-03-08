@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { DISCOVERY_GUIDE } from '../lib/discoveryData';
 import { BusinessLead, LeadStatus, LeadType, LeadActivity } from '../types';
+import { getBridgeBaseUrl } from '../lib/dataService';
 import { Modal, Input } from './ui';
 import { OutreachTemplate, getStoredTemplates, replacePlaceholders } from '../lib/outreachUtils';
 import { generateLeadIntelligence, refineOutreachTone, OutreachTone } from '../lib/aiUtils';
@@ -245,7 +246,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     setResearchError(null);
 
     try {
-      const response = await fetch('http://localhost:5001/research', {
+      const baseUrl = getBridgeBaseUrl();
+      if (!baseUrl) throw new Error('Bridge unreachable');
+
+      const response = await fetch(`${baseUrl}/research`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -287,7 +291,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     if (!selectedLead || !selectedLead.aiIntelligence) return;
     setIsGeneratingBrief(true);
     try {
-      const response = await fetch('http://localhost:5001/generate-brief', {
+      const baseUrl = getBridgeBaseUrl();
+      if (!baseUrl) throw new Error('Bridge unreachable');
+
+      const response = await fetch(`${baseUrl}/generate-brief`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -302,7 +309,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
       const data = await response.json();
 
       // Download the generated PDF
-      window.open(`http://localhost:5001/briefs/${data.filename}`, '_blank');
+      window.open(`${baseUrl}/briefs/${data.filename}`, '_blank');
     } catch (err) {
       console.error('Brief error:', err);
       alert('Failed to generate PDF brief. Check if the bridge is running.');

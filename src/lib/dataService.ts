@@ -116,12 +116,22 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
-const getBridgeUrl = (path: string) => {
-  // PAUSED: Only allow bridge calls if explicitly on localhost to prevent security popups on hosted sites
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (!isLocalhost) return null;
+export function getBridgeBaseUrl(): string | null {
+  // Check if we are running on localhost
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  const baseUrl = './api/bridge';
+  // If on localhost, use the Vite proxy
+  if (isLocalhost) return './api/bridge';
+
+  // If hosted, we try to talk to the local bridge directly on its default port
+  // Note: This is what triggers the Chrome 'Access other apps' popup
+  return 'http://localhost:5001';
+}
+
+const getBridgeUrl = (path: string) => {
+  const baseUrl = getBridgeBaseUrl();
+  if (!baseUrl) return null;
   return `${baseUrl}${path}`;
 };
 
