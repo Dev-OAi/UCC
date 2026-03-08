@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap, Lock } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap, Lock, Search } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Search, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface MarketData {
@@ -198,11 +198,32 @@ export const MarketIntelligence: React.FC = () => {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm font-black text-gray-900 dark:text-white leading-tight">{item['Business Name']}</p>
-                          <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tight mt-0.5">NAICS: {item['NAICS_Code']}</p>
+                          <div className="flex items-center space-x-2 mt-0.5">
+                            <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tight">NAICS: {item['NAICS_Code']}</p>
+                            {item['Growth_Score'] >= 70 && (
+                              <span className="px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase rounded flex items-center">
+                                <Zap className="w-2 h-2 mr-1" />
+                                High Growth
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                           <MapPin className="w-3 h-3 text-gray-400" />
-                           <span className="text-[10px] font-bold text-gray-400 uppercase">FL Intelligence</span>
+                        <div className="flex flex-col items-end">
+                           <div className="flex items-center space-x-1">
+                              <MapPin className="w-3 h-3 text-gray-400" />
+                              <span className="text-[10px] font-bold text-gray-400 uppercase">FL Intelligence</span>
+                           </div>
+                           {item['Growth_Score'] > 0 && (
+                             <div className="mt-1 flex items-center space-x-1">
+                               <div className="w-12 h-1 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                 <div
+                                   className={`h-full ${item['Growth_Score'] >= 70 ? 'bg-emerald-500' : item['Growth_Score'] >= 40 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                                   style={{ width: `${item['Growth_Score']}%` }}
+                                 />
+                               </div>
+                               <span className="text-[8px] font-black text-gray-400">{item['Growth_Score']}%</span>
+                             </div>
+                           )}
                         </div>
                       </div>
                       <div className="space-y-2">

@@ -61,11 +61,19 @@ def generate_manifest():
                 })
 
             elif file.endswith('.json'):
-                manifest.append({
-                    "path": relative_path,
-                    "type": "JSON",
-                    "filename": file
-                })
+                # Special handling for Industries
+                if 'Industries' in root:
+                    manifest.append({
+                        "path": relative_path,
+                        "type": "IndustryProfile",
+                        "filename": file
+                    })
+                else:
+                    manifest.append({
+                        "path": relative_path,
+                        "type": "JSON",
+                        "filename": file
+                    })
 
             elif file.endswith('.pdf'):
                 # Assume category is the filename without extension

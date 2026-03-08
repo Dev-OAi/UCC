@@ -119,6 +119,388 @@
     "filename": "V BUCC.csv"
   },
   {
+    "path": "Data/Industries/Air_Traffic_Control.json",
+    "type": "IndustryProfile",
+    "filename": "Air_Traffic_Control.json"
+  },
+  {
+    "path": "Data/Industries/CPA_Practices.json",
+    "type": "IndustryProfile",
+    "filename": "CPA_Practices.json"
+  },
+  {
+    "path": "Data/Industries/Physician_Practices.json",
+    "type": "IndustryProfile",
+    "filename": "Physician_Practices.json"
+  },
+  {
+    "path": "Data/Industries/Commercial_Banks.json",
+    "type": "IndustryProfile",
+    "filename": "Commercial_Banks.json"
+  },
+  {
+    "path": "Data/Industries/Advertising_Agencies.json",
+    "type": "IndustryProfile",
+    "filename": "Advertising_Agencies.json"
+  },
+  {
+    "path": "Data/Industries/Landscaping_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Landscaping_Services.json"
+  },
+  {
+    "path": "Data/Industries/Assisted_Living_Facilities.json",
+    "type": "IndustryProfile",
+    "filename": "Assisted_Living_Facilities.json"
+  },
+  {
+    "path": "Data/Industries/Optometry_Practices.json",
+    "type": "IndustryProfile",
+    "filename": "Optometry_Practices.json"
+  },
+  {
+    "path": "Data/Industries/Acupuncturists.json",
+    "type": "IndustryProfile",
+    "filename": "Acupuncturists.json"
+  },
+  {
+    "path": "Data/Industries/Accessories_and_Other_Apparel_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Accessories_and_Other_Apparel_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Electrical_Contractors.json",
+    "type": "IndustryProfile",
+    "filename": "Electrical_Contractors.json"
+  },
+  {
+    "path": "Data/Industries/Barber_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Barber_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Car_Washes.json",
+    "type": "IndustryProfile",
+    "filename": "Car_Washes.json"
+  },
+  {
+    "path": "Data/Industries/Adult_Day_Services_Centers.json",
+    "type": "IndustryProfile",
+    "filename": "Adult_Day_Services_Centers.json"
+  },
+  {
+    "path": "Data/Industries/Auto_Body_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Auto_Body_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Beauty_Salons.json",
+    "type": "IndustryProfile",
+    "filename": "Beauty_Salons.json"
+  },
+  {
+    "path": "Data/Industries/Auto_Dealerships.json",
+    "type": "IndustryProfile",
+    "filename": "Auto_Dealerships.json"
+  },
+  {
+    "path": "Data/Industries/Real_Estate_Development.json",
+    "type": "IndustryProfile",
+    "filename": "Real_Estate_Development.json"
+  },
+  {
+    "path": "Data/Industries/Armored_Car_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Armored_Car_Services.json"
+  },
+  {
+    "path": "Data/Industries/Agricultural_Chemical_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Agricultural_Chemical_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Dry_Cleaning_And_Laundry_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Dry_Cleaning_And_Laundry_Services.json"
+  },
+  {
+    "path": "Data/Industries/Ambulance_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Ambulance_Services.json"
+  },
+  {
+    "path": "Data/Industries/Advertising_And_PR_Agencies.json",
+    "type": "IndustryProfile",
+    "filename": "Advertising_And_PR_Agencies.json"
+  },
+  {
+    "path": "Data/Industries/Adhesive_Manufacturing.json",
+    "type": "IndustryProfile",
+    "filename": "Adhesive_Manufacturing.json"
+  },
+  {
+    "path": "Data/Industries/Coffee_Shops_And_Snack_Bars.json",
+    "type": "IndustryProfile",
+    "filename": "Coffee_Shops_And_Snack_Bars.json"
+  },
+  {
+    "path": "Data/Industries/Management_Consulting_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Management_Consulting_Services.json"
+  },
+  {
+    "path": "Data/Industries/Advertising_Material_Distribution_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Advertising_Material_Distribution_Services.json"
+  },
+  {
+    "path": "Data/Industries/Pet_Care_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Pet_Care_Services.json"
+  },
+  {
+    "path": "Data/Industries/Restaurants.json",
+    "type": "IndustryProfile",
+    "filename": "Restaurants.json"
+  },
+  {
+    "path": "Data/Industries/Interior_Design_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Interior_Design_Services.json"
+  },
+  {
+    "path": "Data/Industries/Real_Estate_Appraisers.json",
+    "type": "IndustryProfile",
+    "filename": "Real_Estate_Appraisers.json"
+  },
+  {
+    "path": "Data/Industries/Medical_Laboratories.json",
+    "type": "IndustryProfile",
+    "filename": "Medical_Laboratories.json"
+  },
+  {
+    "path": "Data/Industries/Machine_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Machine_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Book_Stores.json",
+    "type": "IndustryProfile",
+    "filename": "Book_Stores.json"
+  },
+  {
+    "path": "Data/Industries/Dental_Practices.json",
+    "type": "IndustryProfile",
+    "filename": "Dental_Practices.json"
+  },
+  {
+    "path": "Data/Industries/Breweries.json",
+    "type": "IndustryProfile",
+    "filename": "Breweries.json"
+  },
+  {
+    "path": "Data/Industries/Art_Dealers_and_Galleries.json",
+    "type": "IndustryProfile",
+    "filename": "Art_Dealers_and_Galleries.json"
+  },
+  {
+    "path": "Data/Industries/Agents_for_Wireless_Telecommunications_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Agents_for_Wireless_Telecommunications_Services.json"
+  },
+  {
+    "path": "Data/Industries/Wineries.json",
+    "type": "IndustryProfile",
+    "filename": "Wineries.json"
+  },
+  {
+    "path": "Data/Industries/Security_Guards_and_Patrol_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Security_Guards_and_Patrol_Services.json"
+  },
+  {
+    "path": "Data/Industries/Chiropractic_Clinics.json",
+    "type": "IndustryProfile",
+    "filename": "Chiropractic_Clinics.json"
+  },
+  {
+    "path": "Data/Industries/Taxi_and_Limousine_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Taxi_and_Limousine_Services.json"
+  },
+  {
+    "path": "Data/Industries/Hotels_And_Motels.json",
+    "type": "IndustryProfile",
+    "filename": "Hotels_And_Motels.json"
+  },
+  {
+    "path": "Data/Industries/Computer_Programming_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Computer_Programming_Services.json"
+  },
+  {
+    "path": "Data/Industries/Caterers.json",
+    "type": "IndustryProfile",
+    "filename": "Caterers.json"
+  },
+  {
+    "path": "Data/Industries/Veterinary_Practices.json",
+    "type": "IndustryProfile",
+    "filename": "Veterinary_Practices.json"
+  },
+  {
+    "path": "Data/Industries/Construction_Development.json",
+    "type": "IndustryProfile",
+    "filename": "Construction_Development.json"
+  },
+  {
+    "path": "Data/Industries/Architectural_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Architectural_Services.json"
+  },
+  {
+    "path": "Data/Industries/Ambulatory_Surgery_Centers.json",
+    "type": "IndustryProfile",
+    "filename": "Ambulatory_Surgery_Centers.json"
+  },
+  {
+    "path": "Data/Industries/Abrasive_Product_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Abrasive_Product_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Agents_and_Managers_for_Artists,_Athletes,_Entertainers,_and_Other_Public_Figures.json",
+    "type": "IndustryProfile",
+    "filename": "Agents_and_Managers_for_Artists,_Athletes,_Entertainers,_and_Other_Public_Figures.json"
+  },
+  {
+    "path": "Data/Industries/HVAC_And_Plumbing_Contractors.json",
+    "type": "IndustryProfile",
+    "filename": "HVAC_And_Plumbing_Contractors.json"
+  },
+  {
+    "path": "Data/Industries/Funeral_Homes_and_Funeral_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Funeral_Homes_and_Funeral_Services.json"
+  },
+  {
+    "path": "Data/Industries/Nail_Salons.json",
+    "type": "IndustryProfile",
+    "filename": "Nail_Salons.json"
+  },
+  {
+    "path": "Data/Industries/Janitorial_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Janitorial_Services.json"
+  },
+  {
+    "path": "Data/Industries/Fitness_Centers.json",
+    "type": "IndustryProfile",
+    "filename": "Fitness_Centers.json"
+  },
+  {
+    "path": "Data/Industries/Grocery_Stores.json",
+    "type": "IndustryProfile",
+    "filename": "Grocery_Stores.json"
+  },
+  {
+    "path": "Data/Industries/Auto_Repair_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Auto_Repair_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Child_Care_Centers.json",
+    "type": "IndustryProfile",
+    "filename": "Child_Care_Centers.json"
+  },
+  {
+    "path": "Data/Industries/Law_Firms.json",
+    "type": "IndustryProfile",
+    "filename": "Law_Firms.json"
+  },
+  {
+    "path": "Data/Industries/Pawn_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Pawn_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Employment_placement_Agencies.json",
+    "type": "IndustryProfile",
+    "filename": "Employment_placement_Agencies.json"
+  },
+  {
+    "path": "Data/Industries/Home_Healthcare_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Home_Healthcare_Services.json"
+  },
+  {
+    "path": "Data/Industries/Aircraft_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Aircraft_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Engineering_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Engineering_Services.json"
+  },
+  {
+    "path": "Data/Industries/Commercial_Real_Estate_Brokers.json",
+    "type": "IndustryProfile",
+    "filename": "Commercial_Real_Estate_Brokers.json"
+  },
+  {
+    "path": "Data/Industries/Amusement_and_Theme_Parks.json",
+    "type": "IndustryProfile",
+    "filename": "Amusement_and_Theme_Parks.json"
+  },
+  {
+    "path": "Data/Industries/Air_and_Gas_Compressor_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Air_and_Gas_Compressor_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Software_Publishers.json",
+    "type": "IndustryProfile",
+    "filename": "Software_Publishers.json"
+  },
+  {
+    "path": "Data/Industries/Commercial_Property_Managers.json",
+    "type": "IndustryProfile",
+    "filename": "Commercial_Property_Managers.json"
+  },
+  {
+    "path": "Data/Industries/Bicycle_Shops.json",
+    "type": "IndustryProfile",
+    "filename": "Bicycle_Shops.json"
+  },
+  {
+    "path": "Data/Industries/Appliance_Repair_and_Maintenance.json",
+    "type": "IndustryProfile",
+    "filename": "Appliance_Repair_and_Maintenance.json"
+  },
+  {
+    "path": "Data/Industries/Printing_Machinery_Manufacturers.json",
+    "type": "IndustryProfile",
+    "filename": "Printing_Machinery_Manufacturers.json"
+  },
+  {
+    "path": "Data/Industries/Bookkeeping_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Bookkeeping_Services.json"
+  },
+  {
+    "path": "Data/Industries/Graphic_Design_Services.json",
+    "type": "IndustryProfile",
+    "filename": "Graphic_Design_Services.json"
+  },
+  {
+    "path": "Data/Intelligence/Business_Intelligence.csv",
+    "type": "Intelligence",
+    "zip": "",
+    "location": "Business_Intelligence",
+    "filename": "Business_Intelligence.csv"
+  },
+  {
     "path": "Data/ProductsGuide/initial.json",
     "type": "JSON",
     "filename": "initial.json"

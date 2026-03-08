@@ -26,6 +26,7 @@ import { ProductGuide, BusinessLead, LeadStatus, LeadType, ScorecardMetric, Call
 import { SearchResult } from './components/SearchDropdown';
 import { productData } from './lib/productData';
 import { calculateScore } from './lib/scoring';
+import { initIndustryKnowledge } from './lib/industryKnowledge';
 import { Search, Filter, Database, MapPin, Download, FilterX, Copy, Globe } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -679,6 +680,7 @@ function App() {
 
     async function init() {
       try {
+        await initIndustryKnowledge();
         const m = await fetchManifest();
         if (!isMounted) return;
         setManifest(m);
