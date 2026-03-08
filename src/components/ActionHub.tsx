@@ -4,7 +4,7 @@ import {
   CheckCircle2, AlertCircle, Sparkles, FileText, Edit3,
   BookOpen, Package, MessageCircle, ArrowLeft,
   Building2, HardHat, TrendingUp, Calendar, Info,
-  Search, Eye, HelpCircle, UserPlus, Activity
+  Search, Eye, HelpCircle, UserPlus, Activity, Loader2, Download
 } from 'lucide-react';
 import { DISCOVERY_GUIDE } from '../lib/discoveryData';
 import { BusinessLead, LeadStatus, LeadType, LeadActivity } from '../types';
@@ -38,6 +38,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [manualContext, setManualContext] = useState<string>('');
+  const [isResearching, setIsResearching] = useState(false);
+  const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -235,6 +239,78 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     onUpdateLeads(updatedLeads);
   };
 
+  const handleDeepDive = async () => {
+    if (!selectedLead) return;
+    setIsResearching(true);
+    setResearchError(null);
+
+    try {
+      const response = await fetch('http://localhost:5001/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: selectedLead.businessName,
+          website: selectedLead.website,
+          industry: selectedLead.industry,
+          city: selectedLead.city || '',
+          zip: selectedLead.zip || '',
+          manualContext: manualContext
+        })
+      });
+
+      if (!response.ok) throw new Error('Research request failed');
+
+      const data = await response.json();
+
+      // Update the lead with AI intelligence
+      const updatedLeads = leads.map(l =>
+        l.id === selectedLead.id
+          ? {
+              ...l,
+              aiIntelligence: data.ai,
+              researchConfidence: data.confidence,
+              lastUpdated: new Date().toISOString()
+            }
+          : l
+      );
+      onUpdateLeads(updatedLeads);
+      setActiveStrategyTab('focus');
+    } catch (err) {
+      console.error('Research error:', err);
+      setResearchError('Could not connect to the Intelligence Bridge. Make sure it is running locally.');
+    } finally {
+      setIsResearching(false);
+    }
+  };
+
+  const handleGenerateBrief = async () => {
+    if (!selectedLead || !selectedLead.aiIntelligence) return;
+    setIsGeneratingBrief(true);
+    try {
+      const response = await fetch('http://localhost:5001/generate-brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: selectedLead.businessName,
+          ai: selectedLead.aiIntelligence,
+          industry: selectedLead.industry,
+          website: selectedLead.website
+        })
+      });
+
+      if (!response.ok) throw new Error('Brief generation failed');
+      const data = await response.json();
+
+      // Download the generated PDF
+      window.open(`http://localhost:5001/briefs/${data.filename}`, '_blank');
+    } catch (err) {
+      console.error('Brief error:', err);
+      alert('Failed to generate PDF brief. Check if the bridge is running.');
+    } finally {
+      setIsGeneratingBrief(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-950 overflow-hidden h-full">
       {/* Header */}
@@ -377,10 +453,12 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         <BookOpen className="w-12 h-12" />
                       </div>
                       <div className="flex items-center justify-between mb-4 relative z-10">
-                        <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
-                          <Target className="w-3.5 h-3.5 mr-2 text-blue-600" />
-                          Strategic Focus
-                        </h3>
+                        <div className="flex flex-col">
+                          <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                            <Target className="w-3.5 h-3.5 mr-2 text-blue-600" />
+                            Strategic Focus
+                          </h3>
+                        </div>
                         <div className="flex bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700">
                           {(['growth', 'efficiency', 'security'] as const).map((theme) => (
                             <button
@@ -397,8 +475,90 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           ))}
                         </div>
                       </div>
+                      <div className="space-y-4 mb-6 relative z-10">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                            <Edit3 className="w-3 h-3 mr-1.5" />
+                            Manual Banker Context / Observations
+                          </label>
+                          <textarea
+                            value={manualContext}
+                            onChange={(e) => setManualContext(e.target.value)}
+                            placeholder="e.g. Spoke to owner at Chamber event; they are opening a 3rd site next month."
+                            className="w-full h-16 p-3 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-600"
+                          />
+                        </div>
+                      </div>
+
                       <div className="text-sm md:text-base text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed relative z-10">
-                        {intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()}
+                        {selectedLead.aiIntelligence ? (
+                          <div className="space-y-3">
+                            <p>{selectedLead.aiIntelligence.intelligence}</p>
+                            {selectedLead.aiIntelligence.signals && selectedLead.aiIntelligence.signals.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {selectedLead.aiIntelligence.signals.map((sig: string, idx: number) => (
+                                  <span key={idx} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded border border-blue-100 dark:border-blue-800">
+                                    Signal: {sig}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()
+                        )}
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10 space-y-3">
+                        <button
+                          onClick={handleDeepDive}
+                          disabled={isResearching}
+                          className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                            isResearching
+                              ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {isResearching ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>AI is Researching...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4" />
+                              <span>{selectedLead.aiIntelligence ? 'Refresh AI Intelligence' : 'Get AI Intelligence Brief'}</span>
+                            </>
+                          )}
+                        </button>
+
+                        {selectedLead.aiIntelligence && (
+                          <button
+                            onClick={handleGenerateBrief}
+                            disabled={isGeneratingBrief}
+                            className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
+                              isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            {isGeneratingBrief ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>Generating PDF...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4" />
+                                <span>Download PDF Insight Brief</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+
+                        {researchError && (
+                          <p className="mt-2 text-[10px] text-red-500 font-bold text-center">
+                            {researchError}
+                          </p>
+                        )}
                       </div>
                       {scoreDetails && scoreDetails.insights.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800">
@@ -422,7 +582,25 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         Recommended Solutions
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => {
+                        {selectedLead.aiIntelligence ? (
+                          selectedLead.aiIntelligence.products.map((productName: string, i: number) => {
+                            const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'AI recommended based on recent signals.' })}
+                                className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                                  <span className="text-[10px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
+                                </div>
+                                <ChevronRight className="w-2.5 h-2.5 text-gray-400" />
+                              </button>
+                            );
+                          })
+                        ) : (
+                          intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => {
                           const productName = item.replace('- ', '').split(':')[0].trim();
                           const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
                           return (
@@ -438,7 +616,8 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                               <ChevronRight className="w-2.5 h-2.5 text-gray-400" />
                             </button>
                           );
-                        })}
+                        })
+                        )}
                       </div>
                     </div>
                   )}
@@ -697,7 +876,11 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
                   <div className="p-6 font-serif text-sm text-gray-700 dark:text-slate-300 min-h-[300px]">
                     <textarea
-                      value={customDraft !== null ? customDraft : (currentTemplate ? replacePlaceholders(currentTemplate.body, selectedLead) : '')}
+                      value={customDraft !== null ? customDraft : (
+                        selectedLead.aiIntelligence && outreachChannel === 'Email' && !selectedTemplateId
+                        ? selectedLead.aiIntelligence.script
+                        : (currentTemplate ? replacePlaceholders(currentTemplate.body, selectedLead) : '')
+                      )}
                       onChange={(e) => setCustomDraft(e.target.value)}
                       className="w-full h-full min-h-[300px] bg-transparent border-none focus:ring-0 resize-none p-0"
                       placeholder="Template body will appear here..."
