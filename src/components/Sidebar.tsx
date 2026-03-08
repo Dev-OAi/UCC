@@ -395,11 +395,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {bridgeStatus === 'online' ? 'Online' : 'Offline'}
               </span>
             </div>
-            <p className="text-[9px] text-gray-400 italic">
-              {bridgeStatus === 'online'
-                ? 'AI Research & Ollama active'
-                : 'Start bridge to enable AI'}
-            </p>
+            <div className="group relative">
+              <p className="text-[9px] text-gray-400 italic cursor-help">
+                {bridgeStatus === 'online'
+                  ? 'AI Research & Ollama active'
+                  : 'Start bridge to enable AI'}
+              </p>
+              {bridgeStatus === 'offline' && (
+                <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-[9px] text-slate-200 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50">
+                  If running locally, ensure <b>ucc_bridge.py</b> is started. If on Chrome, click <b>"Allow"</b> on the security popup to connect.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
