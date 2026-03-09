@@ -9,6 +9,7 @@ import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { ProductsSecurityModal } from './components/ProductsSecurityModal';
+import { SystemSecurityModal } from './components/SystemSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
@@ -156,6 +157,7 @@ function App() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
@@ -535,6 +537,7 @@ function App() {
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
 
   // Auto-lock Products after 1 minute
@@ -650,7 +653,21 @@ function App() {
       return;
     }
 
-    setActiveTab(tab);
+    // Special toggle logic for System Guardrails
+    if (tab === 'System') {
+      if (activeTab === 'System') {
+        // If already on System, toggle back to the last main tab
+        setActiveTab(lastMainTab);
+      } else {
+        // Store current tab before switching to System
+        setLastMainTab(activeTab);
+        setActiveTab('System');
+      }
+    } else {
+      // Normal navigation
+      setLastMainTab(tab);
+      setActiveTab(tab);
+    }
 
     // Always close right sidebar when navigating to Home
     if (tab === 'Home') {
@@ -1124,6 +1141,13 @@ function App() {
     }
   };
 
+  const handleSystemPurgeSuccess = () => {
+    setIsSystemModalOpen(false);
+    localStorage.removeItem('isOriginalDesign');
+    setIsOriginalDesign(true);
+    window.location.reload();
+  };
+
   const handleAddToScorecard = (row: DataRow) => {
     const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
     if (exists) {
@@ -1270,7 +1294,11 @@ function App() {
           ) : activeTab === 'Market Intelligence' ? (
             <MarketIntelligence allData={allData} />
           ) : activeTab === 'System' ? (
-            <SystemGuardrails isOriginalDesign={isOriginalDesign} onToggleDesign={setIsOriginalDesign} />
+            <SystemGuardrails
+              isOriginalDesign={isOriginalDesign}
+              onToggleDesign={setIsOriginalDesign}
+              onPurgeRequest={() => setIsSystemModalOpen(true)}
+            />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}
@@ -1489,6 +1517,7 @@ function App() {
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
       <ProductsSecurityModal isOpen={isProductsModalOpen} onClose={() => setIsProductsModalOpen(false)} onSuccess={handleProductsUnlockSuccess} />
+      <SystemSecurityModal isOpen={isSystemModalOpen} onClose={() => setIsSystemModalOpen(false)} onSuccess={handleSystemPurgeSuccess} />
     </div>
   );
 }
