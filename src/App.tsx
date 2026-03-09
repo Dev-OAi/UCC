@@ -539,6 +539,7 @@ function App() {
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
@@ -653,21 +654,11 @@ function App() {
       return;
     }
 
-    // Special toggle logic for System Guardrails
-    if (tab === 'System') {
-      if (activeTab === 'System') {
-        // If already on System, toggle back to the last main tab
-        setActiveTab(lastMainTab);
-      } else {
-        // Store current tab before switching to System
-        setLastMainTab(activeTab);
-        setActiveTab('System');
-      }
-    } else {
-      // Normal navigation
+    if (tab !== 'System') {
       setLastMainTab(tab);
-      setActiveTab(tab);
     }
+
+    setActiveTab(tab);
 
     // Always close right sidebar when navigating to Home
     if (tab === 'Home') {
@@ -1249,6 +1240,14 @@ function App() {
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        onSettingsClick={() => {
+          if (activeTab === 'System') {
+            handleTabChange(lastMainTab);
+          } else {
+            handleTabChange('System');
+          }
+        }}
+        activeTab={activeTab}
         isRightSidebarOpen={isRightSidebarOpen}
       />
 
