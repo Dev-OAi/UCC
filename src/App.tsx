@@ -1256,7 +1256,7 @@ function App() {
               onFilterChange={onFilterChange}
             />
           ) : activeTab === 'Market Intelligence' ? (
-            <MarketIntelligence />
+            <MarketIntelligence allData={allData} />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}

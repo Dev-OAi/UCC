@@ -64,6 +64,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const [generatedIntel, setGeneratedIntel] = React.useState<{ strategy: string, email: string } | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<string>('');
   const [isDiscoveryExpanded, setIsDiscoveryExpanded] = React.useState(false);
+  const [learnedTrends, setLearnedTrends] = React.useState<any>(null);
+  const [marketGraph, setMarketGraph] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch('./Data/Intelligence/learned_trends.json')
+      .then(res => res.json())
+      .then(data => setLearnedTrends(data))
+      .catch(() => {});
+
+    fetch('./Data/Intelligence/Market_Graph.json')
+      .then(res => res.json())
+      .then(data => setMarketGraph(data))
+      .catch(() => {});
+  }, []);
 
   const templates = React.useMemo(() => getStoredTemplates(), []);
 
@@ -390,6 +404,34 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               <SalesHooks leadData={selectedRow} />
             </div>
 
+            {/* Market Graph Connections */}
+            {marketGraph && selectedRow && (
+              <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+                <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Share2 className="w-4 h-4 text-purple-600" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-purple-900 dark:text-purple-100">Mutual Value Partner</h4>
+                  </div>
+                  {marketGraph.connections
+                    .filter((c: any) => c.source === (selectedRow.businessName || selectedRow['Entity Name']) || c.target === (selectedRow.businessName || selectedRow['Entity Name']))
+                    .map((conn: any, i: number) => (
+                      <div key={i} className="space-y-2">
+                        <p className="text-[11px] text-purple-800 dark:text-purple-300 font-medium">
+                          {conn.source === (selectedRow.businessName || selectedRow['Entity Name']) ? `Connection: ${conn.target}` : `Connection: ${conn.source}`}
+                        </p>
+                        <p className="text-[10px] text-purple-700/70 dark:text-purple-400/70 italic leading-relaxed">
+                          "{conn.reason}"
+                        </p>
+                      </div>
+                    ))
+                  }
+                  {marketGraph.connections.filter((c: any) => c.source === (selectedRow.businessName || selectedRow['Entity Name']) || c.target === (selectedRow.businessName || selectedRow['Entity Name'])).length === 0 && (
+                    <p className="text-[10px] text-gray-400 italic">No direct supply chain connections found in current hubs.</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Discovery Guide Quick Access */}
             <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-xl overflow-hidden">
@@ -534,6 +576,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             </div>
 
             <div className="space-y-4">
+              {learnedTrends && learnedTrends.hot_industries.some((i: any) => i.name === category) && (
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 p-3 rounded-xl flex items-center space-x-2 mb-4">
+                  <TrendingUp className="w-4 h-4 text-amber-600" />
+                  <span className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase">Learned: Hot Industry in Territory</span>
+                </div>
+              )}
+
               {insight ? (
                 <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl overflow-hidden">
                   <div className="p-4 border-b border-blue-100/50 dark:border-blue-900/20">
