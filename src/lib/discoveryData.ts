@@ -4,6 +4,52 @@ export interface DiscoveryPoint {
   icon?: string;
 }
 
+export const PRODUCT_DISCOVERY_MAPPING: Record<string, string[]> = {
+  'ADP': [
+    "How many employees do you currently have on payroll?",
+    "Are you planning to hire more staff in the next 6-12 months?",
+    "How much time does your team spend manually processing payroll each week?",
+    "Are you satisfied with your current tax filing and compliance support?"
+  ],
+  'Fiserv': [
+    "How do your customers currently prefer to pay (Credit Card, Cash, ACH)?",
+    "What is your average monthly credit card processing volume?",
+    "Are you looking for a more integrated way to handle online and in-store payments?",
+    "Does your current processor provide detailed reporting and next-day funding?"
+  ],
+  'SBA': [
+    "Are you currently leasing your space or do you have plans to purchase a building?",
+    "Do you have any major equipment purchases planned for this year?",
+    "Is business acquisition part of your growth strategy for the next 24 months?",
+    "How would a long-term, low-down-payment loan impact your cash flow?"
+  ],
+  'Treasury': [
+    "How many checks do you typically deposit in a month?",
+    "Do you have multiple locations that need to deposit funds into a central account?",
+    "What protocols do you have in place to prevent ACH or check fraud?",
+    "Would automated sweep accounts help you manage your daily liquidity better?"
+  ],
+  'Merchant Services': [
+    "Are you currently accepting mobile payments or digital wallets?",
+    "How do you handle your point-of-sale inventory tracking?",
+    "Is your current payment system integrated with your accounting software?"
+  ],
+  'Business Line of Credit': [
+    "How do you typically manage seasonal fluctuations in your cash flow?",
+    "Do you ever have to pass on opportunities because you don't have immediate access to capital?",
+    "How are you currently financing your raw materials or inventory?"
+  ],
+  'ACH Positive Pay': [
+    "How many ACH transactions do you process monthly?",
+    "Have you experienced any unauthorized ACH attempts in the past year?",
+    "How do you currently reconcile your daily bank activity?"
+  ],
+  'Remote Deposit Capture': [
+    "How often do you or your staff physically go to the branch to make deposits?",
+    "Would depositing checks directly from your office improve your team's productivity?"
+  ]
+};
+
 export const DISCOVERY_GUIDE = {
   triggerPhrases: {
     title: "Trigger Phrases",

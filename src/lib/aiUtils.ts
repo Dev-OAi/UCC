@@ -1,6 +1,7 @@
 import { BusinessLead } from '../types';
 import { DataRow } from './dataService';
 import { getInsightForCategory } from './industryKnowledge';
+import { PRODUCT_DISCOVERY_MAPPING } from './discoveryData';
 
 export const generateAiManifest = (data: DataRow | BusinessLead) => {
   const isLead = 'status' in data;
@@ -96,11 +97,15 @@ Best,
   return email; // Professional is the default
 };
 
-export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'growth' | 'efficiency' | 'security' = 'growth') => {
+export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'growth' | 'efficiency' | 'security' = 'growth', learnedTrends?: any) => {
   const isLead = 'status' in data;
   const industry = isLead ? (data as BusinessLead).industry : (data['Category'] || data['Category '] || '');
   const insight = getInsightForCategory(industry || '');
   const businessName = isLead ? (data as BusinessLead).businessName : (data['businessName'] || data['Entity Name'] || 'Unknown Business');
+
+  // Recursive Learning Logic: Check if this lead's industry is "Hot"
+  const isHotIndustry = learnedTrends?.hot_industries?.some((h: any) => h.name === industry);
+  const learnedInsight = isHotIndustry ? learnedTrends.hot_industries.find((h: any) => h.name === industry).insight : null;
 
   let strategy = '';
   let email = '';
@@ -111,6 +116,7 @@ export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'g
     strategy = `### 🎯 AI-Generated Strategy for ${businessName}
 
 **Industry Context:** ${industryContext}
+${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
 Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and cash flow optimization. Given the current market trends, they are likely looking for ways to reduce manual financial tasks and protect their overhead. ${insight?.quickFacts?.[1] ? `Key Insight: ${insight.quickFacts[1]}` : ''}
@@ -142,6 +148,7 @@ Best,
     strategy = `### 🎯 AI-Generated Strategy for ${businessName}
 
 **Industry Context:** ${industryContext}
+${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
 Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority. ${insight?.quickFacts?.[0] ? `Context: ${insight.quickFacts[0]}` : ''}
@@ -174,6 +181,7 @@ Best regards,
     strategy = `### 🎯 AI-Generated Strategy for ${businessName}
 
 **Industry Context:** ${industryContext}
+${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
 Focus on ${insight ? 'leveraging sector-specific growth' : 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion while securing the relationship with a full-service banking suite. ${insight?.quickFacts?.[2] ? `Note: ${insight.quickFacts[2]}` : ''} We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
@@ -213,5 +221,24 @@ Best regards,
 [Your Name]`;
   }
 
-  return { strategy, email };
+  // 3. DYNAMIC DISCOVERY QUESTIONS (New Learned Feature)
+  const discoveryQuestions: string[] = [];
+  const recommendedProducts = isLead ? (data as BusinessLead).aiIntelligence?.products || [] : [];
+
+  if (recommendedProducts.length > 0) {
+     recommendedProducts.forEach((prodName: string) => {
+        // Find best match in mapping
+        const key = Object.keys(PRODUCT_DISCOVERY_MAPPING).find(k =>
+           prodName.includes(k) || k.includes(prodName)
+        );
+        if (key) {
+           discoveryQuestions.push(...PRODUCT_DISCOVERY_MAPPING[key]);
+        }
+     });
+  }
+
+  // Deduplicate and limit
+  const uniqueQuestions = Array.from(new Set(discoveryQuestions)).slice(0, 6);
+
+  return { strategy, email, discoveryQuestions: uniqueQuestions };
 };
