@@ -1294,11 +1294,7 @@ function App() {
           ) : activeTab === 'Market Intelligence' ? (
             <MarketIntelligence allData={allData} />
           ) : activeTab === 'System' ? (
-            <SystemGuardrails
-              isOriginalDesign={isOriginalDesign}
-              onToggleDesign={setIsOriginalDesign}
-              onPurgeRequest={() => setIsSystemModalOpen(true)}
-            />
+            <SystemGuardrails isOriginalDesign={isOriginalDesign} onToggleDesign={setIsOriginalDesign} />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}

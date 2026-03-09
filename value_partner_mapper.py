@@ -11,7 +11,10 @@ VALUE_CHAIN = {
     "Real Estate Development": ["Construction & Development", "Abrasive Product Manufacturers", "HVAC"],
     "Construction & Development": ["Real Estate Development", "Heavy Equipment", "Electrical Services"],
     "Acupuncturists": ["Medical Supply", "Wellness Centers"],
-    "Commercial Printing": ["Graphic Design", "Marketing Agencies", "Paper Suppliers"]
+    "Commercial Printing": ["Graphic Design", "Marketing Agencies", "Paper Suppliers"],
+    "Apparel Manufacturers": ["Textile", "Graphic Design", "Retail"],
+    "Accessories and Other Apparel Manufacturers": ["Textile", "Retail"],
+    "Trusts: Educational, Religious, Etc.": ["Non-Profit Organization", "Financial Services"]
 }
 
 def main():
@@ -31,16 +34,33 @@ def main():
     for f in csv_files:
         if "Business_Intelligence" in f: continue
         try:
-            df = pd.read_csv(f, nrows=500, low_memory=False)
-            # Find name and category columns
-            name_col = next((c for c in df.columns if 'Name' in c or 'COMPANY' in c), None)
-            cat_col = next((c for c in df.columns if 'Category' in c or 'Industry' in c), None)
+            # Check for headers
+            df_check = pd.read_csv(f, nrows=1, header=None)
+            if df_check.empty: continue
 
-            if name_col and cat_col:
+            first_row = [str(x).strip() for x in df_check.iloc[0]]
+            has_header = any(x in ['Name', 'COMPANY', 'businessName', 'Entity Name'] for x in first_row)
+
+            if has_header:
+                df = pd.read_csv(f, nrows=500, low_memory=False)
+                name_col = next((c for c in df.columns if any(x in str(c) for x in ['Name', 'COMPANY', 'businessName'])), None)
+                cat_col = next((c for c in df.columns if any(x in str(c) for x in ['Category', 'Industry', 'SIC', 'SICDESC'])), None)
+            else:
+                # Fallback for ZIP hubs (No header)
+                df = pd.read_csv(f, header=None, nrows=500, low_memory=False)
+                name_col = 0
+                cat_col = None
+                # Check column 7 (YP/33027 format)
+                if len(df.columns) > 7:
+                    sample = str(df.iloc[0, 7])
+                    if not sample.startswith('http') and len(sample) > 3:
+                        cat_col = 7
+
+            if name_col is not None:
                 for _, row in df.iterrows():
                     name = str(row[name_col]).strip().upper()
-                    cat = str(row[cat_col]).strip()
-                    if name and cat and name != 'NAN' and cat != 'NAN' and name != 'N/A':
+                    cat = str(row[cat_col]).strip() if cat_col is not None else 'Other'
+                    if name and name != 'NAN' and name != 'N/A':
                         all_businesses[name] = cat
         except:
             continue

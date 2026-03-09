@@ -33,21 +33,46 @@ def main():
         "dynamic_focus_zones": []
     }
 
+    # 1. Detect Hot Industries (Scanning ALL hubs for volume)
+    import glob
+    csv_files = glob.glob("Data/**/*.csv", recursive=True)
+    all_industry_counts = {}
+
+    for f in csv_files:
+        if "Business_Intelligence" in f: continue
+        try:
+            df_check = pd.read_csv(f, nrows=1, header=None)
+            if df_check.empty: continue
+            first_row = [str(x).strip() for x in df_check.iloc[0]]
+            has_header = any(x in ['Name', 'COMPANY', 'businessName'] for x in first_row)
+
+            if has_header:
+                df_ind = pd.read_csv(f, usecols=lambda c: any(x in str(c) for x in ['Category', 'Industry', 'SIC']), low_memory=False)
+            else:
+                df_ind = pd.read_csv(f, header=None, usecols=[7] if len(df_check.columns) > 7 else [], low_memory=False)
+                df_ind.columns = ['Category'] if not df_ind.empty else []
+
+            if not df_ind.empty:
+                col = df_ind.columns[0]
+                counts = df_ind[col].value_counts()
+                for ind, count in counts.items():
+                    if str(ind) not in ['nan', 'Other', 'Other ', 'N/A', '']:
+                        all_industry_counts[str(ind)] = all_industry_counts.get(str(ind), 0) + int(count)
+        except:
+            continue
+
+    if all_industry_counts:
+        top_industries = sorted(all_industry_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+        for ind, count in top_industries:
+            trends["hot_industries"].append({
+                "name": ind,
+                "intensity": count,
+                "insight": f"Major sector presence in territory with {count} identified entities."
+            })
+
+    # 2. Detect Growth Alerts (from Recent Intelligence)
     if os.path.exists(INTEL_FILE):
         df = pd.read_csv(INTEL_FILE)
-
-        # 1. Detect Hot Industries (most frequent in the intelligence log)
-        if not df.empty and 'NAICS_Code' in df.columns:
-            top_industries = df['NAICS_Code'].value_counts().head(8)
-            for industry, count in top_industries.items():
-                if industry != 'Pending' and str(industry) != 'nan':
-                    trends["hot_industries"].append({
-                        "name": str(industry),
-                        "intensity": int(count),
-                        "insight": f"Increased activity detected in {industry} vertical."
-                    })
-
-        # 2. Detect Growth Alerts (keyword scanning)
         if 'Industry_Pain_Point' in df.columns:
             growth_rows = df[df['Industry_Pain_Point'].str.contains('hiring|expansion|new site|opening|growth', case=False, na=False)]
             for _, row in growth_rows.tail(10).iterrows():
@@ -70,16 +95,34 @@ def main():
                     hits += 1
             trends["learning_accuracy"] = round(hits / len(prev_hot), 2) if prev_hot else 1.0
 
-    # 4. Map Zip Code Momentum (Mocking for now based on Business Intelligence logs)
-    # In a real scenario, we'd use the actual Hub CSVs
-    # We'll pull a few "Focus Zones" based on where most intelligence is being gathered
-    if os.path.exists(INTEL_FILE):
-        # If we had a Zip column in INTEL_FILE, we'd use it.
-        # For now, let's suggest focus zones based on industry clusters
-        trends["dynamic_focus_zones"] = [
-            {"zip": "33401", "reason": "High density of Real Estate growth signals."},
-            {"zip": "33477", "reason": "New construction activity hotspot."}
-        ]
+    # 4. Map Zip Code Momentum (Direct Hub Scanning)
+    import glob
+    csv_files = glob.glob("Data/**/*.csv", recursive=True)
+    zip_counts = {}
+
+    for f in csv_files:
+        if "Business_Intelligence" in f: continue
+        try:
+            # Quick scan of first 1000 rows for Zips
+            df_zip = pd.read_csv(f, nrows=1000, low_memory=False)
+            zip_col = next((c for c in df_zip.columns if 'Zip' in str(c) or 'ZIP' in str(c)), None)
+
+            if zip_col:
+                counts = df_zip[zip_col].value_counts()
+                for z, count in counts.items():
+                    z_str = str(z)[:5]
+                    if z_str.isdigit() and len(z_str) == 5:
+                        zip_counts[z_str] = zip_counts.get(z_str, 0) + int(count)
+        except:
+            continue
+
+    if zip_counts:
+        top_zips = sorted(zip_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        for z, count in top_zips:
+            trends["dynamic_focus_zones"].append({
+                "zip": z,
+                "reason": f"High density of local activity detected ({count} recent records)."
+            })
 
     # 5. Analyze Feedback (if available) to prioritize strategies
     if os.path.exists(FEEDBACK_FILE):
