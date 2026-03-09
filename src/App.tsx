@@ -9,6 +9,7 @@ import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { ProductsSecurityModal } from './components/ProductsSecurityModal';
+import { SystemSecurityModal } from './components/SystemSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
@@ -156,6 +157,7 @@ function App() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
@@ -535,6 +537,7 @@ function App() {
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
   const [lastMainTab, setLastMainTab] = useState<string>('Home');
 
@@ -1129,6 +1132,13 @@ function App() {
     }
   };
 
+  const handleSystemPurgeSuccess = () => {
+    setIsSystemModalOpen(false);
+    localStorage.removeItem('isOriginalDesign');
+    setIsOriginalDesign(true);
+    window.location.reload();
+  };
+
   const handleAddToScorecard = (row: DataRow) => {
     const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
     if (exists) {
@@ -1223,6 +1233,8 @@ function App() {
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -1500,6 +1512,7 @@ function App() {
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
       <ProductsSecurityModal isOpen={isProductsModalOpen} onClose={() => setIsProductsModalOpen(false)} onSuccess={handleProductsUnlockSuccess} />
+      <SystemSecurityModal isOpen={isSystemModalOpen} onClose={() => setIsSystemModalOpen(false)} onSuccess={handleSystemPurgeSuccess} />
     </div>
   );
 }

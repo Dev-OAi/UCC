@@ -10,6 +10,8 @@ interface HeaderProps {
   searchResults: SearchResult[];
   onResultClick: (result: SearchResult) => void;
   onQuickLinkClick: (title: string) => void;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
   isProductsUnlocked?: boolean;
   onToggleLeftSidebar: () => void;
   onToggleRightSidebar: () => void;
@@ -28,6 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   searchResults,
   onResultClick,
   onQuickLinkClick,
+  activeTab,
+  onTabChange,
   isProductsUnlocked = false,
   onToggleLeftSidebar,
   onToggleRightSidebar,
