@@ -45,7 +45,15 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [isGeneratingPackage, setIsGeneratingPackage] = useState(false);
   const [isGeneratingMarketing, setIsGeneratingMarketing] = useState(false);
   const [marketingHtml, setMarketingHtml] = useState<string | null>(null);
+  const [marketGraph, setMarketGraph] = useState<any>(null);
   const [researchError, setResearchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('./Data/Intelligence/Market_Graph.json')
+      .then(res => res.json())
+      .then(data => setMarketGraph(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -561,6 +569,25 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         ) : (
                           intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()
                         )}
+
+                        {marketGraph && (
+                          <div className="mt-4 space-y-2">
+                            {marketGraph.connections
+                              .filter((c: any) => c.source === selectedLead.businessName || c.target === selectedLead.businessName)
+                              .map((conn: any, i: number) => (
+                                <div key={i} className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg">
+                                  <div className="flex items-center space-x-2 text-[10px] font-black text-purple-600 uppercase mb-1">
+                                    <Share2 className="w-3 h-3" />
+                                    <span>Value Partner Opportunity</span>
+                                  </div>
+                                  <p className="text-xs text-purple-900 dark:text-purple-100 font-bold">
+                                    Connect with {conn.source === selectedLead.businessName ? conn.target : conn.source} ({conn.source === selectedLead.businessName ? conn.target_cat : conn.source_cat})
+                                  </p>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
                       </div>
 
                       <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10 space-y-3">
@@ -611,10 +638,11 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                             <button
                               onClick={handleGeneratePackage}
                               disabled={isGeneratingPackage || !getBridgeBaseUrl()}
-                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 ${
+                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 relative group/btn ${
                                 isGeneratingPackage ? 'opacity-50 cursor-not-allowed' : ''
                               }`}
                             >
+                              <div className="absolute -top-2 -right-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm group-hover/btn:scale-110 transition-transform">EFFICIENCY+</div>
                               {isGeneratingPackage ? (
                                 <>
                                   <Loader2 className="w-4 h-4 animate-spin" />

@@ -1,0 +1,11 @@
+{
+  "hot_industries": [
+    { "name": "Commercial Printing", "intensity": 45, "insight": "High volume of new UCC filings detected." },
+    { "name": "Acupuncturists", "intensity": 22, "insight": "Growing cluster in Zip 33401." }
+  ],
+  "market_alerts": [
+    { "business": "FAST PRINT SOLUTIONS", "type": "Expansion", "detail": "Opening 2nd site in West Palm Beach." },
+    { "business": "TOTAL WELLNESS", "type": "Hiring", "detail": "Recruiting 5 new therapists." }
+  ],
+  "last_updated": "2026-03-09T16:00:00Z"
+}
