@@ -21,10 +21,11 @@ UPLOAD_FOLDER = "public/Uploads"
 COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
 STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
 LEAD_BRIEFS_DIR = "Lead_Insight_Briefs"
+PRODUCT_FORMS_DIR = "Data/Product_Forms"
 INTEL_FILE = "Data/Intelligence/Business_Intelligence.csv"
 
 # Ensure directories exist
-for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR]:
+for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR, PRODUCT_FORMS_DIR]:
     os.makedirs(d, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
@@ -520,14 +521,26 @@ def generate_opening_package():
         pdf.multi_cell(0, 6, txt=data.get('uccStatus', 'No specific financing activity found in the last 24 months.'))
 
         pdf.ln(10)
-        section_header("5. Proposed Product Bundle")
+        section_header("5. Proposed Product Bundle & Form Status")
         products = data.get('uccStatus', '').split(',')[:3]
         for p in products:
-            if p.strip():
+            p_name = p.strip()
+            if p_name:
+                # Check for product form
+                form_found = False
+                for f in os.listdir(PRODUCT_FORMS_DIR):
+                    if p_name.lower() in f.lower():
+                        form_found = True
+                        break
+
                 pdf.set_font("Arial", 'B', 10)
                 pdf.cell(10, 8, txt=" [X]", ln=False)
                 pdf.set_font("Arial", '', 10)
-                pdf.cell(0, 8, txt=p.strip(), ln=True)
+                pdf.cell(80, 8, txt=p_name, ln=False)
+                pdf.set_font("Arial", 'I', 8)
+                pdf.set_text_color(0, 102, 204)
+                pdf.cell(0, 8, txt=" (Form Template Ready)" if form_found else " (Form Template Pending)", ln=True)
+                pdf.set_text_color(0, 0, 0)
 
         pdf.set_y(-40)
         pdf.set_font("Arial", 'I', 8)

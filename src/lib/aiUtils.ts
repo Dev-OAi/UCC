@@ -1,6 +1,7 @@
 import { BusinessLead } from '../types';
 import { DataRow } from './dataService';
 import { getInsightForCategory } from './industryKnowledge';
+import { PRODUCT_DISCOVERY_MAPPING } from './discoveryData';
 
 export const generateAiManifest = (data: DataRow | BusinessLead) => {
   const isLead = 'status' in data;
@@ -220,5 +221,24 @@ Best regards,
 [Your Name]`;
   }
 
-  return { strategy, email };
+  // 3. DYNAMIC DISCOVERY QUESTIONS (New Learned Feature)
+  const discoveryQuestions: string[] = [];
+  const recommendedProducts = isLead ? (data as BusinessLead).aiIntelligence?.products || [] : [];
+
+  if (recommendedProducts.length > 0) {
+     recommendedProducts.forEach((prodName: string) => {
+        // Find best match in mapping
+        const key = Object.keys(PRODUCT_DISCOVERY_MAPPING).find(k =>
+           prodName.includes(k) || k.includes(prodName)
+        );
+        if (key) {
+           discoveryQuestions.push(...PRODUCT_DISCOVERY_MAPPING[key]);
+        }
+     });
+  }
+
+  // Deduplicate and limit
+  const uniqueQuestions = Array.from(new Set(discoveryQuestions)).slice(0, 6);
+
+  return { strategy, email, discoveryQuestions: uniqueQuestions };
 };

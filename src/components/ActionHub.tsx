@@ -791,10 +791,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
                           <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center mb-3">
                             <HelpCircle className="w-3 h-3 mr-2" />
-                            Discovery Questions
+                            {intelligence?.discoveryQuestions?.length > 0 ? 'AI Learned Questions' : 'Discovery Questions'}
                           </h3>
                           <div className="space-y-2">
-                            {DISCOVERY_GUIDE.discoveryQuestions.items.map((item, i) => (
+                            {(intelligence?.discoveryQuestions?.length > 0 ? intelligence.discoveryQuestions : DISCOVERY_GUIDE.discoveryQuestions.items).map((item, i) => (
                               <div key={i} className="text-[11px] text-emerald-700 dark:text-emerald-400/90 font-bold bg-emerald-50/50 dark:bg-emerald-900/10 p-2 rounded-lg border border-emerald-100/30 italic">
                                 "{item}"
                               </div>
