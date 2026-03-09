@@ -1,0 +1,12 @@
+{
+  "connections": [
+    {
+      "source": "REALTY DEV CORP",
+      "source_cat": "Real Estate Development",
+      "target": "FLORIDA CONSTRUCTORS",
+      "target_cat": "Construction & Development",
+      "reason": "Real Estate Development firms often utilize services from Construction & Development firms."
+    }
+  ],
+  "last_updated": "2026-03-09T16:00:00Z"
+}
