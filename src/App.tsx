@@ -156,6 +156,7 @@ function App() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
@@ -650,7 +651,21 @@ function App() {
       return;
     }
 
-    setActiveTab(tab);
+    // Special toggle logic for System Guardrails
+    if (tab === 'System') {
+      if (activeTab === 'System') {
+        // If already on System, toggle back to the last main tab
+        setActiveTab(lastMainTab);
+      } else {
+        // Store current tab before switching to System
+        setLastMainTab(activeTab);
+        setActiveTab('System');
+      }
+    } else {
+      // Normal navigation
+      setLastMainTab(tab);
+      setActiveTab(tab);
+    }
 
     // Always close right sidebar when navigating to Home
     if (tab === 'Home') {
@@ -1218,6 +1233,8 @@ function App() {
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
