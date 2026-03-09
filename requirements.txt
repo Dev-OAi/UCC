@@ -4,3 +4,7 @@ flask
 flask-cors
 playwright
 playwright-stealth
+fpdf
+ollama
+pandas
+beautifulsoup4

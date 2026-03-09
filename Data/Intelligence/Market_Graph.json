@@ -1,0 +1,161 @@
+{
+  "connections": [
+    {
+      "source": "GALAXY GLASS",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like GALAXY GLASS often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "ISLAND PLANET",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like ISLAND PLANET often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "SPLIT INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like SPLIT INC often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "LA MODA HINDU",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like LA MODA HINDU often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "FOUR SEASONS APPAREL",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like FOUR SEASONS APPAREL often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "ARTESANO CREATIONS",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like ARTESANO CREATIONS often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "LEO FASHIONS INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like LEO FASHIONS INC often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "GLOBAX LLC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like GLOBAX LLC often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "LUXURE BY LAUREN",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like LUXURE BY LAUREN often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "TOP IMAGE USA INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like TOP IMAGE USA INC often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    },
+    {
+      "source": "KAMTEX USA INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "reason": "Accessories and Other Apparel Manufacturers firms like KAMTEX USA INC often utilize services from Retail Bakeries firms like SWEET ENDINGS  INC."
+    }
+  ],
+  "strategic_referrals": [
+    {
+      "primary": "GALAXY GLASS",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "ISLAND PLANET",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "SPLIT INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "LA MODA HINDU",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "FOUR SEASONS APPAREL",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "ARTESANO CREATIONS",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "LEO FASHIONS INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "GLOBAX LLC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "LUXURE BY LAUREN",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "TOP IMAGE USA INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "KAMTEX USA INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries partner nearby)\u2014would an introduction to help optimize your supply chain be helpful?"
+    }
+  ],
+  "last_updated": "2026-03-09T19:51:57.414154"
+}
