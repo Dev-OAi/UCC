@@ -33,7 +33,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || '');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1280);
-  const [activeHubTab, setActiveHubTab] = useState<'strategy' | 'outreach'>('strategy');
+  const [activeHubTab, setActiveHubTab] = useState<'strategy' | 'outreach' | 'marketing'>('strategy');
   const [activeStrategyTab, setActiveStrategyTab] = useState<'focus' | 'solutions' | 'starters' | 'discovery' | 'history'>('focus');
   const [outreachChannel, setOutreachChannel] = useState<'Email' | 'SMS' | 'LinkedIn'>('Email');
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
@@ -42,6 +42,9 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [manualContext, setManualContext] = useState<string>('');
   const [isResearching, setIsResearching] = useState(false);
   const [isGeneratingBrief, setIsGeneratingBrief] = useState(false);
+  const [isGeneratingPackage, setIsGeneratingPackage] = useState(false);
+  const [isGeneratingMarketing, setIsGeneratingMarketing] = useState(false);
+  const [marketingHtml, setMarketingHtml] = useState<string | null>(null);
   const [researchError, setResearchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -287,6 +290,40 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     }
   };
 
+  const handleGeneratePackage = async () => {
+    if (!selectedLead) return;
+    setIsGeneratingPackage(true);
+    try {
+      const baseUrl = getBridgeBaseUrl();
+      if (!baseUrl) throw new Error('Bridge unreachable');
+
+      const response = await fetch(`${baseUrl}/generate-opening-package`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: selectedLead.businessName,
+          address: selectedLead.address,
+          phone: selectedLead.phone,
+          email: selectedLead.email,
+          keyPrincipal: selectedLead.keyPrincipal,
+          ein: selectedLead.ein,
+          entityType: selectedLead.entityType,
+          establishedDate: selectedLead.establishedDate,
+          uccStatus: selectedLead.aiIntelligence?.products?.join(', ')
+        })
+      });
+
+      if (!response.ok) throw new Error('Package generation failed');
+      const data = await response.json();
+      window.open(`${baseUrl}/briefs/${data.filename}`, '_blank');
+    } catch (err) {
+      console.error('Package error:', err);
+      alert('Failed to generate account opening package.');
+    } finally {
+      setIsGeneratingPackage(false);
+    }
+  };
+
   const handleGenerateBrief = async () => {
     if (!selectedLead || !selectedLead.aiIntelligence) return;
     setIsGeneratingBrief(true);
@@ -430,7 +467,17 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
                     }`}
                   >
-                    2. Outreach Composer
+                    2. Outreach
+                  </button>
+                  <button
+                    onClick={() => setActiveHubTab('marketing')}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${
+                      activeHubTab === 'marketing'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50/50 dark:bg-blue-900/10'
+                        : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    3. Marketing
                   </button>
                 </div>
               )}
@@ -540,25 +587,47 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         </button>
 
                         {selectedLead.aiIntelligence && (
-                          <button
-                            onClick={handleGenerateBrief}
-                            disabled={isGeneratingBrief || !getBridgeBaseUrl()}
-                            className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
-                              isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            {isGeneratingBrief ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Generating PDF...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Download className="w-4 h-4" />
-                                <span>Download PDF Insight Brief</span>
-                              </>
-                            )}
-                          </button>
+                          <div className="space-y-3">
+                            <button
+                              onClick={handleGenerateBrief}
+                              disabled={isGeneratingBrief || !getBridgeBaseUrl()}
+                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
+                                isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              {isGeneratingBrief ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>Generating PDF...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-4 h-4" />
+                                  <span>Download PDF Insight Brief</span>
+                                </>
+                              )}
+                            </button>
+
+                            <button
+                              onClick={handleGeneratePackage}
+                              disabled={isGeneratingPackage || !getBridgeBaseUrl()}
+                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 ${
+                                isGeneratingPackage ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              {isGeneratingPackage ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>Pre-filling Package...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FileText className="w-4 h-4" />
+                                  <span>Download Account Opening Package</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
                         )}
 
                         {researchError && (
@@ -811,8 +880,9 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                 </div>
               </div>
 
-              {/* Right Panel: Outreach */}
-              <div className={`${(isMobile || isTablet) && activeHubTab !== 'outreach' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col overflow-y-auto p-4 md:p-6 space-y-4`}>
+              {/* Right Panel: Outreach & Marketing */}
+              <div className={`${(isMobile || isTablet) && activeHubTab === 'strategy' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col overflow-y-auto p-4 md:p-6 space-y-4`}>
+                {((!isMobile && !isTablet) || activeHubTab === 'outreach') && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
                   <div className="flex bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
                     {(['Email', 'SMS', 'LinkedIn'] as const).map((channel) => (
@@ -918,6 +988,90 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                     </button>
                   </div>
                 </div>
+                )}
+
+                {((!isMobile && !isTablet) || activeHubTab === 'marketing') && (
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col">
+                    <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="w-4 h-4 text-purple-500" />
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">Marketing Agent</h3>
+                      </div>
+                      {marketingHtml && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(marketingHtml);
+                            alert('HTML copied to clipboard!');
+                          }}
+                          className="text-[10px] font-black text-blue-600 uppercase hover:underline"
+                        >
+                          Copy HTML
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="p-6">
+                      {marketingHtml ? (
+                        <div className="border border-gray-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white">
+                          <iframe
+                            srcDoc={marketingHtml}
+                            title="Marketing Preview"
+                            className="w-full h-[400px] border-none"
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 space-y-4">
+                          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-full w-fit mx-auto">
+                            <Mail className="w-8 h-8 text-purple-600" />
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-slate-400 max-w-[240px] mx-auto">
+                            Generate a professional, product-specific HTML email template for this lead.
+                          </p>
+                          <button
+                            onClick={async () => {
+                              setIsGeneratingMarketing(true);
+                              try {
+                                const baseUrl = getBridgeBaseUrl();
+                                if (!baseUrl) throw new Error('Bridge unreachable');
+                                const response = await fetch(`${baseUrl}/generate-marketing-email`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    target_business_name: selectedLead.businessName,
+                                    industry: selectedLead.industry,
+                                    target_keywords: selectedLead.aiIntelligence?.signals?.join(', ') || 'growth, treasury',
+                                    my_company_name: 'Your Premier Bank'
+                                  })
+                                });
+                                const data = await response.json();
+                                if (data.html) setMarketingHtml(data.html);
+                              } catch (err) {
+                                console.error(err);
+                                alert('Failed to generate marketing email.');
+                              } finally {
+                                setIsGeneratingMarketing(false);
+                              }
+                            }}
+                            disabled={isGeneratingMarketing || !getBridgeBaseUrl()}
+                            className="px-6 py-2 bg-purple-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-purple-700 transition-all flex items-center mx-auto"
+                          >
+                            {isGeneratingMarketing ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 mr-2" />
+                                Create Marketing Template
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-3 border border-amber-100 dark:border-amber-900/20 flex items-start space-x-2">
                   <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />

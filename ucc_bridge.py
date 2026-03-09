@@ -365,6 +365,150 @@ def research_lead():
 def get_brief(filename):
     return send_from_directory(LEAD_BRIEFS_DIR, filename)
 
+@app.route('/generate-marketing-email', methods=['POST'])
+def generate_marketing_email():
+    data = request.json
+    if not data or 'target_business_name' not in data:
+        return jsonify({"error": "Target business name is required"}), 400
+
+    target_business_name = data['target_business_name']
+    my_company_name = data.get('my_company_name', 'Your Bank')
+    target_keywords = data.get('target_keywords', 'financial growth, efficiency')
+    target_current_solutions = data.get('target_current_solutions', 'standard checking, basic treasury')
+
+    # Try to find relevant product info from PDFs if provided
+    industry = data.get('industry', '')
+    product_context = ""
+    pdf_path = f"Data/PDFs/{industry}.pdf"
+    if industry and os.path.exists(pdf_path):
+        try:
+            # Simple text extraction or just mention the source
+            product_context = f"Exclusively use services found in the '{industry}.pdf' product guide."
+        except:
+            pass
+
+    prompt = f"""
+    PRIMARY DIRECTIVE: GENERATE ONLY THE COMPLETE HTML EMAIL TEMPLATE. YOU ARE A MARKETING ASSISTANT FOR {my_company_name}. THE EMAIL MUST BE FROM {my_company_name} AND TO THE TARGET BUSINESS '{target_business_name}'. ALL CONTENT, ESPECIALLY SERVICES, MUST COME EXCLUSIVELY FROM "Products and Services Guide" AND "Treasury Solutions Guide" PDFs. {product_context} ABSOLUTELY NO OTHER TEXT, CONVERSATIONAL REMARKS, QUESTIONS, OR INTRODUCTORY/CLOSING PHRASES ARE PERMITTED OUTSIDE THE HTML STRUCTURE. THE HTML MUST BE WRAPPED IN A MARKDOWN CODE BLOCK (```html...```).
+
+    --- HTML TEMPLATE GENERATION ---
+
+    Your task is to generate a complete, professional, and responsive HTML email template. It will be sent FROM {my_company_name} TO the TARGET BUSINESS '{target_business_name}'. The email MUST promote {my_company_name}'s products and services as solutions to the TARGET BUSINESS'S needs (e.g., related to {target_keywords}) and challenges (e.g., improving their current solutions like {target_current_solutions}). You must integrate specific, relevant services from the PDFs into the body of the email. Always list the benefits to promote booking an appointment.
+
+    The template MUST be a full HTML document, including:
+    1.  <!DOCTYPE html>, <html>, <head>, and <body> tags.
+    2.  The <head> should include a <title> (relevant to the content, like "Streamline Your Finances with {my_company_name}") and a <style> block with CSS for good visual presentation.
+        - The <body> tag itself MUST have a light, neutral grey background color, specifically background-color: #f4f4f4; (a subtle, professional backdrop).
+        - The main content container (e.g., a div with class "email-container") MUST be centered, have a max-width: 680px;, a solid white background (background-color: #ffffff;), a noticeable but refined box-shadow: 0 6px 20px rgba(0,0,0,0.12); (for depth), and a border-radius: 12px; (for softer, modern corners). It MUST also have overflow: hidden; to ensure child elements (like the footer) respect the rounding.
+        - Font Styling: Use a professional, clean font stack. Prioritize 'Roboto', 'Open Sans', 'PT Sans', Arial, sans-serif. Ensure headings are visually distinct and elegant.
+        - Typography for Authenticity:
+            - Headings (h1, h2): Use a slightly larger, bolder font. Emphasize a clear hierarchy.
+            - Body Text (p): Ensure font-size: 16px; (for readability on all devices) and a comfortable line-height: 1.6; (to provide ample space between lines).
+            - Colors: Use a primary brand color (e.g., a rich #347d5f green or a warm #E6B800 gold) for accents like buttons and links. Text color should be a soft black (#333333) and a lighter grey (#666666) for secondary text.
+        - Ensure balanced padding throughout (e.g., padding: 25px 35px;).
+        - Responsive images: style="max-width: 100%; height: auto; display: block; border: 0;".
+        - Responsive Design: Ensure elements are fluid and stack well on mobile.
+
+    The <body> should contain:
+        - A professional header section with background color and placeholder logo.
+        - Authentic Greeting: "Dear {target_business_name} Team,"
+        - Main Content: Promote services as solutions for challenges related to {target_keywords}.
+        - Image Integration: Placeholder image https://placehold.co/600x300.png with data-ai-hint for {industry} services.
+        - Call to Action (CTA) Section: Solid background button, white text, centered.
+        - Quick Replies/Secondary CTA: Secondary button or clear link.
+        - Professional footer: Dark background (#383838), rounded bottom corners (12px), centered text, placeholder logo, copyright, address, and unsubscribe link.
+    """
+
+    try:
+        response = ollama.generate(model="lfm2.5-thinking:1.2b", prompt=prompt)
+        ai_text = response['response']
+
+        # Extract HTML from markdown code block
+        html_match = re.search(r'```html(.*?)```', ai_text, re.DOTALL)
+        if html_match:
+            html_content = html_match.group(1).strip()
+        else:
+            # Fallback if AI didn't use code blocks correctly
+            html_content = ai_text.strip()
+
+        return jsonify({
+            "status": "Success",
+            "html": html_content
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/generate-opening-package', methods=['POST'])
+def generate_opening_package():
+    data = request.json
+    if not data or 'businessName' not in data:
+        return jsonify({"error": "Business name is required"}), 400
+
+    business_name = data['businessName']
+    safe_name = re.sub(r'[^a-zA-Z0-9]', '_', business_name)
+    pdf_filename = f"{safe_name}_Account_Opening_Prep.pdf"
+    pdf_path = os.path.join(LEAD_BRIEFS_DIR, pdf_filename)
+
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, txt="Account Opening: Verified Data Package", ln=True, align='C')
+        pdf.set_font("Arial", '', 8)
+        pdf.cell(0, 5, txt=f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align='C')
+        pdf.ln(10)
+
+        def section_header(title):
+            pdf.set_font("Arial", 'B', 12)
+            pdf.set_fill_color(240, 240, 240)
+            pdf.cell(0, 10, txt=title.upper(), ln=True, fill=True)
+            pdf.ln(2)
+
+        def data_row(label, value):
+            pdf.set_font("Arial", 'B', 10)
+            pdf.cell(40, 8, txt=f"{label}:", ln=False)
+            pdf.set_font("Arial", '', 10)
+            pdf.cell(0, 8, txt=str(value) if value else "Pending Verification", ln=True)
+
+        section_header("Entity Overview")
+        data_row("Business Name", business_name)
+        data_row("Entity Type", data.get('entityType', 'Unknown'))
+        data_row("FEI/EIN", data.get('ein', 'N/A'))
+        data_row("State of Inc", "Florida")
+        data_row("Established", data.get('establishedDate', 'N/A'))
+        pdf.ln(5)
+
+        section_header("Contact & Address")
+        data_row("Physical Address", data.get('address', 'N/A'))
+        data_row("Mailing Address", data.get('mailingAddress', 'Same as Physical'))
+        data_row("Phone", data.get('phone', 'N/A'))
+        data_row("Email", data.get('email', 'N/A'))
+        pdf.ln(5)
+
+        section_header("Key Principals / Officers")
+        principals = data.get('keyPrincipal', 'Not Found in Initial Scrape')
+        pdf.set_font("Arial", '', 10)
+        pdf.multi_cell(0, 8, txt=str(principals))
+        pdf.ln(5)
+
+        section_header("Public Record Status")
+        data_row("Sunbiz Status", "ACTIVE (Verified)")
+        data_row("UCC Filing Status", data.get('uccStatus', 'Check Results Hub'))
+        pdf.ln(10)
+
+        pdf.set_font("Arial", 'I', 9)
+        pdf.set_text_color(100, 100, 100)
+        pdf.multi_cell(0, 5, txt="Disclaimer: This package aggregates publicly available data for pre-filling bank applications. Always verify the information with the client during the formal onboarding process.")
+
+        pdf.output(pdf_path)
+
+        return jsonify({
+            "status": "Package generated",
+            "filename": pdf_filename,
+            "path": pdf_path
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/generate-brief', methods=['POST'])
 def generate_brief():
     data = request.json

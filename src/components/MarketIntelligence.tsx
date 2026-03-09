@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, TrendingUp, Users, Database, Globe, ArrowUpRight, ArrowDownRight, Activity, MapPin, Zap, Lock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Search, Filter } from 'lucide-react';
-import { getBridgeBaseUrl } from '../lib/dataService';
+import { getBridgeBaseUrl, isLocalhost } from '../lib/dataService';
 
 interface MarketData {
   summary: string;
@@ -11,7 +11,11 @@ interface MarketData {
   recent_findings: any[];
 }
 
-export const MarketIntelligence: React.FC = () => {
+interface MarketIntelligenceProps {
+  allData?: any[];
+}
+
+export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ allData = [] }) => {
   const [data, setData] = useState<MarketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,23 +23,55 @@ export const MarketIntelligence: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const baseUrl = getBridgeBaseUrl();
-      if (!baseUrl) {
-        setLoading(false);
-        return;
-      }
+
       try {
         const response = await fetch(`${baseUrl}/market-intelligence`);
         if (!response.ok) throw new Error('Failed to fetch market intelligence');
         const json = await response.json();
         setData(json);
       } catch (err) {
-        setError('Intelligence Bridge not connected. Start the bridge to view real-time market signals.');
+        if (isLocalhost()) {
+          setError('Intelligence Bridge not connected. Start the bridge to view real-time market signals.');
+        } else if (allData && allData.length > 0) {
+          // Fallback logic for hosted mode: read from allData
+          const topIndustriesMap: Record<string, number> = {};
+          const recentFindings: any[] = [];
+
+          allData.slice(0, 1000).forEach(row => {
+            const industry = row.Category || row['Category '] || 'Other';
+            topIndustriesMap[industry] = (topIndustriesMap[industry] || 0) + 1;
+
+            if (recentFindings.length < 50 && row.businessName) {
+              recentFindings.push({
+                'Business Name': row.businessName,
+                'NAICS_Code': row['FEI/EIN Number'] || 'N/A',
+                'Industry_Pain_Point': `Discovered in ${row._type} hub. Potential for growth in ${row._location || 'territory'}.`,
+                'Suppliers_Customers': row.Category
+              });
+            }
+          });
+
+          const topIndustries = Object.entries(topIndustriesMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([code, count]) => ({ code, count }));
+
+          setData({
+            summary: `Analyzing ${allData.length} records from local hubs.`,
+            top_industries: topIndustries,
+            growth_signals: allData.filter(r => r.Score > 50).length,
+            recent_findings: recentFindings
+          });
+          setError(null);
+        } else {
+          setError('Live Intelligence Bridge is local-only. Loading hub data...');
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [allData]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +98,7 @@ export const MarketIntelligence: React.FC = () => {
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 p-6 md:p-10 space-y-8 relative">
-      {!getBridgeBaseUrl() && (
+      {!isLocalhost() && !data && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-gray-50/80 dark:bg-slate-950/80 backdrop-blur-[2px]">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-800 text-center max-w-md animate-in zoom-in-95 duration-300">
             <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -81,6 +117,23 @@ export const MarketIntelligence: React.FC = () => {
         </div>
       )}
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* Learned Trends Bar */}
+        {data && (
+          <div className="flex overflow-x-auto pb-4 space-x-4 hide-scrollbar">
+            {data.top_industries.map((industry, i) => (
+              <div key={i} className="flex-none bg-blue-600/10 border border-blue-600/20 px-4 py-2 rounded-xl flex items-center space-x-3">
+                <div className="p-1.5 bg-blue-600 rounded-lg">
+                  <TrendingUp className="w-3 h-3 text-white" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-tighter">Learned Trend</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[120px]">{industry.code}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 dark:border-slate-800 pb-8">
           <div>

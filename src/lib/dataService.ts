@@ -116,18 +116,16 @@ export async function fetchPendingJobs(): Promise<PendingJob[]> {
   }
 }
 
-export function getBridgeBaseUrl(): string | null {
-  // Check if we are running on localhost
-  const isLocalhost = typeof window !== 'undefined' &&
+export function isLocalhost(): boolean {
+  return typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
     !(window as any).__is_simulated_hosted;
+}
 
-  // If on localhost, use the Vite proxy
-  if (isLocalhost) return './api/bridge';
-
-  // To prevent Chrome's "Access other apps and services on this device" popup
-  // on hosted sites, we DISABLE bridge connectivity when not on localhost.
-  return null;
+export function getBridgeBaseUrl(): string | null {
+  // Always return the proxy path, but components can check isLocalhost()
+  // if they need to show restricted UI or use fallback logic.
+  return './api/bridge';
 }
 
 const getBridgeUrl = (path: string) => {
