@@ -1,13 +1,22 @@
-import React from 'react';
-import { Layers, Zap, Database, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Layers, Zap, Database, ArrowRight, TrendingUp, MapPin, Sparkles } from 'lucide-react';
 
 interface DashboardProps {
   types: string[];
   onSelectCategory: (type: string) => void;
   rowCount: number;
+  isOriginalDesign?: boolean;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ types, onSelectCategory, rowCount }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ types, onSelectCategory, rowCount, isOriginalDesign = false }) => {
+  const [learnedTrends, setLearnedTrends] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('./Data/Intelligence/learned_trends.json')
+      .then(res => res.json())
+      .then(data => setLearnedTrends(data))
+      .catch(() => {});
+  }, []);
   const displayTypes = types.filter(t => t !== 'All' && t !== 'Home');
 
   return (
@@ -29,7 +38,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ types, onSelectCategory, r
           </span>
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-12">
           <div className="group relative bg-blue-600 dark:bg-blue-700 rounded-2xl p-8 text-left text-white shadow-xl shadow-blue-200 dark:shadow-none transition-all hover:-translate-y-1 overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
               <Zap className="w-24 h-24" />
@@ -63,6 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ types, onSelectCategory, r
             </button>
           </div>
         </div>
+
 
         <div className="w-full text-left">
           <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Quick Navigation</h2>

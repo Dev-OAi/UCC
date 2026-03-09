@@ -1,0 +1,50 @@
+{
+  "hot_industries": [
+    {
+      "name": "Real Estate Development",
+      "intensity": 1,
+      "insight": "Increased activity detected in Real Estate Development vertical."
+    },
+    {
+      "name": "Construction & Development",
+      "intensity": 1,
+      "insight": "Increased activity detected in Construction & Development vertical."
+    },
+    {
+      "name": "Commercial Printing",
+      "intensity": 1,
+      "insight": "Increased activity detected in Commercial Printing vertical."
+    },
+    {
+      "name": "HVAC",
+      "intensity": 1,
+      "insight": "Increased activity detected in HVAC vertical."
+    }
+  ],
+  "market_alerts": [
+    {
+      "business": "CORNERSTONE CONSTRUCTION",
+      "type": "Growth Signal",
+      "detail": "Hiring new site managers."
+    },
+    {
+      "business": "PRINT SHOP PRO",
+      "type": "Growth Signal",
+      "detail": "Growth in digital services."
+    }
+  ],
+  "zip_code_momentum": {},
+  "learning_accuracy": 1.0,
+  "lender_competitive_shift": [],
+  "last_updated": "2026-03-09T17:18:22.133206",
+  "dynamic_focus_zones": [
+    {
+      "zip": "33401",
+      "reason": "High density of Real Estate growth signals."
+    },
+    {
+      "zip": "33477",
+      "reason": "New construction activity hotspot."
+    }
+  ]
+}
