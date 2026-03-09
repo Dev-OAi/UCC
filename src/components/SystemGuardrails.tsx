@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, RotateCcw, Brain, Activity, CheckCircle2, AlertTriangle, Zap, Terminal } from 'lucide-react';
+import { Shield, RotateCcw, Brain, Activity, CheckCircle2, AlertTriangle, Zap, Terminal, RefreshCw } from 'lucide-react';
+import { SecurityModal } from './SecurityModal';
+import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface SystemGuardrailsProps {
   isOriginalDesign: boolean;
@@ -9,6 +11,7 @@ interface SystemGuardrailsProps {
 export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDesign, onToggleDesign }) => {
   const [learnedTrends, setLearnedTrends] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [isPurgeModalOpen, setIsPurgeModalOpen] = useState(false);
 
   useEffect(() => {
     fetch('./Data/Intelligence/learned_trends.json')
@@ -167,19 +170,47 @@ export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDe
              </div>
              <button
                className="px-6 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-red-600 dark:text-red-400 text-xs font-black rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all uppercase tracking-widest"
-               onClick={() => {
-                 if (confirm('Are you sure you want to clear all learned intelligence?')) {
-                   localStorage.removeItem('isOriginalDesign');
-                   onToggleDesign(true);
-                   window.location.reload();
-                 }
-               }}
+               onClick={() => setIsPurgeModalOpen(true)}
              >
                Purge Memory & Restore Baseline
              </button>
           </div>
         </div>
       </div>
+
+      <SecurityModal
+        isOpen={isPurgeModalOpen}
+        onClose={() => setIsPurgeModalOpen(false)}
+        onSuccess={async () => {
+          try {
+            const baseUrl = getBridgeBaseUrl();
+            if (baseUrl) {
+              await fetch(`${baseUrl}/system/purge`, { method: 'POST' });
+            }
+          } catch (e) {
+            console.error('Remote purge failed', e);
+          }
+
+          // Clear all local state
+          localStorage.removeItem('isOriginalDesign');
+          localStorage.removeItem('scorecardLeads');
+          localStorage.removeItem('scorecardMetrics');
+          localStorage.removeItem('productGuides');
+          localStorage.removeItem('sales_callEntries');
+          localStorage.removeItem('sales_emailEntries');
+          localStorage.removeItem('sales_meetingEntries');
+          localStorage.removeItem('banker_roleplay_score');
+          localStorage.removeItem('banker_roleplay_completed');
+
+          onToggleDesign(true);
+          window.location.reload();
+        }}
+        title="System Reset Authorization"
+        description="Please enter the authorization code to purge system memory and restore the baseline."
+        icon={<RefreshCw className="w-8 h-8 text-red-600" />}
+        buttonText="Authorize Reset"
+        variant="red"
+      />
     </div>
   );
 };

@@ -196,6 +196,40 @@ def system_restart():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/system/purge', methods=['POST'])
+def system_purge():
+    try:
+        # 1. Clear Intelligence Data
+        intel_dir = "Data/Intelligence"
+        if os.path.exists(intel_dir):
+            for f in os.listdir(intel_dir):
+                if f.endswith(('.csv', '.json')):
+                    try:
+                        os.remove(os.path.join(intel_dir, f))
+                    except:
+                        pass
+
+        # 2. Clear Generated Briefs
+        if os.path.exists(LEAD_BRIEFS_DIR):
+            for f in os.listdir(LEAD_BRIEFS_DIR):
+                try:
+                    os.remove(os.path.join(LEAD_BRIEFS_DIR, f))
+                except:
+                    pass
+
+        # 3. Clear Staging & Commands
+        for d in [STAGING_DIR, COMMANDS_DIR]:
+            if os.path.exists(d):
+                for f in os.listdir(d):
+                    try:
+                        os.remove(os.path.join(d, f))
+                    except:
+                        pass
+
+        return jsonify({"status": "System memory purged and intelligence reset."}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # =================================================================
 # ENRICHMENT & AI LOGIC (PHASE 2)
 # =================================================================
