@@ -20,7 +20,7 @@ export const SystemSecurityModal: React.FC<SystemSecurityModalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Using same default as Products
-  const CORRECT_PASSCODE = import.meta.env.VITE_SYSTEM_PASSCODE || 'VLY';
+  const CORRECT_PASSCODE = import.meta.env.VITE_SYSTEM_PASSCODE || 'AUTH';
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
