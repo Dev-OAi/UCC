@@ -1371,6 +1371,7 @@ function App() {
               allData={allData}
               hubTypes={types}
               scorecardLeads={scorecardLeads}
+              isOriginalDesign={isOriginalDesign}
               onSelectLead={(lead) => {
                 setActiveTab('Scorecard');
                 setSelectedLeadId(lead.id);
