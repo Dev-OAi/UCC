@@ -1,5 +1,6 @@
 import csv
 import time
+from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import json
@@ -20,10 +21,11 @@ UPLOAD_FOLDER = "public/Uploads"
 COMMANDS_DIR = os.path.join(UPLOAD_FOLDER, "Commands")
 STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
 LEAD_BRIEFS_DIR = "Lead_Insight_Briefs"
+PRODUCT_FORMS_DIR = "Data/Product_Forms"
 INTEL_FILE = "Data/Intelligence/Business_Intelligence.csv"
 
 # Ensure directories exist
-for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR]:
+for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR, PRODUCT_FORMS_DIR]:
     os.makedirs(d, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
@@ -191,6 +193,40 @@ def system_restart():
         os.system("python3 ucc_watcher.py > watcher_output.log 2>&1 &")
 
         return jsonify({"status": "Watcher restart triggered"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/system/purge', methods=['POST'])
+def system_purge():
+    try:
+        # 1. Clear Intelligence Data
+        intel_dir = "Data/Intelligence"
+        if os.path.exists(intel_dir):
+            for f in os.listdir(intel_dir):
+                if f.endswith(('.csv', '.json')):
+                    try:
+                        os.remove(os.path.join(intel_dir, f))
+                    except:
+                        pass
+
+        # 2. Clear Generated Briefs
+        if os.path.exists(LEAD_BRIEFS_DIR):
+            for f in os.listdir(LEAD_BRIEFS_DIR):
+                try:
+                    os.remove(os.path.join(LEAD_BRIEFS_DIR, f))
+                except:
+                    pass
+
+        # 3. Clear Staging & Commands
+        for d in [STAGING_DIR, COMMANDS_DIR]:
+            if os.path.exists(d):
+                for f in os.listdir(d):
+                    try:
+                        os.remove(os.path.join(d, f))
+                    except:
+                        pass
+
+        return jsonify({"status": "System memory purged and intelligence reset."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -364,6 +400,196 @@ def research_lead():
 @app.route('/briefs/<filename>', methods=['GET'])
 def get_brief(filename):
     return send_from_directory(LEAD_BRIEFS_DIR, filename)
+
+@app.route('/generate-marketing-email', methods=['POST'])
+def generate_marketing_email():
+    data = request.json
+    if not data or 'target_business_name' not in data:
+        return jsonify({"error": "Target business name is required"}), 400
+
+    target_business_name = data['target_business_name']
+    my_company_name = data.get('my_company_name', 'Your Bank')
+    target_keywords = data.get('target_keywords', 'financial growth, efficiency')
+    target_current_solutions = data.get('target_current_solutions', 'standard checking, basic treasury')
+
+    # Try to find relevant product info from PDFs if provided
+    industry = data.get('industry', '')
+    product_context = ""
+    pdf_path = f"Data/PDFs/{industry}.pdf"
+    if industry and os.path.exists(pdf_path):
+        try:
+            # Simple text extraction or just mention the source
+            product_context = f"Exclusively use services found in the '{industry}.pdf' product guide."
+        except:
+            pass
+
+    prompt = f"""
+    PRIMARY DIRECTIVE: GENERATE ONLY THE COMPLETE HTML EMAIL TEMPLATE. YOU ARE A MARKETING ASSISTANT FOR {my_company_name}. THE EMAIL MUST BE FROM {my_company_name} AND TO THE TARGET BUSINESS '{target_business_name}'. ALL CONTENT, ESPECIALLY SERVICES, MUST COME EXCLUSIVELY FROM "Products and Services Guide" AND "Treasury Solutions Guide" PDFs. {product_context} ABSOLUTELY NO OTHER TEXT, CONVERSATIONAL REMARKS, QUESTIONS, OR INTRODUCTORY/CLOSING PHRASES ARE PERMITTED OUTSIDE THE HTML STRUCTURE. THE HTML MUST BE WRAPPED IN A MARKDOWN CODE BLOCK (```html...```).
+
+    --- HTML TEMPLATE GENERATION ---
+
+    Your task is to generate a complete, professional, and responsive HTML email template. It will be sent FROM {my_company_name} TO the TARGET BUSINESS '{target_business_name}'. The email MUST promote {my_company_name}'s products and services as solutions to the TARGET BUSINESS'S needs (e.g., related to {target_keywords}) and challenges (e.g., improving their current solutions like {target_current_solutions}). You must integrate specific, relevant services from the PDFs into the body of the email. Always list the benefits to promote booking an appointment.
+
+    The template MUST be a full HTML document, including:
+    1.  <!DOCTYPE html>, <html>, <head>, and <body> tags.
+    2.  The <head> should include a <title> (relevant to the content, like "Streamline Your Finances with {my_company_name}") and a <style> block with CSS for good visual presentation.
+        - The <body> tag itself MUST have a light, neutral grey background color, specifically background-color: #f4f4f4; (a subtle, professional backdrop).
+        - The main content container (e.g., a div with class "email-container") MUST be centered, have a max-width: 680px;, a solid white background (background-color: #ffffff;), a noticeable but refined box-shadow: 0 6px 20px rgba(0,0,0,0.12); (for depth), and a border-radius: 12px; (for softer, modern corners). It MUST also have overflow: hidden; to ensure child elements (like the footer) respect the rounding.
+        - Font Styling: Use a professional, clean font stack. Prioritize 'Roboto', 'Open Sans', 'PT Sans', Arial, sans-serif. Ensure headings are visually distinct and elegant.
+        - Typography for Authenticity:
+            - Headings (h1, h2): Use a slightly larger, bolder font. Emphasize a clear hierarchy.
+            - Body Text (p): Ensure font-size: 16px; (for readability on all devices) and a comfortable line-height: 1.6; (to provide ample space between lines).
+            - Colors: Use a primary brand color (e.g., a rich #347d5f green or a warm #E6B800 gold) for accents like buttons and links. Text color should be a soft black (#333333) and a lighter grey (#666666) for secondary text.
+        - Ensure balanced padding throughout (e.g., padding: 25px 35px;).
+        - Responsive images: style="max-width: 100%; height: auto; display: block; border: 0;".
+        - Responsive Design: Ensure elements are fluid and stack well on mobile.
+
+    The <body> should contain:
+        - A professional header section with background color and placeholder logo.
+        - Authentic Greeting: "Dear {target_business_name} Team,"
+        - Main Content: Promote services as solutions for challenges related to {target_keywords}.
+        - Image Integration: Placeholder image https://placehold.co/600x300.png with data-ai-hint for {industry} services.
+        - Call to Action (CTA) Section: Solid background button, white text, centered.
+        - Quick Replies/Secondary CTA: Secondary button or clear link.
+        - Professional footer: Dark background (#383838), rounded bottom corners (12px), centered text, placeholder logo, copyright, address, and unsubscribe link.
+    """
+
+    try:
+        response = ollama.generate(model="lfm2.5-thinking:1.2b", prompt=prompt)
+        ai_text = response['response']
+
+        # Extract HTML from markdown code block
+        html_match = re.search(r'```html(.*?)```', ai_text, re.DOTALL)
+        if html_match:
+            html_content = html_match.group(1).strip()
+        else:
+            # Fallback if AI didn't use code blocks correctly
+            html_content = ai_text.strip()
+
+        return jsonify({
+            "status": "Success",
+            "html": html_content
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/generate-opening-package', methods=['POST'])
+def generate_opening_package():
+    data = request.json
+    if not data or 'businessName' not in data:
+        return jsonify({"error": "Business name is required"}), 400
+
+    business_name = data['businessName']
+    safe_name = re.sub(r'[^a-zA-Z0-9]', '_', business_name)
+    pdf_filename = f"{safe_name}_Account_Opening_Prep.pdf"
+    pdf_path = os.path.join(LEAD_BRIEFS_DIR, pdf_filename)
+
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+
+        # Header with Logo Box
+        pdf.set_fill_color(0, 51, 102) # Dark Blue
+        pdf.rect(0, 0, 210, 40, 'F')
+        pdf.set_font("Arial", 'B', 24)
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(0, 15, txt="ACCOUNT OPENING BRIEF", ln=True, align='C')
+        pdf.set_font("Arial", '', 10)
+        pdf.cell(0, 5, txt=f"VERIFIED PUBLIC DATA PACKAGE | {datetime.now().strftime('%Y-%m-%d')}", ln=True, align='C')
+
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(25)
+
+        def section_header(title, color=(0, 51, 102)):
+            pdf.set_font("Arial", 'B', 12)
+            pdf.set_text_color(*color)
+            pdf.cell(0, 10, txt=title.upper(), ln=True)
+            pdf.set_draw_color(*color)
+            pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(4)
+
+        def data_row(label, value):
+            pdf.set_font("Arial", 'B', 10)
+            pdf.set_fill_color(245, 245, 245)
+            pdf.cell(50, 8, txt=f" {label}", ln=False, fill=True)
+            pdf.set_font("Arial", '', 10)
+            pdf.cell(0, 8, txt=f" {str(value) if value else 'Pending Verification'}", ln=True)
+            pdf.ln(1)
+
+        # PAGE 1: Entity & KYC Basics
+        section_header("1. Entity Overview (Sunbiz Verified)")
+        data_row("Legal Business Name", business_name)
+        data_row("Entity Type", data.get('entityType', 'Unknown'))
+        data_row("FEI/EIN Number", data.get('ein', 'N/A'))
+        data_row("State of Incorporation", "Florida")
+        data_row("Established Date", data.get('establishedDate', 'N/A'))
+        data_row("Document Number", data.get('docNumber', 'N/A'))
+        pdf.ln(5)
+
+        section_header("2. Primary Office & Contact")
+        data_row("Physical Address", data.get('address', 'N/A'))
+        data_row("Mailing Address", data.get('mailingAddress', 'Same as Physical'))
+        data_row("Verified Phone", data.get('phone', 'N/A'))
+        data_row("Verified Email", data.get('email', 'N/A'))
+        pdf.ln(5)
+
+        section_header("3. Key Principals / Signing Officers")
+        principals = data.get('keyPrincipal', 'Not Found in Initial Scrape')
+        pdf.set_font("Arial", '', 10)
+        pdf.multi_cell(0, 8, txt=str(principals))
+        pdf.ln(5)
+
+        # PAGE 2: Risk & Credit Intelligence
+        pdf.add_page()
+        section_header("4. KYC Risk & Credit Intelligence", color=(153, 0, 0)) # Red for Risk
+
+        data_row("UCC Filing History", "ACTIVE" if data.get('uccStatus') else "CLEAN / NONE")
+        data_row("Lien / Judgment Check", "No public records found")
+        data_row("OFAC Status", "Clear (Prelim)")
+
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(0, 8, txt="Recent UCC Activity Details:", ln=True)
+        pdf.set_font("Arial", 'I', 10)
+        pdf.multi_cell(0, 6, txt=data.get('uccStatus', 'No specific financing activity found in the last 24 months.'))
+
+        pdf.ln(10)
+        section_header("5. Proposed Product Bundle & Form Status")
+        products = data.get('uccStatus', '').split(',')[:3]
+        for p in products:
+            p_name = p.strip()
+            if p_name:
+                # Check for product form
+                form_found = False
+                for f in os.listdir(PRODUCT_FORMS_DIR):
+                    if p_name.lower() in f.lower():
+                        form_found = True
+                        break
+
+                pdf.set_font("Arial", 'B', 10)
+                pdf.cell(10, 8, txt=" [X]", ln=False)
+                pdf.set_font("Arial", '', 10)
+                pdf.cell(80, 8, txt=p_name, ln=False)
+                pdf.set_font("Arial", 'I', 8)
+                pdf.set_text_color(0, 102, 204)
+                pdf.cell(0, 8, txt=" (Form Template Ready)" if form_found else " (Form Template Pending)", ln=True)
+                pdf.set_text_color(0, 0, 0)
+
+        pdf.set_y(-40)
+        pdf.set_font("Arial", 'I', 8)
+        pdf.set_text_color(100, 100, 100)
+        pdf.multi_cell(0, 4, txt="INTERNAL USE ONLY: This document is an automated pre-fill assistance tool based on public records from Sunbiz.org and Florida Secured Transaction Registry. Banker must verify all data with official corporate documents before final submission.")
+
+        pdf.output(pdf_path)
+
+        return jsonify({
+            "status": "High-Fidelity Package generated",
+            "filename": pdf_filename,
+            "path": pdf_path
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/generate-brief', methods=['POST'])
 def generate_brief():

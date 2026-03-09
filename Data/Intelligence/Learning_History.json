@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2026-03-09T17:10:25.539483",
+    "accuracy": 0.0,
+    "top_industry": "None"
+  },
+  {
+    "timestamp": "2026-03-09T17:10:59.363812",
+    "accuracy": 0.0,
+    "top_industry": "Real Estate Development"
+  },
+  {
+    "timestamp": "2026-03-09T17:18:22.140452",
+    "accuracy": 1.0,
+    "top_industry": "Real Estate Development"
+  },
+  {
+    "timestamp": "2026-03-09T19:39:46.160934",
+    "accuracy": 1.0,
+    "top_industry": "Real Estate Development"
+  },
+  {
+    "timestamp": "2026-03-09T19:41:11.006262",
+    "accuracy": 1.0,
+    "top_industry": "Real Estate Development"
+  },
+  {
+    "timestamp": "2026-03-09T19:48:44.198340",
+    "accuracy": 1.0,
+    "top_industry": "Real Estate Development"
+  },
+  {
+    "timestamp": "2026-03-09T19:50:29.009856",
+    "accuracy": 0.0,
+    "top_industry": "Advertising Material Distribution Services"
+  },
+  {
+    "timestamp": "2026-03-09T19:51:56.579964",
+    "accuracy": 1.0,
+    "top_industry": "Advertising Material Distribution Services"
+  }
+]

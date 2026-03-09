@@ -17,6 +17,7 @@ import { TerritoryMap } from './components/TerritoryMap';
 import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
 import { MarketIntelligence } from './components/MarketIntelligence';
+import { SystemGuardrails } from './components/SystemGuardrails';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
@@ -128,6 +129,11 @@ function App() {
   );
   const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() =>
     safeJsonParse('scorecardMetrics', DEFAULT_METRICS)
+  );
+
+  // System State
+  const [isOriginalDesign, setIsOriginalDesign] = useState(() =>
+    localStorage.getItem('isOriginalDesign') === 'true'
   );
 
   // Activity Log State
@@ -530,6 +536,7 @@ function App() {
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
@@ -555,6 +562,10 @@ function App() {
     else document.documentElement.classList.remove('dark');
     localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('isOriginalDesign', String(isOriginalDesign));
+  }, [isOriginalDesign]);
 
   useEffect(() => {
     const handleSwitchTab = (e: Event) => {
@@ -638,6 +649,10 @@ function App() {
     if (tab === 'Products' && !isProductsUnlocked) {
       setIsProductsModalOpen(true);
       return;
+    }
+
+    if (tab !== 'System') {
+      setLastMainTab(tab);
     }
 
     setActiveTab(tab);
@@ -1213,6 +1228,14 @@ function App() {
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        onSettingsClick={() => {
+          if (activeTab === 'System') {
+            handleTabChange(lastMainTab);
+          } else {
+            handleTabChange('System');
+          }
+        }}
+        activeTab={activeTab}
         isRightSidebarOpen={isRightSidebarOpen}
       />
 
@@ -1247,7 +1270,7 @@ function App() {
               </div>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
-            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
+            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} isOriginalDesign={isOriginalDesign} />
           ) : activeTab === 'Insights' ? (
             <Insights
               data={allData}
@@ -1256,7 +1279,9 @@ function App() {
               onFilterChange={onFilterChange}
             />
           ) : activeTab === 'Market Intelligence' ? (
-            <MarketIntelligence />
+            <MarketIntelligence allData={allData} />
+          ) : activeTab === 'System' ? (
+            <SystemGuardrails isOriginalDesign={isOriginalDesign} onToggleDesign={setIsOriginalDesign} />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}
@@ -1329,6 +1354,7 @@ function App() {
               allData={allData}
               hubTypes={types}
               scorecardLeads={scorecardLeads}
+              isOriginalDesign={isOriginalDesign}
               onSelectLead={(lead) => {
                 setActiveTab('Scorecard');
                 setSelectedLeadId(lead.id);

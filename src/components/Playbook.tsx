@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Zap, Clock, AlertCircle, Calendar, ArrowRight,
-  Target, TrendingUp, Building2, Phone, Globe, Plus, ChevronDown
+  Target, TrendingUp, Building2, Phone, Globe, Plus, ChevronDown, Sparkles, MapPin
 } from 'lucide-react';
 import { DataRow } from '../lib/dataService';
 import { BusinessLead } from '../types';
@@ -10,6 +10,7 @@ interface PlaybookProps {
   allData: DataRow[];
   hubTypes: string[];
   scorecardLeads: BusinessLead[];
+  isOriginalDesign?: boolean;
   onSelectLead: (lead: BusinessLead) => void;
   onSelectRow: (row: DataRow) => void;
   onAddToScorecard: (row: DataRow) => void;
@@ -19,12 +20,21 @@ export const Playbook: React.FC<PlaybookProps> = ({
   allData,
   hubTypes,
   scorecardLeads,
+  isOriginalDesign = false,
   onSelectLead,
   onSelectRow,
   onAddToScorecard
 }) => {
   const [selectedHub, setSelectedHub] = useState('All');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [learnedTrends, setLearnedTrends] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('./Data/Intelligence/learned_trends.json')
+      .then(res => res.json())
+      .then(data => setLearnedTrends(data))
+      .catch(() => {});
+  }, []);
 
   const handleHubChange = (hub: string) => {
     setIsUpdating(true);
@@ -220,6 +230,44 @@ export const Playbook: React.FC<PlaybookProps> = ({
             )}
           </div>
         </section>
+
+        {/* Dynamic Focus Zone (Learned Upgrade) */}
+        {!isOriginalDesign && learnedTrends?.hot_industries?.length > 0 && (
+          <div className="group relative bg-gradient-to-r from-indigo-600 to-blue-700 rounded-2xl p-8 text-left text-white shadow-xl shadow-indigo-200 dark:shadow-none transition-all hover:-translate-y-1 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-32 h-32" />
+            </div>
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="bg-white/20 w-10 h-10 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-white uppercase tracking-widest">Priority Industry Detected</span>
+            </div>
+            <div className="max-w-xl">
+              <h3 className="text-3xl font-black mb-2 uppercase tracking-tight">Focus: {learnedTrends.hot_industries[0].name}</h3>
+              <p className="text-indigo-100 text-sm mb-6 leading-relaxed">
+                {learnedTrends.hot_industries[0].insight} We've identified a surge of new filings in this vertical. Bankers are encouraged to prioritize outreach to firms in this sector today.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => {
+                    // Trigger a search for the industry or filter the playbook
+                    setSelectedHub('All');
+                  }}
+                  className="px-6 py-2.5 bg-white text-indigo-700 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 transition-colors"
+                >
+                  View Market Action
+                </button>
+                {learnedTrends.dynamic_focus_zones?.[0] && (
+                  <div className="flex items-center space-x-2 px-4 py-2 bg-indigo-500/30 rounded-xl border border-indigo-400/30">
+                     <MapPin className="w-4 h-4 text-indigo-200" />
+                     <span className="text-[10px] font-bold text-indigo-50 tracking-wide">Hotspot: {learnedTrends.dynamic_focus_zones[0].zip}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Fresh Prospects */}
         <section className="space-y-4">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot, GraduationCap, Globe } from 'lucide-react';
+import { Home, ChevronDown, ChevronRight, MapPin, Hash, Layers, BarChart3, Package, ClipboardList, Lock, Unlock, FileText, Target, Zap, Bot, GraduationCap, Globe, Shield } from 'lucide-react';
 import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface SidebarProps {

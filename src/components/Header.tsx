@@ -13,6 +13,8 @@ interface HeaderProps {
   isProductsUnlocked?: boolean;
   onToggleLeftSidebar: () => void;
   onToggleRightSidebar: () => void;
+  onSettingsClick?: () => void;
+  activeTab?: string;
   isRightSidebarOpen: boolean;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -29,6 +31,8 @@ export const Header: React.FC<HeaderProps> = ({
   isProductsUnlocked = false,
   onToggleLeftSidebar,
   onToggleRightSidebar,
+  onSettingsClick,
+  activeTab,
   isRightSidebarOpen,
   isDarkMode,
   onToggleDarkMode
@@ -123,7 +127,10 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
         
         <button
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full text-gray-500 dark:text-slate-400 transition-colors hidden md:block"
+          onClick={onSettingsClick}
+          className={`p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors hidden md:block ${
+            activeTab === 'System' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 dark:text-slate-400'
+          }`}
           aria-label="Settings"
         >
           <Settings className="w-5 h-5" />

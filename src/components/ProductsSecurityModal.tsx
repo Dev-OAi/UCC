@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, ShieldAlert, Timer, X, ArrowRight, Package } from 'lucide-react';
+import { validatePasscode } from '../lib/securityUtils';
 
 interface ProductsSecurityModalProps {
   isOpen: boolean;
@@ -18,8 +19,6 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
   const [timeLeft, setTimeLeft] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const CORRECT_PASSCODE = import.meta.env.VITE_PRODUCTS_PASSCODE || 'VLY';
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -51,7 +50,7 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
     e.preventDefault();
     if (lockoutUntil) return;
 
-    if (passcode === CORRECT_PASSCODE) {
+    if (validatePasscode(passcode)) {
       setAttempts(0);
       setPasscode('');
       setError(null);
