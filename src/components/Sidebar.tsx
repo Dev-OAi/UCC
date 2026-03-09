@@ -146,6 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-sm font-medium font-bold">Market Intelligence</span>
           </button>
 
+
           <button
             onClick={() => handleTabClick('System')}
             role="tab"
