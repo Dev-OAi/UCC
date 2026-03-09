@@ -182,7 +182,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const handleGenerateIntelligence = () => {
     if (!selectedRow) return;
-    const intel = generateLeadIntelligence(selectedRow);
+    const intel = generateLeadIntelligence(selectedRow, 'growth', learnedTrends);
     setGeneratedIntel(intel);
   };
 

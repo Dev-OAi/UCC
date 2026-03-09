@@ -17,6 +17,7 @@ import { TerritoryMap } from './components/TerritoryMap';
 import { ActionHub } from './components/ActionHub';
 import { ActivityLog } from './components/ActivityLog';
 import { MarketIntelligence } from './components/MarketIntelligence';
+import { SystemGuardrails } from './components/SystemGuardrails';
 import { Playbook } from './components/Playbook';
 import { Scorecard } from './components/Scorecard';
 import { ScorecardRightSidebar } from './components/ScorecardRightSidebar';
@@ -128,6 +129,11 @@ function App() {
   );
   const [scorecardMetrics, setScorecardMetrics] = useState<ScorecardMetric[]>(() =>
     safeJsonParse('scorecardMetrics', DEFAULT_METRICS)
+  );
+
+  // System State
+  const [isOriginalDesign, setIsOriginalDesign] = useState(() =>
+    localStorage.getItem('isOriginalDesign') === 'true'
   );
 
   // Activity Log State
@@ -555,6 +561,10 @@ function App() {
     else document.documentElement.classList.remove('dark');
     localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('isOriginalDesign', String(isOriginalDesign));
+  }, [isOriginalDesign]);
 
   useEffect(() => {
     const handleSwitchTab = (e: Event) => {
@@ -1247,7 +1257,7 @@ function App() {
               </div>
             </div>
           ) : activeTab === 'Home' && !searchTerm ? (
-            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} />
+            <Dashboard types={types} onSelectCategory={setActiveTab} rowCount={allData.length} isOriginalDesign={isOriginalDesign} />
           ) : activeTab === 'Insights' ? (
             <Insights
               data={allData}
@@ -1257,6 +1267,8 @@ function App() {
             />
           ) : activeTab === 'Market Intelligence' ? (
             <MarketIntelligence allData={allData} />
+          ) : activeTab === 'System' ? (
+            <SystemGuardrails isOriginalDesign={isOriginalDesign} onToggleDesign={setIsOriginalDesign} />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}

@@ -20,14 +20,14 @@ export interface ScoreResult {
   insights: ScoreInsight[];
 }
 
-export function calculateScore(item: DataRow | BusinessLead): number {
-  return getScoreDetails(item).total;
+export function calculateScore(item: DataRow | BusinessLead, learnedTrends?: any): number {
+  return getScoreDetails(item, learnedTrends).total;
 }
 
 /**
  * Calculates a lead priority score from 0-100 and provides a breakdown of reasons.
  */
-export function getScoreDetails(item: DataRow | BusinessLead): ScoreResult {
+export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: any): ScoreResult {
   let total = 0;
   const insights: ScoreInsight[] = [];
 
@@ -102,6 +102,13 @@ export function getScoreDetails(item: DataRow | BusinessLead): ScoreResult {
   if (principal) {
     total += 10;
     insights.push({ label: 'Key principal identified', points: 10 });
+  }
+
+  // 5. Recursive Intelligence Boost (Max 15 points)
+  const industry = getVal(['Category', 'Category ', 'industry']);
+  if (learnedTrends?.hot_industries?.some((h: any) => h.name === industry)) {
+    total += 15;
+    insights.push({ label: 'Strategic vertical momentum boost', points: 15 });
   }
 
   return {

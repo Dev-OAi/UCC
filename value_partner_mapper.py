@@ -6,7 +6,7 @@ from datetime import datetime
 
 OUTPUT_GRAPH = "Data/Intelligence/Market_Graph.json"
 
-# Industry relationship mapping (Value Chain)
+# Industry relationship mapping (Value Chain) - This is the "Static Knowledge"
 VALUE_CHAIN = {
     "Real Estate Development": ["Construction & Development", "Abrasive Product Manufacturers", "HVAC"],
     "Construction & Development": ["Real Estate Development", "Heavy Equipment", "Electrical Services"],
@@ -19,6 +19,7 @@ def main():
 
     graph = {
         "connections": [],
+        "strategic_referrals": [],
         "last_updated": datetime.now().isoformat()
     }
 
@@ -39,12 +40,12 @@ def main():
                 for _, row in df.iterrows():
                     name = str(row[name_col]).strip().upper()
                     cat = str(row[cat_col]).strip()
-                    if name and cat and name != 'NAN' and cat != 'NAN':
+                    if name and cat and name != 'NAN' and cat != 'NAN' and name != 'N/A':
                         all_businesses[name] = cat
         except:
             continue
 
-    # Map Mutual Value
+    # Map Mutual Value Connections
     processed = set()
     for biz_a, cat_a in all_businesses.items():
         if cat_a in VALUE_CHAIN:
@@ -55,6 +56,7 @@ def main():
                 if any(t in cat_b for t in targets):
                     connection_id = "-".join(sorted([biz_a, biz_b]))
                     if connection_id not in processed:
+                        # 1. Add connection for Graph UI
                         graph["connections"].append({
                             "source": biz_a,
                             "source_cat": cat_a,
@@ -62,16 +64,26 @@ def main():
                             "target_cat": cat_b,
                             "reason": f"{cat_a} firms like {biz_a} often utilize services from {cat_b} firms like {biz_b}."
                         })
+
+                        # 2. Add as Strategic Referral Idea for the Banker
+                        graph["strategic_referrals"].append({
+                            "primary": biz_a,
+                            "primary_industry": cat_a,
+                            "partner": biz_b,
+                            "partner_industry": cat_b,
+                            "referral_script": f"I noticed you are in {cat_a}. We just started working with {biz_b} (a {cat_b} partner nearby)—would an introduction to help optimize your supply chain be helpful?"
+                        })
+
                         processed.add(connection_id)
-                        if len(processed) > 100: break
-        if len(processed) > 100: break
+                        if len(processed) > 50: break # Limiting for efficiency
+        if len(processed) > 50: break
 
     # Ensure output directory exists
     os.makedirs(os.path.dirname(OUTPUT_GRAPH), exist_ok=True)
     with open(OUTPUT_GRAPH, 'w') as f:
         json.dump(graph, f, indent=2)
 
-    print(f"--- VALUE MAPPING COMPLETE: {len(graph['connections'])} connections discovered ---")
+    print(f"--- VALUE MAPPING COMPLETE: {len(graph['connections'])} connections and referrals discovered ---")
 
 if __name__ == "__main__":
     main()

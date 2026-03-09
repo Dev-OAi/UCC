@@ -1,12 +1,28 @@
 {
   "connections": [
     {
-      "source": "REALTY DEV CORP",
+      "source": "BAKER REAL ESTATE",
       "source_cat": "Real Estate Development",
-      "target": "FLORIDA CONSTRUCTORS",
+      "target": "CORNERSTONE CONSTRUCTION",
       "target_cat": "Construction & Development",
-      "reason": "Real Estate Development firms often utilize services from Construction & Development firms."
+      "reason": "Real Estate Development firms like BAKER REAL ESTATE often utilize services from Construction & Development firms like CORNERSTONE CONSTRUCTION."
     }
   ],
-  "last_updated": "2026-03-09T16:00:00Z"
+  "strategic_referrals": [
+    {
+      "primary": "BAKER REAL ESTATE",
+      "primary_industry": "Real Estate Development",
+      "partner": "CORNERSTONE CONSTRUCTION",
+      "partner_industry": "Construction & Development",
+      "referral_script": "I noticed you are in Real Estate Development. We just started working with CORNERSTONE CONSTRUCTION (a Construction & Development partner nearby)—would an introduction to help optimize your supply chain be helpful?"
+    },
+    {
+      "primary": "CORNERSTONE CONSTRUCTION",
+      "primary_industry": "Construction & Development",
+      "partner": "PRECISION HVAC",
+      "partner_industry": "HVAC",
+      "referral_script": "As a Construction firm, I thought you might value a connection to PRECISION HVAC. We've seen significant activity from them recently and they could be a great partner for your upcoming sites."
+    }
+  ],
+  "last_updated": "2026-03-09T17:30:00"
 }

@@ -27,6 +27,7 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ allData 
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'velocity' | 'hotspots' | 'industries' | 'competitors'>('velocity');
 
   useEffect(() => {
     fetch('./Data/Intelligence/Market_Graph.json')
@@ -284,60 +285,172 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ allData 
               </div>
             </div>
 
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+               <div className="flex border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30">
+                  {[
+                    { id: 'velocity', label: 'Market Velocity', icon: AreaIcon },
+                    { id: 'hotspots', label: 'Zip Hotspots', icon: MapPin },
+                    { id: 'industries', label: 'Top Sectors', icon: TrendingUp },
+                    { id: 'competitors', label: 'Lender Activity', icon: Zap }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`flex-1 flex items-center justify-center space-x-2 py-4 px-4 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${
+                        activeTab === tab.id
+                          ? 'text-blue-600 border-blue-600 bg-white dark:bg-slate-900'
+                          : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
+                      }`}
+                    >
+                      <tab.icon className="w-3.5 h-3.5" />
+                      <span className="hidden md:inline">{tab.label}</span>
+                    </button>
+                  ))}
+               </div>
+
+               <div className="p-8">
+                  {activeTab === 'velocity' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                          Territory Filing Velocity (Last 30 Days)
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase">Live Momentum</span>
+                        </div>
+                      </div>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={data?.filing_velocity}>
+                            <defs>
+                              <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 9 }} hide />
+                            <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
+                            <Tooltip />
+                            <Area type="monotone" dataKey="count" stroke="#10b981" fillOpacity={1} fill="url(#colorCount)" strokeWidth={3} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'hotspots' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                      <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                        Market Hotspots (Zip Code Density)
+                      </h3>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={data?.zip_hotspots}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                            <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 9 }} />
+                            <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
+                            <Tooltip />
+                            <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={35}>
+                              {data?.zip_hotspots?.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'industries' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                      <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                        Top Industries by Signal Volume
+                      </h3>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={data?.top_industries}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                            <XAxis dataKey="code" tick={{ fill: '#64748b', fontSize: 9 }} />
+                            <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
+                            <Tooltip />
+                            <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={35}>
+                              {data?.top_industries.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === 'competitors' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                       <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                        Territory Competitive Shifts (Lenders)
+                      </h3>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={data?.lender_activity} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" width={150} tick={{ fill: '#64748b', fontSize: 9 }} axisLine={false} tickLine={false} />
+                            <Tooltip />
+                            <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={25}>
+                              {data?.lender_activity?.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                         <p className="text-xs text-blue-700 dark:text-blue-300 font-bold">
+                           <Zap className="w-3.5 h-3.5 inline mr-1.5" />
+                           {data?.lender_activity?.[0]?.name} is the most active competitor in this territory.
+                         </p>
+                      </div>
+                    </div>
+                  )}
+               </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Territory Filing Velocity (Missing restored) */}
+
+              {/* Territory Value Chain */}
               <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm flex flex-col lg:col-span-2">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
-                    <AreaIcon className="w-4 h-4 mr-2 text-emerald-600" />
-                    Territory Filing Velocity (Last 30 Days)
+                    <Share2 className="w-4 h-4 mr-2 text-purple-600" />
+                    Territory Value Chain (B2B Opportunities)
                   </h3>
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase">Live Momentum</span>
-                  </div>
+                  <span className="text-[10px] font-bold text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded">Recursive Discovery</span>
                 </div>
-                <div className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data?.filing_velocity}>
-                      <defs>
-                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                      <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 9 }} hide />
-                      <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="count" stroke="#10b981" fillOpacity={1} fill="url(#colorCount)" strokeWidth={3} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
 
-              {/* Geographic Hotspots (Missing restored) */}
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm flex flex-col">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
-                    <BarIcon className="w-4 h-4 mr-2 text-blue-600" />
-                    Market Hotspots (Zip Code Density)
-                  </h3>
-                </div>
-                <div className="h-[300px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data?.zip_hotspots} margin={{ left: -20 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                      <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 9 }} />
-                      <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
-                      <Tooltip />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={25}>
-                        {data?.zip_hotspots?.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {marketGraph?.connections?.slice(0, 6).map((conn: any, i: number) => (
+                    <div key={i} className="p-4 bg-purple-50/30 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-900/20">
+                      <div className="flex items-center justify-between mb-2">
+                         <span className="text-[9px] font-black text-purple-600 uppercase tracking-tighter">Chain Link</span>
+                         <Share2 className="w-3 h-3 text-purple-400" />
+                      </div>
+                      <div className="flex items-center space-x-2 mb-3">
+                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[80px]">{conn.source_cat}</div>
+                        <ArrowRight className="w-3 h-3 text-gray-400" />
+                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[80px]">{conn.target_cat}</div>
+                      </div>
+                      <p className="text-[9px] text-gray-500 dark:text-slate-400 leading-relaxed italic">
+                        "High probability of partnership between these sectors in your territory."
+                      </p>
+                    </div>
+                  ))}
+                  {(!marketGraph || !marketGraph.connections) && (
+                    <div className="col-span-3 text-center py-8">
+                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Building value chain mapping...</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -346,23 +459,62 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ allData 
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
                     <TrendingUp className="w-4 h-4 mr-2 text-blue-600" />
-                    Top Industries by Signal Volume
+                    Territory Competitive Shifts (Lenders)
                   </h3>
                 </div>
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data?.top_industries}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                      <XAxis dataKey="code" tick={{ fill: '#64748b', fontSize: 9 }} />
-                      <YAxis tick={{ fill: '#64748b', fontSize: 9 }} />
+                    <BarChart data={data?.lender_activity} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" width={120} tick={{ fill: '#64748b', fontSize: 9 }} axisLine={false} tickLine={false} />
                       <Tooltip />
-                      <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={25}>
-                        {data?.top_industries.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={25}>
+                        {data?.lender_activity?.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} opacity={0.8} />
                         ))}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                   <p className="text-[10px] text-blue-700 dark:text-blue-300 font-medium">
+                     <Zap className="w-3 h-3 inline mr-1" />
+                     {data?.lender_activity?.[0]?.name} is the most active competitor in this territory.
+                   </p>
+                </div>
+              </div>
+
+              {/* Market Alerts & Learned Logic (Recursive restored) */}
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm flex flex-col lg:col-span-2">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                    <AlertCircle className="w-4 h-4 mr-2 text-amber-500" />
+                    Recursive Market Alerts (Learned Patterns)
+                  </h3>
+                  <div className="px-2 py-1 bg-amber-50 dark:bg-amber-900/20 rounded text-[9px] font-black text-amber-600 uppercase border border-amber-100">
+                    Updated Nightly
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {learnedTrends?.market_alerts?.map((alert: any, i: number) => (
+                    <div key={i} className="flex items-start space-x-4 p-4 bg-amber-50/30 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                      <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                        <Zap className="w-4 h-4 text-amber-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">{alert.business}</p>
+                        <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold mb-1">{alert.type}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-slate-400 italic">"{alert.detail}"</p>
+                      </div>
+                    </div>
+                  ))}
+                  {(!learnedTrends || !learnedTrends.market_alerts) && (
+                    <p className="col-span-2 text-center py-6 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                       Listening for market shifts...
+                    </p>
+                  )}
                 </div>
               </div>
 

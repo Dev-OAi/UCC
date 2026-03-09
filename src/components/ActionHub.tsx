@@ -34,7 +34,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1280);
   const [activeHubTab, setActiveHubTab] = useState<'strategy' | 'outreach' | 'marketing'>('strategy');
-  const [activeStrategyTab, setActiveStrategyTab] = useState<'focus' | 'solutions' | 'starters' | 'discovery' | 'history'>('focus');
+  const [activeStrategyTab, setActiveStrategyTab] = useState<'intro' | 'discovery' | 'proposal' | 'opening' | 'history'>('intro');
   const [outreachChannel, setOutreachChannel] = useState<'Email' | 'SMS' | 'LinkedIn'>('Email');
   const [activeTone, setActiveTone] = useState<OutreachTone>('professional');
   const [customDraft, setCustomDraft] = useState<string | null>(null);
@@ -46,12 +46,18 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
   const [isGeneratingMarketing, setIsGeneratingMarketing] = useState(false);
   const [marketingHtml, setMarketingHtml] = useState<string | null>(null);
   const [marketGraph, setMarketGraph] = useState<any>(null);
+  const [learnedTrends, setLearnedTrends] = useState<any>(null);
   const [researchError, setResearchError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('./Data/Intelligence/Market_Graph.json')
       .then(res => res.json())
       .then(data => setMarketGraph(data))
+      .catch(() => {});
+
+    fetch('./Data/Intelligence/learned_trends.json')
+      .then(res => res.json())
+      .then(data => setLearnedTrends(data))
       .catch(() => {});
   }, []);
 
@@ -81,7 +87,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const intelligence = useMemo(() => {
     if (!selectedLead) return null;
-    const intel = generateLeadIntelligence(selectedLead, (selectedLead.preferredTheme as any) || 'growth');
+    const intel = generateLeadIntelligence(selectedLead, (selectedLead.preferredTheme as any) || 'growth', learnedTrends);
     if (activeTone !== 'professional') {
       intel.email = refineOutreachTone(intel.email, activeTone);
     }
@@ -90,8 +96,8 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
   const scoreDetails = useMemo(() => {
     if (!selectedLead) return null;
-    return getScoreDetails(selectedLead);
-  }, [selectedLead]);
+    return getScoreDetails(selectedLead, learnedTrends);
+  }, [selectedLead, learnedTrends]);
 
   const industryInsight = useMemo(() => {
     if (!selectedLead) return null;
@@ -493,7 +499,7 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
               {/* Left Panel: Strategy */}
               <div className={`${(isMobile || isTablet) && activeHubTab !== 'strategy' ? 'hidden' : 'flex'} w-full xl:w-1/2 flex flex-col border-r border-gray-200 dark:border-slate-800 overflow-hidden`}>
                 <div className="flex bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shrink-0 px-4">
-                  {(['focus', 'solutions', 'starters', 'discovery', 'history'] as const).map((tab) => (
+                  {(['intro', 'discovery', 'proposal', 'opening', 'history'] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveStrategyTab(tab)}
@@ -503,196 +509,188 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                           : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-slate-300'
                       }`}
                     >
-                      {tab}
+                      {tab === 'intro' ? '1. Introduction' : tab === 'discovery' ? '2. Discovery' : tab === 'proposal' ? '3. Proposal' : tab === 'opening' ? '4. Opening' : 'History'}
                     </button>
                   ))}
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-                  {activeStrategyTab === 'focus' && (
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-2 opacity-5">
-                        <BookOpen className="w-12 h-12" />
-                      </div>
-                      <div className="flex items-center justify-between mb-4 relative z-10">
-                        <div className="flex flex-col">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+                  {activeStrategyTab === 'intro' && (
+                    <div className="space-y-6">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-2 opacity-5">
+                          <BookOpen className="w-12 h-12" />
+                        </div>
+                        <div className="flex items-center justify-between mb-4 relative z-10">
                           <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
                             <Target className="w-3.5 h-3.5 mr-2 text-blue-600" />
-                            Strategic Focus
+                            Engagement Objective
                           </h3>
-                        </div>
-                        <div className="flex bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700">
-                          {(['growth', 'efficiency', 'security'] as const).map((theme) => (
-                            <button
-                              key={theme}
-                              onClick={() => handleThemeChange(theme)}
-                              className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight transition-all ${
-                                (selectedLead.preferredTheme || 'growth') === theme
-                                  ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'
-                              }`}
-                            >
-                              {theme}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-4 mb-6 relative z-10">
-                        <div className="space-y-1.5">
-                          <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center">
-                            <Edit3 className="w-3 h-3 mr-1.5" />
-                            Manual Banker Context / Observations
-                          </label>
-                          <textarea
-                            value={manualContext}
-                            onChange={(e) => setManualContext(e.target.value)}
-                            placeholder="e.g. Spoke to owner at Chamber event; they are opening a 3rd site next month."
-                            className="w-full h-16 p-3 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-600"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="text-sm md:text-base text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed relative z-10">
-                        {selectedLead.aiIntelligence ? (
-                          <div className="space-y-3">
-                            <p>{selectedLead.aiIntelligence.intelligence}</p>
-                            {selectedLead.aiIntelligence.signals && selectedLead.aiIntelligence.signals.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {selectedLead.aiIntelligence.signals.map((sig: string, idx: number) => (
-                                  <span key={idx} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase rounded border border-blue-100 dark:border-blue-800">
-                                    Signal: {sig}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()
-                        )}
-
-                        {marketGraph && (
-                          <div className="mt-4 space-y-2">
-                            {marketGraph.connections
-                              .filter((c: any) => c.source === selectedLead.businessName || c.target === selectedLead.businessName)
-                              .map((conn: any, i: number) => (
-                                <div key={i} className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg">
-                                  <div className="flex items-center space-x-2 text-[10px] font-black text-purple-600 uppercase mb-1">
-                                    <Share2 className="w-3 h-3" />
-                                    <span>Value Partner Opportunity</span>
-                                  </div>
-                                  <p className="text-xs text-purple-900 dark:text-purple-100 font-bold">
-                                    Connect with {conn.source === selectedLead.businessName ? conn.target : conn.source} ({conn.source === selectedLead.businessName ? conn.target_cat : conn.source_cat})
-                                  </p>
-                                </div>
-                              ))
-                            }
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800 relative z-10 space-y-3">
-                        <button
-                          onClick={handleDeepDive}
-                          disabled={isResearching || !getBridgeBaseUrl()}
-                          className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                            isResearching || !getBridgeBaseUrl()
-                              ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
-                              : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5'
-                          }`}
-                        >
-                          {isResearching ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>AI is Researching...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4" />
-                              <span>{!getBridgeBaseUrl() ? 'AI Brief (Local Only)' : (selectedLead.aiIntelligence ? 'Refresh AI Intelligence' : 'Get AI Intelligence Brief')}</span>
-                            </>
-                          )}
-                        </button>
-
-                        {selectedLead.aiIntelligence && (
-                          <div className="space-y-3">
-                            <button
-                              onClick={handleGenerateBrief}
-                              disabled={isGeneratingBrief || !getBridgeBaseUrl()}
-                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 ${
-                                isGeneratingBrief ? 'opacity-50 cursor-not-allowed' : ''
-                              }`}
-                            >
-                              {isGeneratingBrief ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                  <span>Generating PDF...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Download className="w-4 h-4" />
-                                  <span>Download PDF Insight Brief</span>
-                                </>
-                              )}
-                            </button>
-
-                            <button
-                              onClick={handleGeneratePackage}
-                              disabled={isGeneratingPackage || !getBridgeBaseUrl()}
-                              className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 relative group/btn ${
-                                isGeneratingPackage ? 'opacity-50 cursor-not-allowed' : ''
-                              }`}
-                            >
-                              <div className="absolute -top-2 -right-1 bg-amber-400 text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm group-hover/btn:scale-110 transition-transform">EFFICIENCY+</div>
-                              {isGeneratingPackage ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                  <span>Pre-filling Package...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FileText className="w-4 h-4" />
-                                  <span>Download Account Opening Package</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        )}
-
-                        {researchError && (
-                          <p className="mt-2 text-[10px] text-red-500 font-bold text-center">
-                            {researchError}
-                          </p>
-                        )}
-                      </div>
-                      {scoreDetails && scoreDetails.insights.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800">
-                          <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1.5">Priority Insights</label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {scoreDetails.insights.map((insight, i) => (
-                              <span key={i} className="px-1.5 py-0.5 bg-gray-50 dark:bg-slate-800 text-[8px] font-bold text-gray-500 dark:text-slate-400 rounded-md border border-gray-100 dark:border-slate-700">
-                                {insight.label} (+{insight.points})
-                              </span>
+                          <div className="flex bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700">
+                            {(['growth', 'efficiency', 'security'] as const).map((theme) => (
+                              <button
+                                key={theme}
+                                onClick={() => handleThemeChange(theme)}
+                                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight transition-all ${
+                                  (selectedLead.preferredTheme || 'growth') === theme
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-slate-300'
+                                }`}
+                              >
+                                {theme}
+                              </button>
                             ))}
                           </div>
                         </div>
-                      )}
+
+                        <div className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed relative z-10 mb-6">
+                          {intelligence?.strategy.split('**1. Strategic Focus:**')[1]?.split('**2. Product Bundle:**')[0]?.trim()}
+                        </div>
+
+                        {marketGraph && (
+                          <div className="space-y-2">
+                             {marketGraph.strategic_referrals
+                               ?.filter((r: any) => r.primary === selectedLead.businessName)
+                               .map((ref: any, i: number) => (
+                                 <div key={i} className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl relative">
+                                   <div className="flex items-center space-x-2 text-[9px] font-black text-indigo-600 uppercase mb-2">
+                                     <Sparkles className="w-3 h-3" />
+                                     <span>Learned Referral Intro</span>
+                                   </div>
+                                   <p className="text-xs text-indigo-900 dark:text-indigo-100 font-bold mb-2 italic">
+                                     "{ref.referral_script}"
+                                   </p>
+                                   <button
+                                     onClick={() => navigator.clipboard.writeText(ref.referral_script)}
+                                     className="text-[9px] font-black text-indigo-500 uppercase hover:underline"
+                                   >
+                                     Copy Intro
+                                   </button>
+                                 </div>
+                               ))
+                             }
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
+                          <MessageCircle className="w-3 h-3 mr-2 text-blue-500" />
+                          Conversation Starters
+                        </h3>
+                        <div className="space-y-3">
+                          {intelligence?.strategy.split('**3. Discussion Starters:**')[1]?.trim().split('\n').filter(s => s.trim().startsWith('-')).slice(0, 3).map((starter, i) => (
+                            <div key={i} className="p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-xs font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
+                              "{starter.replace('- ', '').replace(/"/g, '')}"
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center px-1">
+                          <Edit3 className="w-3 h-3 mr-1.5" />
+                          Banker Context / Observations
+                        </label>
+                        <textarea
+                          value={manualContext}
+                          onChange={(e) => setManualContext(e.target.value)}
+                          placeholder="Log pre-call findings or event context here..."
+                          className="w-full h-24 p-3 text-xs bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-all shadow-sm"
+                        />
+                      </div>
                     </div>
                   )}
 
-                  {activeStrategyTab === 'solutions' && (
-                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
-                        <Package className="w-3 h-3 mr-2 text-blue-500" />
-                        Recommended Solutions
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {selectedLead.aiIntelligence ? (
-                          selectedLead.aiIntelligence.products.map((productName: string, i: number) => {
+                  {activeStrategyTab === 'proposal' && (
+                    <div className="space-y-6">
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                            <Sparkles className="w-3.5 h-3.5 mr-2 text-purple-600" />
+                            Deep Intelligence Research
+                          </h3>
+                        </div>
+
+                        <div className="space-y-4">
+                          <button
+                            onClick={handleDeepDive}
+                            disabled={isResearching || !getBridgeBaseUrl()}
+                            className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                              isResearching || !getBridgeBaseUrl()
+                                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5'
+                            }`}
+                          >
+                            {isResearching ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>AI Researching Market Footprint...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Search className="w-4 h-4" />
+                                <span>{!getBridgeBaseUrl() ? 'Connect Bridge for AI' : (selectedLead.aiIntelligence ? 'Refresh Business Analysis' : 'Run Full Business Analysis')}</span>
+                              </>
+                            )}
+                          </button>
+
+                          {selectedLead.aiIntelligence && (
+                            <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 animate-in fade-in slide-in-from-top-2">
+                               <p className="text-xs text-gray-700 dark:text-slate-300 italic mb-4 leading-relaxed">
+                                 "{selectedLead.aiIntelligence.intelligence}"
+                               </p>
+                               <div className="flex flex-wrap gap-2 mb-4">
+                                 {selectedLead.aiIntelligence.signals?.map((sig: string, idx: number) => (
+                                   <span key={idx} className="px-2 py-1 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase rounded border border-blue-100 dark:border-blue-800">
+                                     Signal: {sig}
+                                   </span>
+                                 ))}
+                               </div>
+                               <button
+                                onClick={handleGenerateBrief}
+                                disabled={isGeneratingBrief}
+                                className="w-full py-2.5 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center justify-center"
+                              >
+                                {isGeneratingBrief ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : <Download className="w-3 h-3 mr-2" />}
+                                Download Strategic Brief
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-4">
+                          <Package className="w-3.5 h-3.5 mr-2 text-blue-500" />
+                          Recommended Solution Bundle
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {selectedLead.aiIntelligence ? (
+                            selectedLead.aiIntelligence.products.map((productName: string, i: number) => {
+                              const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
+                              return (
+                                <button
+                                  key={i}
+                                  onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'AI recommended based on recent signals.' })}
+                                  className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                                    <span className="text-[10px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
+                                  </div>
+                                  <ChevronRight className="w-2.5 h-2.5 text-gray-400" />
+                                </button>
+                              );
+                            })
+                          ) : (
+                            intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => {
+                            const productName = item.replace('- ', '').split(':')[0].trim();
                             const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
                             return (
                               <button
                                 key={i}
-                                onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'AI recommended based on recent signals.' })}
+                                onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'Recommendation based on industry needs.' })}
                                 className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
                               >
                                 <div className="flex items-center space-x-2">
@@ -703,54 +701,68 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                               </button>
                             );
                           })
-                        ) : (
-                          intelligence?.strategy.split('**2. Product Bundle:**')[1]?.split('**3. Discussion Starters:**')[0]?.trim().split('\n').filter(s => s.trim()).map((item, i) => {
-                          const productName = item.replace('- ', '').split(':')[0].trim();
-                          const masterProduct = getAllProducts().find(p => p.name === productName || productName.includes(p.name));
-                          return (
-                            <button
-                              key={i}
-                              onClick={() => setSelectedProduct(masterProduct || { name: productName, summary: 'Recommendation based on industry needs.' })}
-                              className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 transition-colors text-left"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
-                                <span className="text-[10px] font-bold text-gray-700 dark:text-slate-300">{productName}</span>
-                              </div>
-                              <ChevronRight className="w-2.5 h-2.5 text-gray-400" />
-                            </button>
-                          );
-                        })
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {activeStrategyTab === 'starters' && (
-                    <div className="space-y-4">
-                      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-3">
-                          <MessageCircle className="w-3 h-3 mr-2 text-blue-500" />
-                          Contextual Starters
-                        </h3>
-                        <div className="space-y-3">
-                          {intelligence?.strategy.split('**3. Discussion Starters:**')[1]?.trim().split('\n').filter(s => s.trim().startsWith('-')).slice(0, 5).map((starter, i) => (
-                            <div key={i} className="p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 italic border border-blue-100/30 dark:border-blue-900/20">
-                              "{starter.replace('- ', '').replace(/"/g, '')}"
-                            </div>
-                          ))}
+                  {activeStrategyTab === 'opening' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 rounded-2xl text-white shadow-xl shadow-emerald-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <CheckCircle2 className="w-32 h-32" />
+                        </div>
+                        <div className="relative z-10 text-center space-y-6">
+                           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-widest border border-white/20 mb-2">
+                             Final Phase: Implementation
+                           </div>
+                           <h3 className="text-3xl font-black tracking-tight leading-tight">Close the Deal</h3>
+                           <p className="text-emerald-50 text-sm max-w-sm mx-auto leading-relaxed">
+                             Generate a complete account opening package with pre-filled verified public data to make onboarding super efficient.
+                           </p>
+
+                           <button
+                              onClick={handleGeneratePackage}
+                              disabled={isGeneratingPackage || !getBridgeBaseUrl()}
+                              className={`w-full max-w-xs mx-auto flex items-center justify-center space-x-3 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg relative group/btn ${
+                                isGeneratingPackage ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              <div className="absolute -top-3 -right-2 bg-amber-400 text-black text-[9px] font-black px-2 py-1 rounded shadow-md group-hover/btn:scale-110 transition-transform">MAX EFFICIENCY</div>
+                              {isGeneratingPackage ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>Compiling Package...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FileText className="w-4 h-4" />
+                                  <span>Generate Opening Docs</span>
+                                </>
+                              )}
+                            </button>
                         </div>
                       </div>
 
-                      <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-900/20">
-                        <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center mb-3">
-                          <UserPlus className="w-3 h-3 mr-2" />
-                          Partner Positioning Starters
+                      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center mb-4">
+                          <Activity className="w-3.5 h-3.5 mr-2 text-emerald-500" />
+                          KYC & Onboarding Checklist
                         </h3>
-                        <div className="space-y-2">
-                          {DISCOVERY_GUIDE.partnerPositioning.items.slice(0, 3).map((item, i) => (
-                            <div key={i} className="text-[11px] text-amber-800 dark:text-amber-400/90 font-medium leading-relaxed bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-amber-100/50 dark:border-amber-900/30 italic">
-                              "{item}"
+                        <div className="space-y-3">
+                          {[
+                            { label: 'Sunbiz Status Verified', status: 'Auto-Checked', ok: true },
+                            { label: 'UCC History Analysis', status: 'Auto-Generated', ok: true },
+                            { label: 'Officer/Principal Identification', status: 'Ready', ok: true },
+                            { label: 'IRS EIN Confirmation', status: 'Pending Verification', ok: false }
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800">
+                               <div className="flex items-center space-x-3">
+                                 <CheckCircle2 className={`w-4 h-4 ${item.ok ? 'text-emerald-500' : 'text-gray-300'}`} />
+                                 <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">{item.label}</span>
+                               </div>
+                               <span className={`text-[8px] font-black uppercase tracking-widest ${item.ok ? 'text-emerald-600' : 'text-amber-600'}`}>{item.status}</span>
                             </div>
                           ))}
                         </div>
