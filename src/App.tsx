@@ -1218,6 +1218,8 @@ function App() {
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
