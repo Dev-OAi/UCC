@@ -9,6 +9,7 @@ import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { ProductsSecurityModal } from './components/ProductsSecurityModal';
+import { SystemSecurityModal } from './components/SystemSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
@@ -536,6 +537,7 @@ function App() {
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
 
   // Auto-lock Products after 1 minute
@@ -1139,6 +1141,13 @@ function App() {
     }
   };
 
+  const handleSystemPurgeSuccess = () => {
+    setIsSystemModalOpen(false);
+    localStorage.removeItem('isOriginalDesign');
+    setIsOriginalDesign(true);
+    window.location.reload();
+  };
+
   const handleAddToScorecard = (row: DataRow) => {
     const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
     if (exists) {
@@ -1285,7 +1294,11 @@ function App() {
           ) : activeTab === 'Market Intelligence' ? (
             <MarketIntelligence allData={allData} />
           ) : activeTab === 'System' ? (
-            <SystemGuardrails isOriginalDesign={isOriginalDesign} onToggleDesign={setIsOriginalDesign} />
+            <SystemGuardrails
+              isOriginalDesign={isOriginalDesign}
+              onToggleDesign={setIsOriginalDesign}
+              onPurgeRequest={() => setIsSystemModalOpen(true)}
+            />
           ) : activeTab === 'Territory Map' ? (
             <TerritoryMap
               data={allData}
@@ -1503,6 +1516,7 @@ function App() {
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
       <ProductsSecurityModal isOpen={isProductsModalOpen} onClose={() => setIsProductsModalOpen(false)} onSuccess={handleProductsUnlockSuccess} />
+      <SystemSecurityModal isOpen={isSystemModalOpen} onClose={() => setIsSystemModalOpen(false)} onSuccess={handleSystemPurgeSuccess} />
     </div>
   );
 }
