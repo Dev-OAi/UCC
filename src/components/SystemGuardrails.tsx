@@ -6,9 +6,10 @@ import { getBridgeBaseUrl } from '../lib/dataService';
 interface SystemGuardrailsProps {
   isOriginalDesign: boolean;
   onToggleDesign: (val: boolean) => void;
+  onPurgeRequest: () => void;
 }
 
-export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDesign, onToggleDesign }) => {
+export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDesign, onToggleDesign, onPurgeRequest }) => {
   const [learnedTrends, setLearnedTrends] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [learnedInsights, setLearnedInsights] = useState<any>(null);
@@ -184,7 +185,7 @@ export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDe
              </div>
              <button
                className="px-6 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-red-600 dark:text-red-400 text-xs font-black rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all uppercase tracking-widest"
-               onClick={() => setIsPurgeModalOpen(true)}
+               onClick={onPurgeRequest}
              >
                Purge Memory & Restore Baseline
              </button>

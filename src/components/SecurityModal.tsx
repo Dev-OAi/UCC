@@ -30,6 +30,8 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const CORRECT_PASSCODE = import.meta.env.VITE_SECURITY_PASSCODE || 'AUTH';
+
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();

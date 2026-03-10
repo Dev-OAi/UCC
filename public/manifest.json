@@ -131,19 +131,9 @@
     "filename": "initial.json"
   },
   {
-    "path": "Data/Intelligence/Outcome_Log.json",
-    "type": "JSON",
-    "filename": "Outcome_Log.json"
-  },
-  {
     "path": "Data/Intelligence/Learning_History.json",
     "type": "JSON",
     "filename": "Learning_History.json"
-  },
-  {
-    "path": "Data/Intelligence/Learned_Insights.json",
-    "type": "JSON",
-    "filename": "Learned_Insights.json"
   },
   {
     "path": "Data/Intelligence/Market_Graph.json",

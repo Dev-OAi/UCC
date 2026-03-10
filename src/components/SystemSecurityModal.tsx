@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, ShieldAlert, Timer, X, ArrowRight, Package } from 'lucide-react';
-import { validatePasscode } from '../lib/securityUtils';
+import { Lock, ShieldAlert, Timer, X, ArrowRight, RotateCcw } from 'lucide-react';
 
-interface ProductsSecurityModalProps {
+interface SystemSecurityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
+export const SystemSecurityModal: React.FC<SystemSecurityModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
@@ -20,7 +19,7 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const CORRECT_PASSCODE = import.meta.env.VITE_PRODUCTS_PASSCODE || 'AUTH';
+  const CORRECT_PASSCODE = import.meta.env.VITE_SYSTEM_PASSCODE || 'AUTH';
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -52,7 +51,7 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
     e.preventDefault();
     if (lockoutUntil) return;
 
-    if (validatePasscode(passcode)) {
+    if (passcode === CORRECT_PASSCODE) {
       setAttempts(0);
       setPasscode('');
       setError(null);
@@ -96,18 +95,18 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
           </button>
 
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className={`p-4 rounded-full ${lockoutUntil ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}>
-              {lockoutUntil ? <ShieldAlert className="w-8 h-8" /> : <Package className="w-8 h-8" />}
+            <div className={`p-4 rounded-full ${lockoutUntil ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-500'}`}>
+              {lockoutUntil ? <ShieldAlert className="w-8 h-8" /> : <RotateCcw className="w-8 h-8" />}
             </div>
 
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                {lockoutUntil ? 'Access Temporarily Locked' : 'Secure Products Tool'}
+                {lockoutUntil ? 'Access Temporarily Locked' : 'System Reset Authorization'}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                 {lockoutUntil
                   ? 'For security reasons, your access has been temporarily restricted.'
-                  : 'Please enter the authorization code to unlock the Products & Services tool.'
+                  : 'Please enter the authorization code to purge system memory and restore the baseline.'
                 }
               </p>
             </div>
@@ -133,8 +132,8 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
                       value={passcode}
                       onChange={(e) => setPasscode(e.target.value.toUpperCase())}
                       placeholder="ENTER PASSCODE"
-                      className={`w-full px-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 rounded-xl text-center text-xl font-mono tracking-[0.5em] focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-sans dark:text-white ${
-                        error ? 'border-red-200 dark:border-red-900 focus:border-red-500' : 'border-slate-100 dark:border-slate-700 focus:border-blue-500'
+                      className={`w-full px-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 rounded-xl text-center text-xl font-mono tracking-[0.5em] focus:ring-4 focus:ring-red-500/10 outline-none transition-all placeholder:tracking-normal placeholder:text-sm placeholder:font-sans dark:text-white ${
+                        error ? 'border-red-200 dark:border-red-900 focus:border-red-500' : 'border-slate-100 dark:border-slate-700 focus:border-red-600'
                       }`}
                     />
                   </div>
@@ -147,9 +146,9 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center space-x-2 py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                    className="w-full flex items-center justify-center space-x-2 py-4 bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-500/20 active:scale-[0.98]"
                   >
-                    <span>Unlock Products</span>
+                    <span>Authorize Reset</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </button>
                 </div>
