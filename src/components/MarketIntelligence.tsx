@@ -433,16 +433,22 @@ export const MarketIntelligence: React.FC<MarketIntelligenceProps> = ({ allData 
                   {marketGraph?.connections?.slice(0, 6).map((conn: any, i: number) => (
                     <div key={i} className="p-4 bg-purple-50/30 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-900/20">
                       <div className="flex items-center justify-between mb-2">
-                         <span className="text-[9px] font-black text-purple-600 uppercase tracking-tighter">Chain Link</span>
+                         <span className="text-[9px] font-black text-purple-600 uppercase tracking-tighter">
+                           {conn.rel_type || 'Chain Link'}
+                         </span>
                          <Share2 className="w-3 h-3 text-purple-400" />
                       </div>
                       <div className="flex items-center space-x-2 mb-3">
-                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[80px]">{conn.source_cat}</div>
-                        <ArrowRight className="w-3 h-3 text-gray-400" />
-                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[80px]">{conn.target_cat}</div>
+                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[120px]" title={conn.source_cat}>
+                          {conn.source_cat}
+                        </div>
+                        <ArrowRight className="w-3 h-3 text-gray-400 shrink-0" />
+                        <div className="text-[10px] font-bold text-gray-900 dark:text-white truncate max-w-[120px]" title={conn.target_cat}>
+                          {conn.target_cat}
+                        </div>
                       </div>
                       <p className="text-[9px] text-gray-500 dark:text-slate-400 leading-relaxed italic">
-                        "High probability of partnership between these sectors in your territory."
+                        "{conn.reason || 'High probability of partnership between these sectors in your territory.'}"
                       </p>
                     </div>
                   ))}

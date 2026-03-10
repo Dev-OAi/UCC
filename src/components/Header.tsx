@@ -10,11 +10,11 @@ interface HeaderProps {
   searchResults: SearchResult[];
   onResultClick: (result: SearchResult) => void;
   onQuickLinkClick: (title: string) => void;
-  activeTab: string;
-  onTabChange: (tab: string) => void;
   isProductsUnlocked?: boolean;
   onToggleLeftSidebar: () => void;
   onToggleRightSidebar: () => void;
+  onSettingsClick?: () => void;
+  activeTab?: string;
   isRightSidebarOpen: boolean;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -28,11 +28,11 @@ export const Header: React.FC<HeaderProps> = ({
   searchResults,
   onResultClick,
   onQuickLinkClick,
-  activeTab,
-  onTabChange,
   isProductsUnlocked = false,
   onToggleLeftSidebar,
   onToggleRightSidebar,
+  onSettingsClick,
+  activeTab,
   isRightSidebarOpen,
   isDarkMode,
   onToggleDarkMode
@@ -127,11 +127,11 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
         
         <button
-          onClick={() => onTabChange('System')}
-          className={`p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-all active:scale-95 ${
-            activeTab === 'System' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 dark:text-slate-400'
+          onClick={onSettingsClick}
+          className={`p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors hidden md:block ${
+            activeTab === 'System' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 dark:text-slate-400'
           }`}
-          aria-label="System Guardrails"
+          aria-label="Settings"
         >
           <Settings className="w-5 h-5" />
         </button>

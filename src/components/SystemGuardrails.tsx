@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, RotateCcw, Brain, Activity, CheckCircle2, AlertTriangle, Zap, Terminal } from 'lucide-react';
+import { Shield, RotateCcw, Brain, Activity, CheckCircle2, AlertTriangle, Zap, Terminal, RefreshCw } from 'lucide-react';
+import { SecurityModal } from './SecurityModal';
+import { getBridgeBaseUrl } from '../lib/dataService';
 
 interface SystemGuardrailsProps {
   isOriginalDesign: boolean;
@@ -9,6 +11,8 @@ interface SystemGuardrailsProps {
 export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDesign, onToggleDesign }) => {
   const [learnedTrends, setLearnedTrends] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [learnedInsights, setLearnedInsights] = useState<any>(null);
+  const [isPurgeModalOpen, setIsPurgeModalOpen] = useState(false);
 
   useEffect(() => {
     fetch('./Data/Intelligence/learned_trends.json')
@@ -19,6 +23,11 @@ export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDe
     fetch('./Data/Intelligence/Learning_History.json')
       .then(res => res.json())
       .then(data => setHistory(data))
+      .catch(() => {});
+
+    fetch('./Data/Intelligence/Learned_Insights.json')
+      .then(res => res.json())
+      .then(data => setLearnedInsights(data))
       .catch(() => {});
   }, []);
 
@@ -100,31 +109,39 @@ export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDe
             </div>
           </div>
 
-          {/* System Health */}
+          {/* Outcome Learning Insights */}
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-6">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-              <Activity className="w-4 h-4 mr-2 text-emerald-500" />
-              Intelligence Uptime
+              <Zap className="w-4 h-4 mr-2 text-amber-500 fill-amber-500" />
+              Outcome Learning Insights
             </h3>
 
-            <div className="space-y-3">
-              {[
-                { label: 'Recursive Learner', status: 'Online', lastRun: 'Nightly' },
-                { label: 'Value Partner Mapper', status: 'Online', lastRun: 'Nightly' },
-                { label: 'Ollama LFM-2.5', status: 'Active', lastRun: 'On-Demand' },
-                { label: 'Market Discovery', status: 'Online', lastRun: 'Real-time' }
-              ].map((svc, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-800">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs font-bold text-gray-700 dark:text-slate-300">{svc.label}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase">{svc.status}</p>
-                    <p className="text-[9px] text-gray-400 uppercase tracking-tighter">{svc.lastRun}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-4">
+               {learnedInsights?.winning_industries?.length > 0 ? (
+                 <div className="space-y-3">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Winning Verticals</p>
+                   {learnedInsights.winning_industries.slice(0, 3).map((ind: any, i: number) => (
+                     <div key={i} className="flex items-center justify-between p-2 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                       <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{ind.industry}</span>
+                       <span className="text-[10px] font-black text-emerald-600">{(ind.weight * 100).toFixed(0)}% SR</span>
+                     </div>
+                   ))}
+
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-4">Conversion Triggers</p>
+                   <div className="flex flex-wrap gap-2">
+                     {learnedInsights.conversion_triggers.map((t: string, i: number) => (
+                       <span key={i} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 text-[9px] font-black uppercase rounded border border-blue-100 dark:border-blue-800">
+                         {t}
+                       </span>
+                     ))}
+                   </div>
+                 </div>
+               ) : (
+                 <div className="text-center py-10">
+                   <Activity className="w-8 h-8 text-gray-300 mx-auto mb-2 animate-pulse" />
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Collecting Outcome Data...</p>
+                 </div>
+               )}
             </div>
           </div>
 
@@ -167,19 +184,47 @@ export const SystemGuardrails: React.FC<SystemGuardrailsProps> = ({ isOriginalDe
              </div>
              <button
                className="px-6 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-red-600 dark:text-red-400 text-xs font-black rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all uppercase tracking-widest"
-               onClick={() => {
-                 if (confirm('Are you sure you want to clear all learned intelligence?')) {
-                   localStorage.removeItem('isOriginalDesign');
-                   onToggleDesign(true);
-                   window.location.reload();
-                 }
-               }}
+               onClick={() => setIsPurgeModalOpen(true)}
              >
                Purge Memory & Restore Baseline
              </button>
           </div>
         </div>
       </div>
+
+      <SecurityModal
+        isOpen={isPurgeModalOpen}
+        onClose={() => setIsPurgeModalOpen(false)}
+        onSuccess={async () => {
+          try {
+            const baseUrl = getBridgeBaseUrl();
+            if (baseUrl) {
+              await fetch(`${baseUrl}/system/purge`, { method: 'POST' });
+            }
+          } catch (e) {
+            console.error('Remote purge failed', e);
+          }
+
+          // Clear all local state
+          localStorage.removeItem('isOriginalDesign');
+          localStorage.removeItem('scorecardLeads');
+          localStorage.removeItem('scorecardMetrics');
+          localStorage.removeItem('productGuides');
+          localStorage.removeItem('sales_callEntries');
+          localStorage.removeItem('sales_emailEntries');
+          localStorage.removeItem('sales_meetingEntries');
+          localStorage.removeItem('banker_roleplay_score');
+          localStorage.removeItem('banker_roleplay_completed');
+
+          onToggleDesign(true);
+          window.location.reload();
+        }}
+        title="System Reset Authorization"
+        description="Please enter the authorization code to purge system memory and restore the baseline."
+        icon={<RefreshCw className="w-8 h-8 text-red-600" />}
+        buttonText="Authorize Reset"
+        variant="red"
+      />
     </div>
   );
 };

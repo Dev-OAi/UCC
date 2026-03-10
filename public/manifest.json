@@ -119,9 +119,41 @@
     "filename": "V BUCC.csv"
   },
   {
+    "path": "Data/Intelligence/Business_Intelligence.csv",
+    "type": "Intelligence",
+    "zip": "",
+    "location": "Business_Intelligence",
+    "filename": "Business_Intelligence.csv"
+  },
+  {
     "path": "Data/ProductsGuide/initial.json",
     "type": "JSON",
     "filename": "initial.json"
+  },
+  {
+    "path": "Data/Intelligence/Outcome_Log.json",
+    "type": "JSON",
+    "filename": "Outcome_Log.json"
+  },
+  {
+    "path": "Data/Intelligence/Learning_History.json",
+    "type": "JSON",
+    "filename": "Learning_History.json"
+  },
+  {
+    "path": "Data/Intelligence/Learned_Insights.json",
+    "type": "JSON",
+    "filename": "Learned_Insights.json"
+  },
+  {
+    "path": "Data/Intelligence/Market_Graph.json",
+    "type": "JSON",
+    "filename": "Market_Graph.json"
+  },
+  {
+    "path": "Data/Intelligence/learned_trends.json",
+    "type": "JSON",
+    "filename": "learned_trends.json"
   },
   {
     "path": "Data/Last 90 Days/UCC Search Last 90.csv",

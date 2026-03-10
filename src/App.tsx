@@ -9,7 +9,6 @@ import { Dashboard } from './components/Dashboard';
 import { ColumnToggle } from './components/ColumnToggle';
 import { DownloadSecurityModal } from './components/DownloadSecurityModal';
 import { ProductsSecurityModal } from './components/ProductsSecurityModal';
-import { SystemSecurityModal } from './components/SystemSecurityModal';
 import { Insights } from './components/Insights';
 import { SmbCheckingSelector } from './components/SmbCheckingSelector';
 import { TreasuryGuide } from './components/TreasuryGuide';
@@ -157,7 +156,6 @@ function App() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<string>('Home');
-  const [lastMainTab, setLastMainTab] = useState<string>('Home');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
@@ -537,8 +535,8 @@ function App() {
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isProductsUnlocked, setIsProductsUnlocked] = useState(false);
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
-  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
@@ -588,6 +586,16 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('scorecardLeads', JSON.stringify(scorecardLeads));
+
+    // Outcome-Driven Sync to Bridge
+    const baseUrl = getBridgeBaseUrl();
+    if (baseUrl && scorecardLeads.length > 0) {
+      fetch(`${baseUrl}/sync-outcomes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scorecardLeads)
+      }).catch(() => {});
+    }
   }, [scorecardLeads]);
 
   useEffect(() => {
@@ -653,21 +661,11 @@ function App() {
       return;
     }
 
-    // Special toggle logic for System Guardrails
-    if (tab === 'System') {
-      if (activeTab === 'System') {
-        // If already on System, toggle back to the last main tab
-        setActiveTab(lastMainTab);
-      } else {
-        // Store current tab before switching to System
-        setLastMainTab(activeTab);
-        setActiveTab('System');
-      }
-    } else {
-      // Normal navigation
+    if (tab !== 'System') {
       setLastMainTab(tab);
-      setActiveTab(tab);
     }
+
+    setActiveTab(tab);
 
     // Always close right sidebar when navigating to Home
     if (tab === 'Home') {
@@ -782,8 +780,20 @@ function App() {
           return;
         }
         const res = await fetch(`${baseUrl}/health`);
-        if (res.ok) setBridgeStatus('online');
-        else setBridgeStatus('offline');
+        if (res.ok) {
+          setBridgeStatus('online');
+
+          // Load Learned Insights from Bridge
+          try {
+            const insightsRes = await fetch(`${baseUrl}/learned-insights`);
+            if (insightsRes.ok) {
+              const data = await insightsRes.json();
+              (window as any)._learnedInsights = data;
+            }
+          } catch {}
+        } else {
+          setBridgeStatus('offline');
+        }
       } catch {
         setBridgeStatus('offline');
       }
@@ -1141,13 +1151,6 @@ function App() {
     }
   };
 
-  const handleSystemPurgeSuccess = () => {
-    setIsSystemModalOpen(false);
-    localStorage.removeItem('isOriginalDesign');
-    setIsOriginalDesign(true);
-    window.location.reload();
-  };
-
   const handleAddToScorecard = (row: DataRow) => {
     const exists = scorecardLeads.find(l => l.businessName === (row.businessName || row['Entity Name']));
     if (exists) {
@@ -1242,13 +1245,19 @@ function App() {
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        onSettingsClick={() => {
+          if (activeTab === 'System') {
+            handleTabChange(lastMainTab);
+          } else {
+            handleTabChange('System');
+          }
+        }}
+        activeTab={activeTab}
         isRightSidebarOpen={isRightSidebarOpen}
       />
 
@@ -1513,7 +1522,6 @@ function App() {
 
       <DownloadSecurityModal isOpen={isSecurityModalOpen} onClose={() => setIsSecurityModalOpen(false)} onSuccess={() => { setIsSecurityModalOpen(false); downloadCSV(); }} />
       <ProductsSecurityModal isOpen={isProductsModalOpen} onClose={() => setIsProductsModalOpen(false)} onSuccess={handleProductsUnlockSuccess} />
-      <SystemSecurityModal isOpen={isSystemModalOpen} onClose={() => setIsSystemModalOpen(false)} onSuccess={handleSystemPurgeSuccess} />
     </div>
   );
 }
