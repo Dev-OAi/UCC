@@ -539,7 +539,7 @@ function App() {
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
-  const [lastMainTab, setLastMainTab] = useState<string>('Home');
+ 
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
