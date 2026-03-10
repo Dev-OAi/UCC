@@ -539,6 +539,7 @@ function App() {
   const [isProductsModalOpen, setIsProductsModalOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [pendingSearchAction, setPendingSearchAction] = useState<(() => void) | null>(null);
+  const [lastMainTab, setLastMainTab] = useState<string>('Home');
 
   // Auto-lock Products after 1 minute
   useEffect(() => {
@@ -588,6 +589,16 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('scorecardLeads', JSON.stringify(scorecardLeads));
+
+    // Outcome-Driven Sync to Bridge
+    const baseUrl = getBridgeBaseUrl();
+    if (baseUrl && scorecardLeads.length > 0) {
+      fetch(`${baseUrl}/sync-outcomes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scorecardLeads)
+      }).catch(() => {});
+    }
   }, [scorecardLeads]);
 
   useEffect(() => {
@@ -782,8 +793,20 @@ function App() {
           return;
         }
         const res = await fetch(`${baseUrl}/health`);
-        if (res.ok) setBridgeStatus('online');
-        else setBridgeStatus('offline');
+        if (res.ok) {
+          setBridgeStatus('online');
+
+          // Load Learned Insights from Bridge
+          try {
+            const insightsRes = await fetch(`${baseUrl}/learned-insights`);
+            if (insightsRes.ok) {
+              const data = await insightsRes.json();
+              (window as any)._learnedInsights = data;
+            }
+          } catch {}
+        } else {
+          setBridgeStatus('offline');
+        }
       } catch {
         setBridgeStatus('offline');
       }
@@ -1249,6 +1272,14 @@ function App() {
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onToggleLeftSidebar={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
         onToggleRightSidebar={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+        onSettingsClick={() => {
+          if (activeTab === 'System') {
+            handleTabChange(lastMainTab);
+          } else {
+            handleTabChange('System');
+          }
+        }}
+        activeTab={activeTab}
         isRightSidebarOpen={isRightSidebarOpen}
       />
 
@@ -1371,6 +1402,7 @@ function App() {
               allData={allData}
               hubTypes={types}
               scorecardLeads={scorecardLeads}
+              isOriginalDesign={isOriginalDesign}
               onSelectLead={(lead) => {
                 setActiveTab('Scorecard');
                 setSelectedLeadId(lead.id);

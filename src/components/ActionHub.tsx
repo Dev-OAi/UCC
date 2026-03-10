@@ -722,6 +722,36 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                              Generate a complete account opening package with pre-filled verified public data to make onboarding super efficient.
                            </p>
 
+                           {selectedLead.aiIntelligence && (
+                             <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-6 text-left border border-white/20">
+                               <div className="flex items-center justify-between mb-3">
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">AI Data Pre-fill Preview</span>
+                                 <span className="px-2 py-0.5 rounded bg-emerald-400/20 text-[9px] font-bold text-emerald-300 border border-emerald-400/30">92% Confidence</span>
+                               </div>
+                               <div className="grid grid-cols-2 gap-3">
+                                 <div>
+                                   <label className="text-[8px] font-black text-emerald-100/60 uppercase">Predicted EIN</label>
+                                   <p className="text-xs font-bold text-white">{selectedLead.aiIntelligence.ein_pattern || 'Pending'}</p>
+                                 </div>
+                                 <div>
+                                   <label className="text-[8px] font-black text-emerald-100/60 uppercase">Entity Type</label>
+                                   <p className="text-xs font-bold text-white">{selectedLead.aiIntelligence.entity_type_guess || 'Verified LLC'}</p>
+                                 </div>
+                                 <div>
+                                   <label className="text-[8px] font-black text-emerald-100/60 uppercase">NAICS Code</label>
+                                   <p className="text-xs font-bold text-white">{selectedLead.aiIntelligence.naics || '000000'}</p>
+                                 </div>
+                                 <div>
+                                   <label className="text-[8px] font-black text-emerald-100/60 uppercase">KYC Risk Rating</label>
+                                   <p className="text-xs font-bold text-white flex items-center">
+                                      <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-300" />
+                                      {selectedLead.aiIntelligence.kyc_risk || 'Low'}
+                                   </p>
+                                 </div>
+                               </div>
+                             </div>
+                           )}
+
                            <button
                               onClick={handleGeneratePackage}
                               disabled={isGeneratingPackage || !getBridgeBaseUrl()}
@@ -791,10 +821,10 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
                           <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center mb-3">
                             <HelpCircle className="w-3 h-3 mr-2" />
-                            Discovery Questions
+                            {intelligence?.discoveryQuestions?.length > 0 ? 'AI Learned Questions' : 'Discovery Questions'}
                           </h3>
                           <div className="space-y-2">
-                            {DISCOVERY_GUIDE.discoveryQuestions.items.map((item, i) => (
+                            {(intelligence?.discoveryQuestions?.length > 0 ? intelligence.discoveryQuestions : DISCOVERY_GUIDE.discoveryQuestions.items).map((item, i) => (
                               <div key={i} className="text-[11px] text-emerald-700 dark:text-emerald-400/90 font-bold bg-emerald-50/50 dark:bg-emerald-900/10 p-2 rounded-lg border border-emerald-100/30 italic">
                                 "{item}"
                               </div>

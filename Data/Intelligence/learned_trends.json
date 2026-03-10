@@ -1,24 +1,44 @@
 {
   "hot_industries": [
     {
-      "name": "Real Estate Development",
-      "intensity": 1,
-      "insight": "Increased activity detected in Real Estate Development vertical."
+      "name": "Advertising Material Distribution Services",
+      "intensity": 380,
+      "insight": "Major sector presence in territory with 380 identified entities."
     },
     {
-      "name": "Construction & Development",
-      "intensity": 1,
-      "insight": "Increased activity detected in Construction & Development vertical."
+      "name": "Agents for Wireless Telecommunications Services",
+      "intensity": 370,
+      "insight": "Major sector presence in territory with 370 identified entities."
     },
     {
-      "name": "Commercial Printing",
-      "intensity": 1,
-      "insight": "Increased activity detected in Commercial Printing vertical."
+      "name": "Aircraft Engine & Parts Mfrs",
+      "intensity": 343,
+      "insight": "Major sector presence in territory with 343 identified entities."
     },
     {
-      "name": "HVAC",
-      "intensity": 1,
-      "insight": "Increased activity detected in HVAC vertical."
+      "name": "Advertising Agencies",
+      "intensity": 341,
+      "insight": "Major sector presence in territory with 341 identified entities."
+    },
+    {
+      "name": "Air-Conditioning and Warm Air Heating Equipment and Commercial and Industrial Refrigeration Equipment Manufacturing",
+      "intensity": 289,
+      "insight": "Major sector presence in territory with 289 identified entities."
+    },
+    {
+      "name": "Advertising & PR Agencies",
+      "intensity": 247,
+      "insight": "Major sector presence in territory with 247 identified entities."
+    },
+    {
+      "name": "Aircraft Manufacturers",
+      "intensity": 247,
+      "insight": "Major sector presence in territory with 247 identified entities."
+    },
+    {
+      "name": "0",
+      "intensity": 229,
+      "insight": "Major sector presence in territory with 229 identified entities."
     }
   ],
   "market_alerts": [
@@ -36,15 +56,27 @@
   "zip_code_momentum": {},
   "learning_accuracy": 1.0,
   "lender_competitive_shift": [],
-  "last_updated": "2026-03-09T17:18:22.133206",
+  "last_updated": "2026-03-09T19:51:52.924698",
   "dynamic_focus_zones": [
     {
-      "zip": "33401",
-      "reason": "High density of Real Estate growth signals."
+      "zip": "33477",
+      "reason": "High density of local activity detected (1029 recent records)."
     },
     {
-      "zip": "33477",
-      "reason": "New construction activity hotspot."
+      "zip": "33401",
+      "reason": "High density of local activity detected (405 recent records)."
+    },
+    {
+      "zip": "33407",
+      "reason": "High density of local activity detected (200 recent records)."
+    },
+    {
+      "zip": "33405",
+      "reason": "High density of local activity detected (145 recent records)."
+    },
+    {
+      "zip": "33404",
+      "reason": "High density of local activity detected (106 recent records)."
     }
   ]
 }

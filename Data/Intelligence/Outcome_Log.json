@@ -1,0 +1,23 @@
+[
+  {
+    "id": "lead-1",
+    "businessName": "ACME CONSTRUCTION",
+    "industry": "Construction",
+    "status": "NEW",
+    "zip": "33401",
+    "lastUpdated": "2024-03-09T10:00:00Z",
+    "activities": [
+      {
+        "type": "Call",
+        "notes": "Interested in expansion loan",
+        "date": "2024-03-09T10:00:00Z"
+      }
+    ],
+    "aiIntelligence": {
+      "ein_pattern": "59-XXXXXXX",
+      "entity_type_guess": "Corporation",
+      "naics": "236220",
+      "kyc_risk": "Low"
+    }
+  }
+]

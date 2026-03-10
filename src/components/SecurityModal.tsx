@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, Timer, X, ArrowRight, Lock } from 'lucide-react';
+import { validatePasscode, validateSystemPasscode } from '../lib/securityUtils';
 
 interface SecurityModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SecurityModalProps {
   description?: string;
   icon?: React.ReactNode;
   buttonText?: string;
+  variant?: 'blue' | 'red';
 }
 
 export const SecurityModal: React.FC<SecurityModalProps> = ({
@@ -18,7 +20,8 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
   title = "Security Authorization",
   description = "Please enter the authorization code to continue.",
   icon = <Lock className="w-8 h-8" />,
-  buttonText = "Authorize"
+  buttonText = "Authorize",
+  variant = 'blue'
 }) => {
   const [passcode, setPasscode] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -59,7 +62,9 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
     e.preventDefault();
     if (lockoutUntil) return;
 
-    if (passcode.toUpperCase() === CORRECT_PASSCODE) {
+    const isValid = variant === 'red' ? validateSystemPasscode(passcode) : validatePasscode(passcode);
+
+    if (isValid) {
       setAttempts(0);
       setPasscode('');
       setError(null);
@@ -154,7 +159,11 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center space-x-2 py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                    className={`w-full flex items-center justify-center space-x-2 py-4 text-white rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] ${
+                      variant === 'red'
+                        ? 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 shadow-red-500/20'
+                        : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 shadow-blue-500/20'
+                    }`}
                   >
                     <span>{buttonText}</span>
                     <ArrowRight className="w-4 h-4 ml-2" />

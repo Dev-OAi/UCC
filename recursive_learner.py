@@ -1,118 +1,67 @@
 import pandas as pd
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
-INTEL_FILE = "Data/Intelligence/Business_Intelligence.csv"
+OUTCOME_FILE = "Data/Intelligence/Outcome_Log.json"
+LEARNED_INSIGHTS_FILE = "Data/Intelligence/Learned_Insights.json"
 TRENDS_FILE = "Data/Intelligence/learned_trends.json"
-FEEDBACK_FILE = "Data/Intelligence/Feedback_Log.csv"
-HISTORY_FILE = "Data/Intelligence/Learning_History.json"
 
 def main():
-    print(f"--- STARTING RECURSIVE LEARNING: {datetime.now()} ---")
+    print(f"--- STARTING OUTCOME-DRIVEN RECURSIVE LEARNING: {datetime.now()} ---")
 
-    # Ensure directories exist
-    os.makedirs(os.path.dirname(INTEL_FILE), exist_ok=True)
-
-    # 0. Load Previous Baseline for "Self-Correction"
-    old_trends = {}
-    if os.path.exists(TRENDS_FILE):
-        try:
-            with open(TRENDS_FILE, 'r') as f:
-                old_trends = json.load(f)
-        except:
-            pass
-
-    trends = {
-        "hot_industries": [],
-        "market_alerts": [],
-        "zip_code_momentum": {},
-        "learning_accuracy": 0.0,
-        "lender_competitive_shift": [],
-        "last_updated": datetime.now().isoformat(),
-        "dynamic_focus_zones": []
+    insights = {
+        "winning_industries": [],
+        "hot_zips": [],
+        "conversion_triggers": [],
+        "last_learned": datetime.now().isoformat()
     }
 
-    if os.path.exists(INTEL_FILE):
-        df = pd.read_csv(INTEL_FILE)
-
-        # 1. Detect Hot Industries (most frequent in the intelligence log)
-        if not df.empty and 'NAICS_Code' in df.columns:
-            top_industries = df['NAICS_Code'].value_counts().head(8)
-            for industry, count in top_industries.items():
-                if industry != 'Pending' and str(industry) != 'nan':
-                    trends["hot_industries"].append({
-                        "name": str(industry),
-                        "intensity": int(count),
-                        "insight": f"Increased activity detected in {industry} vertical."
-                    })
-
-        # 2. Detect Growth Alerts (keyword scanning)
-        if 'Industry_Pain_Point' in df.columns:
-            growth_rows = df[df['Industry_Pain_Point'].str.contains('hiring|expansion|new site|opening|growth', case=False, na=False)]
-            for _, row in growth_rows.tail(10).iterrows():
-                trends["market_alerts"].append({
-                    "business": row['Business Name'],
-                    "type": "Growth Signal",
-                    "detail": row['Industry_Pain_Point']
-                })
-
-        # 3. SELF-CORRECTION: Audit previous "Hot Industries"
-        # If an industry was "Hot" in the last run, is it still growing?
-        prev_hot = [h['name'] for h in old_trends.get("hot_industries", [])]
-        hits = 0
-        if prev_hot and not df.empty:
-            for ind in prev_hot:
-                # Check if new records (last 48h) still feature this industry
-                # (Assuming we have a way to filter by 'Time Discovered' eventually,
-                # for now we'll just check if it's still in the top 10)
-                if ind in [h['name'] for h in trends["hot_industries"]]:
-                    hits += 1
-            trends["learning_accuracy"] = round(hits / len(prev_hot), 2) if prev_hot else 1.0
-
-    # 4. Map Zip Code Momentum (Mocking for now based on Business Intelligence logs)
-    # In a real scenario, we'd use the actual Hub CSVs
-    # We'll pull a few "Focus Zones" based on where most intelligence is being gathered
-    if os.path.exists(INTEL_FILE):
-        # If we had a Zip column in INTEL_FILE, we'd use it.
-        # For now, let's suggest focus zones based on industry clusters
-        trends["dynamic_focus_zones"] = [
-            {"zip": "33401", "reason": "High density of Real Estate growth signals."},
-            {"zip": "33477", "reason": "New construction activity hotspot."}
-        ]
-
-    # 5. Analyze Feedback (if available) to prioritize strategies
-    if os.path.exists(FEEDBACK_FILE):
+    # 1. Load User Feedback / Outcomes
+    if os.path.exists(OUTCOME_FILE):
         try:
-            feedback_df = pd.read_csv(FEEDBACK_FILE)
-            print(f"  [Learning] Found {len(feedback_df)} user feedback entries.")
-            # Future: Use this to boost product recommendation weights
-        except:
-            pass
+            with open(OUTCOME_FILE, 'r') as f:
+                outcomes = json.load(f)
 
-    # Save the learned intelligence
-    with open(TRENDS_FILE, 'w') as f:
-        json.dump(trends, f, indent=2)
+            # Analyze "Appointment Set" and "Contracted" leads
+            df = pd.DataFrame(outcomes)
+            if not df.empty:
+                # Filter for successful outcomes
+                success_df = df[df['status'].isin(['APPOINTMENT_SET', 'CONTACTED'])]
 
-    # Save to history for long-term trend analysis
-    history = []
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, 'r') as f:
-                history = json.load(f)
-        except:
-            pass
+                if not success_df.empty:
+                    # Learn winning industries
+                    ind_counts = success_df['industry'].value_counts()
+                    for ind, count in ind_counts.items():
+                        insights["winning_industries"].append({
+                            "industry": ind,
+                            "weight": round(count / len(success_df), 2)
+                        })
 
-    history.append({
-        "timestamp": datetime.now().isoformat(),
-        "accuracy": trends["learning_accuracy"],
-        "top_industry": trends["hot_industries"][0]["name"] if trends["hot_industries"] else "None"
-    })
+                    # Learn hot zip codes
+                    zip_counts = success_df['zip'].value_counts()
+                    for z, count in zip_counts.items():
+                        insights["hot_zips"].append({
+                            "zip": str(z),
+                            "momentum": round(count / len(success_df), 2)
+                        })
 
-    with open(HISTORY_FILE, 'w') as f:
-        json.dump(history[-50:], f, indent=2) # Keep last 50 snapshots
+                    # Look for common trigger patterns in notes
+                    all_notes = " ".join(success_df['activities'].apply(lambda x: " ".join([a.get('notes', '') for a in x])).tolist()).lower()
+                    triggers = ['expansion', 'hiring', 'loan', 'credit', 'payroll', 'new site', 'building']
+                    for t in triggers:
+                        if t in all_notes:
+                            insights["conversion_triggers"].append(t)
+        except Exception as e:
+            print(f"Error analyzing outcomes: {e}")
 
-    print(f"--- RECURSIVE LEARNING COMPLETE: {TRENDS_FILE} updated (Accuracy: {trends['learning_accuracy']}) ---")
+    # 2. Update the Learned Insights file
+    with open(LEARNED_INSIGHTS_FILE, 'w') as f:
+        json.dump(insights, f, indent=2)
+
+    # 3. Trigger standard trend discovery (legacy/volume based)
+    # We could combine them, but for now we'll keep the script focused.
+    print(f"Learned Insights Saved to {LEARNED_INSIGHTS_FILE}")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, ShieldAlert, Timer, X, ArrowRight, Package } from 'lucide-react';
+import { validatePasscode } from '../lib/securityUtils';
 
 interface ProductsSecurityModalProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ export const ProductsSecurityModal: React.FC<ProductsSecurityModalProps> = ({
     e.preventDefault();
     if (lockoutUntil) return;
 
-    if (passcode === CORRECT_PASSCODE) {
+    if (validatePasscode(passcode)) {
       setAttempts(0);
       setPasscode('');
       setError(null);

@@ -15,6 +15,8 @@ interface HeaderProps {
   isProductsUnlocked?: boolean;
   onToggleLeftSidebar: () => void;
   onToggleRightSidebar: () => void;
+  onSettingsClick?: () => void;
+  activeTab?: string;
   isRightSidebarOpen: boolean;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -33,6 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   isProductsUnlocked = false,
   onToggleLeftSidebar,
   onToggleRightSidebar,
+  onSettingsClick,
+  activeTab,
   isRightSidebarOpen,
   isDarkMode,
   onToggleDarkMode

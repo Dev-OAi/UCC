@@ -7,11 +7,48 @@ from datetime import datetime
 OUTPUT_GRAPH = "Data/Intelligence/Market_Graph.json"
 
 # Industry relationship mapping (Value Chain) - This is the "Static Knowledge"
+# Format: "Source Industry": [("Target Industry", "Relationship Type", "Context")]
 VALUE_CHAIN = {
-    "Real Estate Development": ["Construction & Development", "Abrasive Product Manufacturers", "HVAC"],
-    "Construction & Development": ["Real Estate Development", "Heavy Equipment", "Electrical Services"],
-    "Acupuncturists": ["Medical Supply", "Wellness Centers"],
-    "Commercial Printing": ["Graphic Design", "Marketing Agencies", "Paper Suppliers"]
+    "Real Estate Development": [
+        ("Construction & Development", "Strategic Partner", "Primary build partner for development projects."),
+        ("Abrasive Product Manufacturers", "Material Supplier", "Provides specialized finishing materials."),
+        ("HVAC", "Service Provider", "Essential infrastructure installation and maintenance."),
+        ("Electrical Services", "Service Provider", "Core infrastructure and lighting systems.")
+    ],
+    "Construction & Development": [
+        ("Real Estate Development", "Customer Base", "Primary source of project contracts."),
+        ("Heavy Equipment", "Equipment Supplier", "Source for machinery and site tools."),
+        ("Electrical Services", "Subcontractor", "Specialized trade partner for electrical grid."),
+        ("Lumber & Building Materials", "Raw Material Supplier", "Source for core structural components.")
+    ],
+    "Acupuncturists": [
+        ("Medical Supply", "Equipment Supplier", "Source for specialized clinical needles and tools."),
+        ("Wellness Centers", "Distribution Partner", "Provides referral network and shared facility space.")
+    ],
+    "Commercial Printing": [
+        ("Graphic Design", "Upstream Partner", "Provides creative files for production."),
+        ("Marketing Agencies", "Service Provider", "Fulfilment partner for regional ad campaigns."),
+        ("Paper Suppliers", "Raw Material Supplier", "Core substrate source for printing volume.")
+    ],
+    "Apparel Manufacturers": [
+        ("Textile", "Raw Material Supplier", "Provides fabric and thread for garment production."),
+        ("Graphic Design", "Service Provider", "Creative partner for pattern and brand design."),
+        ("Retail Bakeries", "Marketing Client", "Custom uniform and branded apron production.")
+    ],
+    "Accessories and Other Apparel Manufacturers": [
+        ("Textile", "Raw Material Supplier", "Provides raw components for accessory manufacturing."),
+        ("Retail Bakeries", "Distribution Point", "Local venue for selling branded boutique items."),
+        ("Graphic Design", "Strategic Partner", "Source for custom logo and textile patterns.")
+    ],
+    "Trusts: Educational, Religious, Etc.": [
+        ("Non-Profit Organization", "Beneficiary", "Primary recipient of trust disbursements."),
+        ("Financial Services", "Strategic Advisor", "Investment and asset management partner.")
+    ],
+    "Retail Bakeries": [
+        ("Apparel Manufacturers", "Branding Partner", "Source for custom branded uniforms and aprons."),
+        ("Paper Suppliers", "Packaging Supplier", "Source for boxes, bags, and food-grade wraps."),
+        ("Graphic Design", "Marketing Partner", "Creative source for menus and signage.")
+    ]
 }
 
 def main():
@@ -31,16 +68,33 @@ def main():
     for f in csv_files:
         if "Business_Intelligence" in f: continue
         try:
-            df = pd.read_csv(f, nrows=500, low_memory=False)
-            # Find name and category columns
-            name_col = next((c for c in df.columns if 'Name' in c or 'COMPANY' in c), None)
-            cat_col = next((c for c in df.columns if 'Category' in c or 'Industry' in c), None)
+            # Check for headers
+            df_check = pd.read_csv(f, nrows=1, header=None)
+            if df_check.empty: continue
 
-            if name_col and cat_col:
+            first_row = [str(x).strip() for x in df_check.iloc[0]]
+            has_header = any(x in ['Name', 'COMPANY', 'businessName', 'Entity Name'] for x in first_row)
+
+            if has_header:
+                df = pd.read_csv(f, nrows=500, low_memory=False)
+                name_col = next((c for c in df.columns if any(x in str(c) for x in ['Name', 'COMPANY', 'businessName'])), None)
+                cat_col = next((c for c in df.columns if any(x in str(c) for x in ['Category', 'Industry', 'SIC', 'SICDESC'])), None)
+            else:
+                # Fallback for ZIP hubs (No header)
+                df = pd.read_csv(f, header=None, nrows=500, low_memory=False)
+                name_col = 0
+                cat_col = None
+                # Check column 7 (YP/33027 format)
+                if len(df.columns) > 7:
+                    sample = str(df.iloc[0, 7])
+                    if not sample.startswith('http') and len(sample) > 3:
+                        cat_col = 7
+
+            if name_col is not None:
                 for _, row in df.iterrows():
                     name = str(row[name_col]).strip().upper()
-                    cat = str(row[cat_col]).strip()
-                    if name and cat and name != 'NAN' and cat != 'NAN' and name != 'N/A':
+                    cat = str(row[cat_col]).strip() if cat_col is not None else 'Other'
+                    if name and name != 'NAN' and name != 'N/A':
                         all_businesses[name] = cat
         except:
             continue
@@ -53,26 +107,29 @@ def main():
             for biz_b, cat_b in all_businesses.items():
                 if biz_a == biz_b: continue
 
-                if any(t in cat_b for t in targets):
-                    connection_id = "-".join(sorted([biz_a, biz_b]))
-                    if connection_id not in processed:
-                        # 1. Add connection for Graph UI
-                        graph["connections"].append({
-                            "source": biz_a,
-                            "source_cat": cat_a,
-                            "target": biz_b,
-                            "target_cat": cat_b,
-                            "reason": f"{cat_a} firms like {biz_a} often utilize services from {cat_b} firms like {biz_b}."
-                        })
+                for target_cat, rel_type, context in targets:
+                    if target_cat in cat_b:
+                        connection_id = "-".join(sorted([biz_a, biz_b]))
+                        if connection_id not in processed:
+                            # 1. Add connection for Graph UI
+                            graph["connections"].append({
+                                "source": biz_a,
+                                "source_cat": cat_a,
+                                "target": biz_b,
+                                "target_cat": cat_b,
+                                "rel_type": rel_type,
+                                "reason": f"{rel_type}: {context}"
+                            })
 
-                        # 2. Add as Strategic Referral Idea for the Banker
-                        graph["strategic_referrals"].append({
-                            "primary": biz_a,
-                            "primary_industry": cat_a,
-                            "partner": biz_b,
-                            "partner_industry": cat_b,
-                            "referral_script": f"I noticed you are in {cat_a}. We just started working with {biz_b} (a {cat_b} partner nearby)—would an introduction to help optimize your supply chain be helpful?"
-                        })
+                            # 2. Add as Strategic Referral Idea for the Banker
+                            graph["strategic_referrals"].append({
+                                "primary": biz_a,
+                                "primary_industry": cat_a,
+                                "partner": biz_b,
+                                "partner_industry": cat_b,
+                                "rel_type": rel_type,
+                                "referral_script": f"I noticed you are in {cat_a}. We just started working with {biz_b} (a {cat_b} {rel_type.lower()})—would an introduction to help optimize your business be helpful?"
+                            })
 
                         processed.add(connection_id)
                         if len(processed) > 50: break # Limiting for efficiency

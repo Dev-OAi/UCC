@@ -111,6 +111,25 @@ export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: an
     insights.push({ label: 'Strategic vertical momentum boost', points: 15 });
   }
 
+  // 6. Outcome-Driven Learning Boost (Max 20 points)
+  const learnedInsights = typeof window !== 'undefined' ? (window as any)._learnedInsights : null;
+  if (learnedInsights) {
+    const industryMatch = learnedInsights.winning_industries?.find((i: any) => i.industry === industry);
+    if (industryMatch) {
+      const boost = Math.round(industryMatch.weight * 20);
+      total += boost;
+      insights.push({ label: `Learned success factor: ${industry} (+${boost})`, points: boost });
+    }
+
+    const zip = getVal(['Zip', 'zip']);
+    const zipMatch = learnedInsights.hot_zips?.find((z: any) => z.zip === zip);
+    if (zipMatch) {
+      const boost = Math.round(zipMatch.momentum * 15);
+      total += boost;
+      insights.push({ label: `Hot conversion zone: ${zip} (+${boost})`, points: boost });
+    }
+  }
+
   return {
     total: Math.min(total, 100),
     insights

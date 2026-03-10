@@ -12,11 +12,12 @@ OUTPUT_FILE = "Data/Intelligence/Business_Intelligence.csv"
 # Potential column names for Business Name and Date
 BUSINESS_NAME_COLS = [
     'Search Term', 'Direct Name', 'DirectName', 'Corporate Name (Search)',
-    'Debtor Name', 'Name', 'LEGALNAME', 'DirectName (Search)', 'Corporate Name'
+    'Debtor Name', 'Name', 'LEGALNAME', 'DirectName (Search)', 'Corporate Name',
+    'COMPANY', 'Entity Name', 'Business Name', 'DirectName (Search)', 'Debtor 1 Name'
 ]
 DATE_COLS = [
     'Date Filed', 'Record Date Search', 'RecordDate', 'Filing Date',
-    'Date Filed (UCC)', 'Record Date'
+    'Date Filed (UCC)', 'Record Date', 'Effective Date', 'Filed Date', 'RecordDate'
 ]
 
 def web_search_clues(business_name):
@@ -59,41 +60,51 @@ def web_search_clues(business_name):
 
 def get_recent_leads_from_file(filepath):
     """
-    Attempts to extract leads from a CSV if it matches known UCC/Business schemas.
+    Attempts to extract leads from a CSV using flexible matching and fallback index detection.
     """
     try:
-        # Skip very large files to keep CI fast, or skip non-CSV
         if not filepath.endswith('.csv'): return pd.DataFrame()
 
-        # Read a small chunk first to check headers
-        df_head = pd.read_csv(filepath, nrows=5, low_memory=False)
+        # Load first row to check if it's a header
+        df_check = pd.read_csv(filepath, nrows=1, header=None)
+        if df_check.empty: return pd.DataFrame()
 
-        # Identify Business Name Column
-        name_col = next((c for c in df_head.columns if c in BUSINESS_NAME_COLS), None)
-        # Identify Date Column
-        date_col = next((c for c in df_head.columns if c in DATE_COLS), None)
+        first_row = [str(x).strip() for x in df_check.iloc[0]]
+        has_header = any(col in BUSINESS_NAME_COLS for col in first_row)
 
-        if not name_col or not date_col:
-            return pd.DataFrame()
+        if has_header:
+            df = pd.read_csv(filepath, low_memory=False)
+            name_col = next((c for c in df.columns if c in BUSINESS_NAME_COLS), None)
+            date_col = next((c for c in df.columns if c in DATE_COLS), None)
+        else:
+            # NO HEADER FALLBACK: Use common patterns based on observation
+            # Zip hubs (33401, etc) often have Name in col 0, Date in col 4 or 5
+            df = pd.read_csv(filepath, header=None, low_memory=False)
+            name_col = 0
+            # Heuristic: Find first col that looks like a date
+            date_col = None
+            for i in range(min(10, len(df.columns))):
+                sample = str(df.iloc[0, i])
+                if re.match(r'\d{1,2}/\d{1,2}/\d{2,4}', sample):
+                    date_col = i
+                    break
 
-        # Read full file
-        df = pd.read_csv(filepath, low_memory=False)
+            if date_col is None:
+                # If no date found, we can't determine "newness", but we might still want to learn
+                # For discovery, we strict-skip. For learning, mapper will pick it up.
+                return pd.DataFrame()
 
-        # Convert to datetime with mixed format support
+        # Read full file logic
         df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-
-        # Filter for last 72 hours
         cutoff = datetime.now() - timedelta(days=3)
         recent = df[df[date_col] >= cutoff].copy()
 
-        if recent.empty:
-            return pd.DataFrame()
+        if recent.empty: return pd.DataFrame()
 
         # Normalize output
         recent = recent[[name_col]].rename(columns={name_col: 'Business Name'})
-        # Basic cleanup
         recent['Business Name'] = recent['Business Name'].astype(str).str.strip().str.upper()
-        recent = recent[recent['Business Name'] != 'NAN']
+        recent = recent[(recent['Business Name'] != 'NAN') & (recent['Business Name'] != '')]
 
         return recent
     except Exception as e:

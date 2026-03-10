@@ -30,6 +30,9 @@ jobs:
           # This script analyzes the Business_Intelligence and any Feedback logs
           # to build the 'learned_trends.json' file.
           python3 recursive_learner.py
+          # Upgrade pending discovery items with deep AI intelligence
+          # Note: Requires Ollama to be accessible if using local brain; otherwise falls back or skips.
+          python3 background_researcher.py || echo "Background Research skipped (Brain unreachable)"
           # Run the Value Partner Mapping to link supply chains
           python3 value_partner_mapper.py
         env:

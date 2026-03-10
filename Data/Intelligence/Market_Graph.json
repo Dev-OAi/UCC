@@ -1,28 +1,183 @@
 {
   "connections": [
     {
-      "source": "BAKER REAL ESTATE",
-      "source_cat": "Real Estate Development",
-      "target": "CORNERSTONE CONSTRUCTION",
-      "target_cat": "Construction & Development",
-      "reason": "Real Estate Development firms like BAKER REAL ESTATE often utilize services from Construction & Development firms like CORNERSTONE CONSTRUCTION."
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "GALAXY GLASS",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "LUXURE BY LAUREN",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "TOP IMAGE USA INC",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "KAMTEX USA INC",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "ISLAND PLANET",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "SPLIT INC",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "LA MODA HINDU",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "FOUR SEASONS APPAREL",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "ARTESANO CREATIONS",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "LEO FASHIONS INC",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+    },
+    {
+      "source": "SWEET ENDINGS  INC",
+      "source_cat": "Retail Bakeries",
+      "target": "GLOBAX LLC",
+      "target_cat": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
     }
   ],
   "strategic_referrals": [
     {
-      "primary": "BAKER REAL ESTATE",
-      "primary_industry": "Real Estate Development",
-      "partner": "CORNERSTONE CONSTRUCTION",
-      "partner_industry": "Construction & Development",
-      "referral_script": "I noticed you are in Real Estate Development. We just started working with CORNERSTONE CONSTRUCTION (a Construction & Development partner nearby)—would an introduction to help optimize your supply chain be helpful?"
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "GALAXY GLASS",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with GALAXY GLASS (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
     },
     {
-      "primary": "CORNERSTONE CONSTRUCTION",
-      "primary_industry": "Construction & Development",
-      "partner": "PRECISION HVAC",
-      "partner_industry": "HVAC",
-      "referral_script": "As a Construction firm, I thought you might value a connection to PRECISION HVAC. We've seen significant activity from them recently and they could be a great partner for your upcoming sites."
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "LUXURE BY LAUREN",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with LUXURE BY LAUREN (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "TOP IMAGE USA INC",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with TOP IMAGE USA INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "KAMTEX USA INC",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with KAMTEX USA INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "ISLAND PLANET",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with ISLAND PLANET (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "SPLIT INC",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with SPLIT INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "LA MODA HINDU",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with LA MODA HINDU (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "FOUR SEASONS APPAREL",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with FOUR SEASONS APPAREL (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "ARTESANO CREATIONS",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with ARTESANO CREATIONS (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "LEO FASHIONS INC",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with LEO FASHIONS INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+    },
+    {
+      "primary": "SWEET ENDINGS  INC",
+      "primary_industry": "Retail Bakeries",
+      "partner": "GLOBAX LLC",
+      "partner_industry": "Accessories and Other Apparel Manufacturers",
+      "rel_type": "Branding Partner",
+      "referral_script": "I noticed you are in Retail Bakeries. We just started working with GLOBAX LLC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
     }
   ],
-  "last_updated": "2026-03-09T17:30:00"
+  "last_updated": "2026-03-10T04:19:59.045738"
 }
