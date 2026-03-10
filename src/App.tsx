@@ -1258,14 +1258,14 @@ function App() {
         </div>
       )}
       <Header
+        activeTab={activeTab}
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={setSearchTerm}        
         isSearchOpen={isSearchOpen}
         setIsSearchOpen={setIsSearchOpen}
         searchResults={searchResults}
         onResultClick={handleResultClick}
         onQuickLinkClick={handleQuickLinkClick}
-        activeTab={activeTab}
         onTabChange={handleTabChange}
         isProductsUnlocked={isProductsUnlocked}
         isDarkMode={isDarkMode}
@@ -1279,6 +1279,7 @@ function App() {
             handleTabChange('System');
           }
         }}
+         
              isRightSidebarOpen={isRightSidebarOpen}
       />
 
