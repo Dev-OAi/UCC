@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLeftSidebar,
   onToggleRightSidebar,
   onSettingsClick,
-  activeTab,
+  
   isRightSidebarOpen,
   isDarkMode,
   onToggleDarkMode
