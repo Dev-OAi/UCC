@@ -1279,8 +1279,7 @@ function App() {
             handleTabChange('System');
           }
         }}
-        activeTab={activeTab}
-        isRightSidebarOpen={isRightSidebarOpen}
+             isRightSidebarOpen={isRightSidebarOpen}
       />
 
       <div className="flex-1 flex overflow-hidden">
