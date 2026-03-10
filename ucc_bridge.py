@@ -23,9 +23,11 @@ STAGING_DIR = os.path.join(UPLOAD_FOLDER, "Staging")
 LEAD_BRIEFS_DIR = "Lead_Insight_Briefs"
 PRODUCT_FORMS_DIR = "Data/Product_Forms"
 INTEL_FILE = "Data/Intelligence/Business_Intelligence.csv"
+OUTCOME_FILE = "Data/Intelligence/Outcome_Log.json"
+LEARNED_INSIGHTS_FILE = "Data/Intelligence/Learned_Insights.json"
 
 # Ensure directories exist
-for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR, PRODUCT_FORMS_DIR]:
+for d in [UPLOAD_FOLDER, COMMANDS_DIR, STAGING_DIR, LEAD_BRIEFS_DIR, PRODUCT_FORMS_DIR, "Data/Intelligence"]:
     os.makedirs(d, exist_ok=True)
 
 @app.route('/health', methods=['GET'])
@@ -196,6 +198,34 @@ def system_restart():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/sync-outcomes', methods=['POST'])
+def sync_outcomes():
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    try:
+        with open(OUTCOME_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+
+        # Trigger immediate recursive learning in the background
+        os.system("python3 recursive_learner.py &")
+
+        return jsonify({"status": "Outcomes synced and learning triggered"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/learned-insights', methods=['GET'])
+def get_learned_insights():
+    if os.path.exists(LEARNED_INSIGHTS_FILE):
+        with open(LEARNED_INSIGHTS_FILE, 'r') as f:
+            return jsonify(json.load(f))
+    return jsonify({
+        "winning_industries": [],
+        "hot_zips": [],
+        "conversion_triggers": []
+    })
+
 @app.route('/system/purge', methods=['POST'])
 def system_purge():
     try:
@@ -359,7 +389,10 @@ def research_lead():
         "intelligence": "...",
         "signals": ["Signal 1", "Signal 2"],
         "script": "...",
-        "naics": "000000"
+        "naics": "000000",
+        "ein_pattern": "XX-XXXXXXX",
+        "entity_type_guess": "Corporation | LLC | Sole Proprietorship",
+        "kyc_risk": "Low | Medium | High"
     }}
     """
 
