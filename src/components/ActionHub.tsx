@@ -15,6 +15,7 @@ import { generateLeadIntelligence, refineOutreachTone, OutreachTone } from '../l
 import { getInsightForCategory } from '../lib/industryKnowledge';
 import { getAllProducts, getProductPoints } from '../lib/productData';
 import { getScoreDetails } from '../lib/scoring';
+import { BankNarrative } from './BankNarrative';
 
 interface ActionHubProps {
   leads: BusinessLead[];
@@ -252,6 +253,27 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
     const updatedLeads = leads.map(l =>
       l.id === selectedLead.id
         ? { ...l, preferredTheme: theme, lastUpdated: new Date().toISOString() }
+        : l
+    );
+    onUpdateLeads(updatedLeads);
+  };
+
+  const handleAddProductToLead = (productName: string) => {
+    if (!selectedLead) return;
+
+    const existingProducts = selectedLead.aiIntelligence?.products || [];
+    if (existingProducts.includes(productName)) return;
+
+    const updatedLeads = leads.map(l =>
+      l.id === selectedLead.id
+        ? {
+            ...l,
+            aiIntelligence: {
+              ...(l.aiIntelligence || { intelligence: '', signals: [], script: '', naics: '' }),
+              products: [...existingProducts, productName]
+            },
+            lastUpdated: new Date().toISOString()
+          }
         : l
     );
     onUpdateLeads(updatedLeads);
@@ -802,6 +824,8 @@ export const ActionHub: React.FC<ActionHubProps> = ({ leads, onSelectLead, onUpd
 
                   {activeStrategyTab === 'discovery' && (
                     <div className="space-y-6">
+                      <BankNarrative onAddProduct={handleAddProductToLead} />
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
                           <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center mb-3">

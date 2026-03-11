@@ -46,7 +46,35 @@ export const PRODUCT_DISCOVERY_MAPPING: Record<string, string[]> = {
   ],
   'Remote Deposit Capture': [
     "How often do you or your staff physically go to the branch to make deposits?",
-    "Would depositing checks directly from your office improve your team's productivity?"
+    "Would depositing checks directly from your office improve your team's productivity?",
+    "Do you have multiple deposit locations that need to be centralized?"
+  ],
+  'Merchant Services': [
+    "How do your customers currently prefer to pay (Credit Card, Cash, ACH)?",
+    "What is your average monthly credit card processing volume?",
+    "Are you looking for a more integrated way to handle online and in-store payments?",
+    "Does your current processor provide detailed reporting and next-day funding?"
+  ],
+  'Business Checking': [
+    "How many employees do you currently have on payroll?",
+    "How many transactions do you process in a typical month?",
+    "What is your average monthly cash deposit volume?",
+    "Are you satisfied with your current online and mobile banking tools?"
+  ],
+  'Business Line of Credit': [
+    "How do you typically manage seasonal fluctuations in your cash flow?",
+    "Do you ever have to pass on opportunities because you don't have immediate access to capital?",
+    "How are you currently financing your raw materials or inventory?"
+  ],
+  'Term Loans': [
+    "Are you planning any major equipment or technology purchases this year?",
+    "Is business acquisition or expansion part of your 12-month strategy?",
+    "Would predictable, structured financing help you manage your long-term growth?"
+  ],
+  'Business Credit Card': [
+    "How do you currently manage and track employee business expenses?",
+    "Are you interested in earning rewards or cash back on your daily business spending?",
+    "Would 0% introductory APR help you manage initial establishment costs?"
   ]
 };
 
@@ -62,7 +90,11 @@ export const DISCOVERY_GUIDE = {
       "Expanding into a new territory",
       "Offering new products/services",
       "Working Capital needs",
-      "Tight Cashflow"
+      "Tight Cashflow",
+      "Receivables process is a pain point",
+      "Manually reconciling accounts",
+      "Looking to reduce fraud exposure",
+      "Building business credit"
     ]
   },
   financialBehaviors: {

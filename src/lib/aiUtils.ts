@@ -119,12 +119,12 @@ export const generateLeadIntelligence = (data: DataRow | BusinessLead, focus: 'g
 ${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
-Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and cash flow optimization. Given the current market trends, they are likely looking for ways to reduce manual financial tasks and protect their overhead. ${insight?.quickFacts?.[1] ? `Key Insight: ${insight.quickFacts[1]}` : ''}
+Focus on ${insight?.quickFacts?.[0] || 'operational scaling'} and cash flow optimization. As a boutique partner, [Bank Name] can help ${businessName} reduce manual financial tasks and protect overhead through automated treasury tools. ${insight?.quickFacts?.[1] ? `Key Insight: ${insight.quickFacts[1]}` : ''}
 
 **2. Product Bundle:**
-- **Primary:** SMB Bundle 3 (AT 552) - Premier Business
-- **Secondary:** Fiserv Merchant Services (to accelerate payment collection)
-- **Value-Add:** Business Credit Card with 1% Cash Back.
+- **Primary:** Advantage Business Checking (for moderate volume & fraud mitigation)
+- **Secondary:** Merchant Services via Fiserv (to accelerate payment collection)
+- **Value-Add:** Visa® Business Credit Card with 1% Cash Back and 0% Intro APR.
 
 **3. Discussion Starters:**
 - "How are you currently managing the rise in ${industry || 'operational'} costs and manual billing?"
@@ -151,12 +151,12 @@ Best,
 ${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
-Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority. ${insight?.quickFacts?.[0] ? `Context: ${insight.quickFacts[0]}` : ''}
+Focus on fraud prevention and asset protection. In the current ${industry || 'business'} environment, protecting outgoing payments and sensitive data is a top priority. [Bank Name]'s sophisticated treasury suite offers real-time monitoring and advanced mitigation. ${insight?.quickFacts?.[0] ? `Context: ${insight.quickFacts[0]}` : ''}
 
 **2. Product Bundle:**
-- **Primary:** ACH Positive Pay (for electronic payment protection)
-- **Secondary:** Check Positive Pay (to prevent physical check fraud)
-- **Value-Add:** SMB Bundle 3 (AT 552) - Premier Business with enhanced security features.
+- **Primary:** ACH Positive Pay & Debit Block
+- **Secondary:** Positive Pay & Check Block (to prevent physical check fraud)
+- **Value-Add:** Premier Business Checking (includes advanced fraud mitigation tools).
 
 **3. Discussion Starters:**
 - "Have you updated your ACH blocks or filters recently to account for new vendors?"
@@ -184,15 +184,15 @@ Best regards,
 ${learnedInsight ? `\n**📈 RECURSIVE TREND DETECTED:** ${learnedInsight}` : ''}
 
 **1. Strategic Focus:**
-Focus on ${insight ? 'leveraging sector-specific growth' : 'expansion opportunities'} and long-term capital strategy. The goal is to support ${businessName}'s expansion while securing the relationship with a full-service banking suite. ${insight?.quickFacts?.[2] ? `Note: ${insight.quickFacts[2]}` : ''} We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
+Focus on ${insight ? 'leveraging sector-specific growth' : 'expansion opportunities'} and long-term capital strategy. [Bank Name] acts as a full-service boutique partner to support ${businessName}'s expansion. ${insight?.quickFacts?.[2] ? `Note: ${insight.quickFacts[2]}` : ''} We want to educate the client on our growth-focused products and schedule a branch appointment to finalize a customized banking strategy that supports their next phase of growth.
 
 **2. Product Bundle:**
-- **Primary:** SBA 7(a) Financing / Secured Lines of Credit (for materials & acquisition)
-- **Secondary:** SMB Bundle 3 (AT 552) - Premier Business (to grow deposits & streamline ops)
-- **Value-Add:** Treasury Solutions (ACH Positive Pay) and ADP Payroll to support workforce scaling.
+- **Primary:** Revolving Line of Credit ($100k - $750k Secured for expansion)
+- **Secondary:** Premier Business Checking (to grow deposits & streamline operations for teams)
+- **Value-Add:** Treasury Solutions (Remote Deposit Capture) to support distributed workforce scaling.
 
 **3. Discussion Starters:**
-- "I've been reviewing how other firms in the ${industry || 'local'} sector are leveraging SBA programs for their expansion into developments and property flips..."
+- "I've been reviewing how other firms in the ${industry || 'local'} sector are leveraging expansion financing for their development projects..."
 - "What are your primary financial goals for ${businessName}? I'd love to walk through growth strategies and financing options that can support this next phase."
 
 `;
