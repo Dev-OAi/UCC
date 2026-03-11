@@ -2,25 +2,40 @@
 
 ## 1. Value Comparison: Why a "Bundle" for a Holding Account?
 
-When a client intends to use an account primarily for "holding," they are often focused on **Security** and **Simplicity**.
+When a client intends to use an account primarily for "holding," they are often focused on **Security** and **Cost-Efficiency**.
 
 | Feature | Business Banking Checking (510) | Advantage/Premier Bundle ("The Protected Account") |
 | :--- | :--- | :--- |
-| **Primary Value** | High transaction utility (500 free) | **Built-in Security & Fraud Protection** |
+| **Maintenance Fee** | **$25 (Non-Waivable)** | **$0 (Waived with $5k / $10k Avg Bal)** |
+| **Primary Value** | High transaction utility (500 free) | **Built-in Security & Cost-Free Protection** |
 | **Safety Tools** | A la carte ($) | **Included (Positive Pay & Secure Wires)** |
-| **Why for this Client?** | If they just want a basic bucket. | If they want to ensure no unauthorized wire or check ever leaves the account. |
+| **Why for this Client?** | If they keep low balances and just need transactions. | **If they hold >$5,000, it's actually $25/mo cheaper AND more secure.** |
 
 ---
 
-## 2. Jargon-Free Discovery Questions (Relationship-First)
+## 2. Banker Decision Matrix: Bundle or Traditional Treasury?
+
+Before making a final recommendation, ask yourself these internal questions based on the client's responses:
+
+*   **The $100,000 Threshold:** Does the client plan to maintain balances greater than $100,000 in this entity?
+*   **Operational Complexity:** Do they have a large volume of outgoing checks (e.g., >20/month) or need to *collect* funds from others via ACH?
+*   **Analysis Account History:** If they have existing accounts, are they currently in an "Analysis" account structure?
+
+**Expert Guidance:**
+*   **Business Bundles** are perfect for this "holding" scenario—lower balances (<$100k) and simpler needs.
+*   **Traditional Treasury/Analysis** is better if the investment vehicle grows to require complex cash management or maintains very high balances (>$100k) that would offset analysis fees.
+
+---
+
+## 3. Jargon-Free Discovery Questions (Relationship-First)
 
 ### A. On Movement of Funds
 *   **Question:** "When you need to move money out of this account for an investment or a major purchase, how do you prefer to do that—wire transfer, check, or online transfer?"
 *   **The "Expert Hook":** "I ask because for accounts holding larger sums, we often see clients prefer a system that requires a second 'digital' signature or an alert before anything leaves. It gives you total control even when you aren't looking at the account daily."
 
-### B. On Account Access
-*   **Question:** "Who besides yourself will need to view these balances or move funds? Just you, or do you have an assistant or accountant who helps with the books?"
-*   **The "Expert Hook":** "Setting up 'view-only' access for an accountant can save you the time of downloading and emailing statements every month—while still keeping you as the only one who can actually move the money."
+### B. On Typical Holding Levels
+*   **Question:** "Do you expect to keep a reserve or 'resting balance' of $5,000 or more in this account while it's in a holding status?"
+*   **The "Expert Hook":** "I mention this because at that level, our most secure account—the **Advantage Bundle**—actually becomes **completely free**. It waives the standard $25 fee you'd see on basic accounts and includes all the fraud protection tools at no extra cost."
 
 ### C. On Security & Peace of Mind
 *   **Question:** "Have you ever had a situation where a fraudulent check or an unauthorized charge hit one of your accounts? How did your previous bank handle that for you?"
@@ -36,18 +51,15 @@ When a client intends to use an account primarily for "holding," they are often 
 ### Step 2: The "Advisor" Transition
 *   "While we’re setting that up, I’d love to learn a little more about how you plan to use this account. Some clients use it as an 'active' account with daily transactions, while others prefer it as a 'secure holding' account. Which sounds more like what you had in mind?"
 
-### Step 3: Education through Observation
-*   "Since you're managing a series of investment vehicles (like THC Ventures), we often recommend our **Advantage Bundle** because it's built for security. It includes tools that automatically block unauthorized charges—which is a huge relief if you aren't checking the balance every single day."
+### Step 3: Education through Value (The "Zero-Cost Security" Strategy)
+*   "Since you're managing a series of investment vehicles (like THC Ventures), I recommend the **Advantage Bundle**. If you keep $5,000 in the account, the monthly fee is completely waived—making it $25/month cheaper than our basic accounts. Most importantly, it includes all of our fraud-blocking tools at no cost, so you can focus on your business while we guard the capital."
 
-### Step 4: The Closing (The Value Proposition)
-*   "The Advantage Bundle is normally $45 a month, but we waive that entirely if you keep an average balance of $5,000. For the peace of mind of having those security tools built-in, it’s usually the best fit for our investment clients."
+### Step 4: The Closing (The Recommendation)
+*   "By going with the Advantage Bundle, you're getting a more secure, institutional-grade account for less than the cost of a basic one. It's the standard for our family office and private investment clients."
 
-### Step 5: Setting the "Relationship" Review
-*   "I'll be your direct point of contact here. I'll reach out in about three months just to make sure the boxes are working well for you and see if you need anything else as the business grows. Does that work for you?"
+---
 
 ## 4. Why [Bank Name] is the Right Fit (Credibility Statements)
-
-If the client asks why they should do more than just the minimum to get the boxes, use these "Expert Insights":
 
 *   **Customized for Sophistication:** "We aren't just a retail bank; we specialize in boutique service for middle-market firms and family offices. We understand that your needs aren't about 'basic' banking—they're about high-level protection and direct access to a dedicated banker."
 *   **The Power of Connection:** "Beyond just the account, we pride ourselves on connecting our clients with other professionals in our network—whether it's legal, tax, or investment infrastructure experts. We want to be a resource for your business, not just a place for your capital."
@@ -63,13 +75,13 @@ Dear [Client Name],
 
 I have everything prepared for our appointment on [Date/Time] to secure your three Safe Deposit Boxes.
 
-To help make our meeting as efficient as possible, I wanted to share a few thoughts on the business checking account that will be linked to your boxes. Since your business is a specialized investment entity, we have a few account options designed specifically for **security and ease of use**.
+To help make our meeting as efficient as possible, I wanted to share a few thoughts on the business checking account that will be linked to your boxes. Since your business is a specialized investment entity, we have a few account options designed specifically for **security and cost-efficiency**.
 
 We can discuss which one fits you best, but I’d love to know:
-1.  Will this account be used primarily for holding funds, or will you need to move money frequently?
-2.  Would you like to have 'view-only' access for an accountant or assistant to simplify your monthly reporting?
+1.  Will this account be used primarily for holding funds?
+2.  Do you anticipate keeping a reserve balance of $5,000 or more?
 
-Our goal is to ensure your capital is not just stored, but also fully protected with the right security tools from day one.
+I ask because at that balance level, we can actually provide you with our **most secure account for $0 monthly**, waiving the fees associated with basic accounts while including full fraud protection for your capital.
 
 Looking forward to seeing you soon,
 
