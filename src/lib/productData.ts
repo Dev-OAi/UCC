@@ -168,9 +168,18 @@ export const productData: MainSection[] = [
                     {
                         title: '',
                         products: [
-                            { name: 'SMB Bundle 1 (AT 550) - Basic Business', points: '10 (1st Balance Tier)', tiers: smbBundleTiers },
-                            { name: 'SMB Bundle 2 (AT 551) - Advantage Business', points: '30 (1st Balance Tier)', tiers: smbBundleTiers },
-                            { name: 'SMB Bundle 3 (AT 552) - Premier Business', points: '40 (1st Balance Tier)', tiers: smbBundleTiers },
+                            { name: 'SMB Bundle 1 (AT 550) - Basic Business', points: '10 (1st Balance Tier)', minBalance: '$100', tiers: [
+                                { tier: 'Avg Bal < $1,500', points: '$15 Fee' },
+                                { tier: 'Avg Bal > $1,500', points: 'Fee Waived' }
+                            ]},
+                            { name: 'SMB Bundle 2 (AT 551) - Advantage Business', points: '30 (1st Balance Tier)', minBalance: '$1,000', tiers: [
+                                { tier: 'Avg Bal < $5,000', points: '$45 Fee' },
+                                { tier: 'Avg Bal > $5,000', points: 'Fee Waived' }
+                            ]},
+                            { name: 'SMB Bundle 3 (AT 552) - Premier Business', points: '40 (1st Balance Tier)', minBalance: '$5,000', tiers: [
+                                { tier: 'Avg Bal < $10,000', points: '$55 Fee' },
+                                { tier: 'Avg Bal > $10,000', points: 'Fee Waived' }
+                            ]},
                         ]
                     },
                     {
@@ -223,9 +232,10 @@ export const productData: MainSection[] = [
                 title: 'COMMERCIAL LOANS',
                 subCategories: [
                     { title: '', products: [
-                        { name: 'Business Line of Credit (Secured)', points: 50 },
-                        { name: 'Business Line of Credit (Unsecured)', points: 50 },
-                        { name: 'Business Term Loan', points: 40 },
+                        { name: 'Business Line of Credit (Secured)', points: 50, tiers: [{ tier: '$100,001 - $750,000', points: 50 }] },
+                        { name: 'Business Line of Credit (Unsecured)', points: 50, tiers: [{ tier: '$10,000 - $100,000', points: 50 }] },
+                        { name: 'Business Term Loan (Secured)', points: 40, tiers: [{ tier: '$100,001 - $750,000', points: 40 }] },
+                        { name: 'Business Term Loan (Unsecured)', points: 40, tiers: [{ tier: '$10,000 - $100,000', points: 40 }] },
                         { name: 'SMB Loans *See VSBB Premium Points in partner referrals*', points: 50 },
                         { name: 'Digital Business Banking Loans', points: 30 },
                     ]}

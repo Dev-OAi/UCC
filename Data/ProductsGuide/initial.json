@@ -1,41 +1,167 @@
 [
   {
-    "id": "guide-treasury",
-    "longTitle": "Product Guide: Treasury Management Solutions",
+    "id": "guide-business-solutions",
+    "longTitle": "Product Guide: [Bank Name] Business Solutions",
     "categories": [
       {
-        "id": "cat-payables",
-        "name": "Payables & Disbursements",
+        "id": "cat-about",
+        "name": "Who We Are",
         "products": [
           {
-            "id": "prod-ach-wire",
-            "name": "ACH & Wire Transfers",
-            "summary": "Efficiently send and receive electronic payments.",
-            "details": "<ul><li><b>Automated Clearing House (ACH):</b> Ideal for direct deposit, vendor payments, and tax payments. Lower cost than wires.</li><li><b>Wire Transfers:</b> For high-value, time-sensitive domestic and international payments.</li></ul>"
-          },
-          {
-            "id": "prod-comm-card",
-            "name": "Commercial Card",
-            "summary": "Streamline purchasing and payables with a robust card program.",
-            "details": "<p>Our commercial card solutions help you manage employee spending, earn rebates, and improve cash flow by extending payment terms.</p>"
+            "id": "prod-boutique-bank",
+            "name": "Full-Service Boutique Bank",
+            "summary": "Customized financial services for middle market firms.",
+            "details": "<p>We are a full-service boutique bank, delivering customized financial services to middle market firms. We are driven by your success. We bring deep market and industry expertise and roll up our sleeves to provide you with the solutions and connections you need to achieve your vision and goals. Whether you are looking for working capital facilities, refinancing existing debt, or seeking treasury or deposit services, we tailor the right financing solutions to meet your unique situation. Your [Bank Name] team is also committed to helping you navigate the challenges that come with wealth. We offer a broad range of private banking solutions and customized plans to U.S. and international clients.</p>"
           }
         ]
       },
       {
-        "id": "cat-receivables",
-        "name": "Receivables & Collections",
+        "id": "cat-checking",
+        "name": "Business Checking",
+        "products": [
+          {
+            "id": "prod-basic-checking",
+            "name": "Basic Business Checking",
+            "summary": "Perfect for small businesses with 1–3 employees needing basic banking tools.",
+            "details": "<ul><li><b>Minimum Opening Deposit:</b> $100</li><li><b>Monthly Fee:</b> $15 (waived with $1,500 average daily balance)</li><li><b>Transactions:</b> First 100 transactions/month included at no charge</li><li><b>Cash Deposits:</b> Up to $10,000/month at no charge</li><li><b>Included:</b> Incoming wire transfers, Visa® Business Debit Card, QuickBooks®/Bill Pay integration, Mobile Check Deposit (single user).</li></ul>"
+          },
+          {
+            "id": "prod-advantage-checking",
+            "name": "Advantage Business Checking",
+            "summary": "Designed for sole owners or those handling moderate transaction volumes.",
+            "details": "<ul><li><b>Minimum Opening Deposit:</b> $1,000</li><li><b>Monthly Fee:</b> $45 (waived with $5,000 average daily balance)</li><li><b>Transactions:</b> First 300 transactions/month included at no charge</li><li><b>Cash Deposits:</b> Up to $15,000/month at no charge</li><li><b>Included:</b> Single outgoing ACH/Wire Module, Unlimited incoming wires, 5 free outgoing wires/month, Fraud mitigation tools, Multi-user Mobile Check Deposit.</li></ul>"
+          },
+          {
+            "id": "prod-premier-checking",
+            "name": "Premier Business Checking",
+            "summary": "Built for teams of 50 or more or businesses with complex cash management needs.",
+            "details": "<ul><li><b>Minimum Opening Deposit:</b> $5,000</li><li><b>Monthly Fee:</b> $55 (waived with $10,000 average daily balance)</li><li><b>Transactions:</b> First 600 transactions/month included at no charge</li><li><b>Cash Deposits:</b> Up to $25,000/month at no charge</li><li><b>Included:</b> Outgoing ACH (single & batch), Wire Module, Unlimited incoming wires, 5 free outgoing wires/month, Advanced fraud mitigation, Multi-user Mobile Check Deposit.</li></ul>"
+          }
+        ]
+      },
+      {
+        "id": "cat-treasury-info",
+        "name": "Treasury: Information Management",
+        "products": [
+          {
+            "id": "prod-online-platform",
+            "name": "Online Platform",
+            "summary": "Sophisticated, secure access to automated banking and reporting 24/7.",
+            "details": "<p>Our Online platform employs secure links and the latest technology to simplify and enhance our clients' banking experience. Provides a single sign-on for multiple functions including Remote Deposit, real-time balance reporting, and an 18-month archive of statements.</p><ul><li><b>Key Benefits:</b> Real-time reporting, advanced fraud tools (ACH/Check Positive Pay), data integration (CSV, QuickBooks, BAI2).</li><li><b>Best Suited For:</b> Clients requiring sophisticated, secure, and consolidated access to banking services.</li></ul>"
+          },
+          {
+            "id": "prod-multi-bank",
+            "name": "Multi-Bank Reporting",
+            "summary": "View balance and transaction info for accounts at other financial institutions.",
+            "details": "<p>Using the SWIFT MT940 format, clients can consolidate their banking information. This eliminates the need to sign on to multiple online banking applications.</p><ul><li><b>Key Benefits:</b> Link external accounts for total balance visibility, ensure cash is in the right place at the right time.</li><li><b>Best Suited For:</b> Clients with multiple bank relationships who want a single portal for all accounts.</li></ul>"
+          },
+          {
+            "id": "prod-sftp",
+            "name": "SFTP (Secure File Transfer Protocol)",
+            "summary": "Securely and automatically exchange data files between the Bank and clients.",
+            "details": "<p>The [Bank Name] Team works with the client to develop connectivity for services like Positive Pay, NACHA, and Wire Transfers. Transmissions are automatically routed for processing.</p><ul><li><b>Key Benefits:</b> Secure, automated method; scheduling allows for unattended transmissions.</li><li><b>Best Suited For:</b> Clients with IT resources who wish to automate file exchanges.</li></ul>"
+          }
+        ]
+      },
+      {
+        "id": "cat-treasury-receivables",
+        "name": "Treasury: Receivables Management",
         "products": [
           {
             "id": "prod-rdc",
-            "name": "Remote Deposit Capture",
-            "summary": "Deposit checks from your office, anytime.",
-            "details": "<p>Scan and deposit checks electronically without visiting a branch. Improves cash flow and employee efficiency.</p>"
+            "name": "Remote Deposit Capture (RDC)",
+            "summary": "Scan and deposit checks electronically from your office.",
+            "details": "<p>Access via our Online Platform to scan checks using a dedicated scanner. The system automatically balances and submits the deposit.</p><ul><li><b>Key Benefits:</b> Available 24/7 including holidays, extended cutoffs, no trips to branch.</li><li><b>Best Suited For:</b> Clients with high check volume or multiple locations.</li></ul>"
+          },
+          {
+            "id": "prod-mobile-deposit",
+            "name": "Mobile Check Deposit",
+            "summary": "Deposit checks directly from a smart device.",
+            "details": "<p>Perfect for low monthly check volume. Authorized users enter the amount and photograph the check via the mobile app.</p><ul><li><b>Key Benefits:</b> Seamlessly available through Mobile Banking, no equipment costs.</li><li><b>Best Suited For:</b> Clients with small check volume or distributed workforces.</li></ul>"
           },
           {
             "id": "prod-lockbox",
-            "name": "Lockbox Services",
-            "summary": "Accelerate the collection of paper-based payments.",
-            "details": "<p>Redirect customer payments to a dedicated PO Box. We collect, process, and deposit them for you, providing detailed reporting.</p>"
+            "name": "Lockbox",
+            "summary": "Outsource receipt and deposit of check collections.",
+            "details": "<p>Check remittances are mailed directly to a P.O. Box and processed by our vendors, eliminating internal handling.</p><ul><li><b>Key Benefits:</b> Speeds up collection, reduces internal processing expenses, same-day reporting.</li><li><b>Best Suited For:</b> Clients with large check volume looking to reduce clerical costs.</li></ul>"
+          },
+          {
+            "id": "prod-merchant",
+            "name": "Merchant Services",
+            "summary": "Accept credit card payments through secure channels.",
+            "details": "<p>In partnership with Fiserv, we provide Point-of-Sale services, digital commerce, and enhanced security tools.</p><ul><li><b>Key Benefits:</b> Faster secured payments, online distribution capabilities, includes Payroll Cards.</li><li><b>Best Suited For:</b> Clients accepting or wishing to accept credit/debit card payments.</li></ul>"
+          }
+        ]
+      },
+      {
+        "id": "cat-treasury-payables",
+        "name": "Treasury: Payables Management",
+        "products": [
+          {
+            "id": "prod-wires",
+            "name": "Wire Transfers",
+            "summary": "Immediate availability for high-dollar, time-sensitive, and international payments.",
+            "details": "<p>Our Online Platform provides the capability to send domestic (USD) and international wires with token-based security.</p><ul><li><b>Key Benefits:</b> Immediate availability, template management, multiple security layers.</li><li><b>Best Suited For:</b> Clients needing final payments for large, urgent transactions.</li></ul>"
+          },
+          {
+            "id": "prod-ach-origination",
+            "name": "ACH Origination",
+            "summary": "Low-cost electronic fund transfers for payments and withdrawals.",
+            "details": "<p>Process batch payments via Online Platform or SFTP. Supports payroll, vendor payments, and customer debits.</p><ul><li><b>Key Benefits:</b> Faster and cheaper than checks, same-day processing for < $1MM.</li><li><b>Best Suited For:</b> Clients wishing to automate collections and manage payment costs.</li></ul>"
+          },
+          {
+            "id": "prod-onecard",
+            "name": "OneCard (Commercial Card)",
+            "summary": "Transform accounts payable into a source of revenue generation.",
+            "details": "<p>A charge card solution with flexible options for Purchasing, Travel & Entertainment, and Multi-Use.</p><ul><li><b>Key Benefits:</b> Cash back rewards, cash flow benefit (26-56 days interest-free), no cardholder limit.</li><li><b>Best Suited For:</b> Clients with large business expenses wishing to defer payments.</li></ul>"
+          }
+        ]
+      },
+      {
+        "id": "cat-fraud",
+        "name": "Treasury: Fraud Mitigation",
+        "products": [
+          {
+            "id": "prod-check-pos-pay",
+            "name": "Positive Pay & Check Block",
+            "summary": "Detect check fraud by matching presented checks against an issue file.",
+            "details": "<p>Includes Payee Positive Pay and Reverse Positive Pay options. Check Block returns any check presented against the account.</p><ul><li><b>Key Benefits:</b> Greatly reduces check fraud exposure, avoids need to close accounts after fraud.</li><li><b>Best Suited For:</b> Any business writing checks.</li></ul>"
+          },
+          {
+            "id": "prod-ach-pos-pay",
+            "name": "ACH Positive Pay & Debit Block",
+            "summary": "Identify incoming ACH debits that do not meet authorization criteria.",
+            "details": "<p>Set up criteria (dollar limits, originator IDs) in Online Banking. Suspicious debits are flagged for review.</p><ul><li><b>Key Benefits:</b> Reduces electronic payment fraud, automatic posting of authorized transactions.</li><li><b>Best Suited For:</b> Clients receiving ACH debits who want to manage authorization.</li></ul>"
+          }
+        ]
+      },
+      {
+        "id": "cat-lending",
+        "name": "Lending Solutions",
+        "products": [
+          {
+            "id": "prod-loc",
+            "name": "Revolving Line of Credit",
+            "summary": "Flexible financing at low rates to manage seasonal cash flow.",
+            "details": "<ul><li><b>Unsecured:</b> $10,000 to $100,000</li><li><b>Secured:</b> $100,001 to $750,000</li><li><b>Use Cases:</b> Cover short-term expenses, seasonal fluctuations, or unexpected costs.</li></ul>"
+          },
+          {
+            "id": "prod-term-loan",
+            "name": "Term Loans",
+            "summary": "Predictable financing for equipment, technology, or expansion.",
+            "details": "<ul><li><b>Unsecured:</b> $10,000 to $100,000</li><li><b>Secured:</b> $100,001 to $750,000</li><li><b>Use Cases:</b> Invest in future growth, debt consolidation, or long-term assets.</li></ul>"
+          },
+          {
+            "id": "prod-visa-biz-card",
+            "name": "Visa® Business Credit Card",
+            "summary": "Earn rewards and manage daily expenses with 0% introductory APR.",
+            "details": "<ul><li><b>0% Intro APR:</b> On purchases for the first 6 months</li><li><b>No Annual Fee:</b> And 1% unlimited cash back</li><li><b>Features:</b> Up to 25 cards per account at no cost, online access, and alerts.</li></ul>"
+          },
+          {
+            "id": "prod-visa-secured-card",
+            "name": "Visa® Secured Business Credit Card",
+            "summary": "Designed for entrepreneurs building business credit.",
+            "details": "<ul><li><b>Deposit Requirement:</b> 110% of desired limit (up to $25,000)</li><li><b>Credit Building:</b> Monthly reporting to major credit bureaus</li><li><b>Features:</b> 0% Intro APR (6mo), No annual fee, 1% cash back.</li></ul>"
           }
         ]
       }
