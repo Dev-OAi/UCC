@@ -4,16 +4,17 @@
 
 For a specialized investment vehicle like THC Ventures, the choice between the **Business Banking Checking (510)** and the **Small Business Bundles** comes down to **Security** and **Cost-Efficiency**.
 
-| Feature | Business Banking Checking (510) | Advantage Bundle ("The Protected Account") |
+| Feature | **Business Banking Checking (510)** | **Advantage Business (Type 551)** |
 | :--- | :--- | :--- |
-| **Maintenance Charge** | **$25.00 (Fixed Maintenance)** | **$20.00 (Waived at $5k Balance)** |
-| **Treasury Services Fee** | **N/A** | **$25.00 (Fixed Treasury)** |
-| **Wire Module Fee** | **$15.00** | **Included (No Extra Charge)** |
+| **Maintenance Charge** | $25.00 (Fixed) | $20.00 (Waived at $5k Balance) |
+| **Treasury Services Fee** | N/A | $25.00 (Fixed - Includes Security Suite) |
+| **Wire Module Fee** | $15.00 | **Included (No Extra Charge)** |
 | **Net Monthly Cost** | **$40.00 (Fixed)** | **$25.00 (With $5k Balance Waiver)** |
-| **Incoming Wires** | First 5 Free (Combined) | **Unlimited Free Incoming Wires** |
-| **Outgoing Wires** | First 5 Free (Combined) | **First 5 Sent Free** |
-| **Security: Positive Pay** | Not Included (Additional Cost) | **Included (Check & ACH Protection)** |
-| **Online Banking** | Single User Focus | **Multi-User (Team Access)** |
+| **Incoming Wires** | First 5 Free (Combined) | **Included / Unlimited** |
+| **Outgoing Wires** | First 5 Free (Combined) | **First 5 Sent Free** (then $25 Online) |
+| **Security: Positive Pay** | Not Included (Additional Cost) | **Included (RPP & ACHPP Protection)** |
+| **ACH Origination** | Unavailable | **Included (Unlimited Single Outgoing)** |
+| **Online Banking** | Single User Focus | **Multiple Users (Team Access)** |
 
 **The Verdict:** While the 510 offers 500 free transactions, a Family Office rarely needs high volume. The **Advantage Bundle** is price-competitive ($25 net with balance) while providing **unlimited incoming wires** and **Positive Pay security**—both essential for protecting multi-million dollar capital calls.
 
@@ -22,8 +23,9 @@ For a specialized investment vehicle like THC Ventures, the choice between the *
 ## 2. Banker Decision Matrix: Picking the Right Tool
 
 *   **Choose the 510 IF:** The client expects 400+ transactions per month and does not require multi-user access or integrated fraud protection. **(Total cost: $40 with wire module).**
-*   **Choose the Advantage Bundle IF:** Security is the priority. The client gains **Positive Pay** (Check/ACH) and **Multi-User access** at a lower price point ($25 net) than the utility account.
-*   **Choose the Premier Bundle IF:** The client maintains $10,000+ and needs **Batch ACH Origination** for payroll or distributions across multiple portfolio companies.
+*   **Choose the Basic Business (Type 550) IF:** The business is small (1-3 employees) and needs basic tools with a lower balance requirement ($1,500 waiver). Note: Does not include Advanced Fraud Protection or Single ACH Origination.
+*   **Choose the Advantage Business (Type 551) IF:** Security and fund movement are the priority. The client gains **Advanced Fraud Protection (RPP & ACHPP)**, **Unlimited Single Outgoing ACH originations**, and **Multi-User access** at a lower price point ($25 net) than the utility account.
+*   **Choose the Premier Business (Type 552) IF:** The client maintains $10,000+ and needs **Batch ACH Origination** for payroll or distributions across multiple portfolio companies.
 
 ---
 
@@ -44,10 +46,10 @@ To help make our meeting as efficient as possible, I wanted to share a few thoug
 "Let’s get those 3 Safe Deposit Boxes secured for you first. Since these are for the business owner, the bank simply requires a linked business checking account for the annual rental. It’s a standard prerequisite."
 
 ### Step 2: The Security Pitch (The "Why")
-"Because THC Ventures moves significant capital into commodities and venture equity, I don't recommend a basic checking account. I recommend our **Advantage Bundle**. It treats your account like an institutional vault."
+"Because THC Ventures moves significant capital into commodities and venture equity, I don't recommend a basic checking account. I recommend our **Advantage Business (Type 551)** account. It treats your account like an institutional vault."
 
 ### Step 3: Highlight the "Free" Upgrade
-"If you maintain a $5,000 balance, the cost is the same as our standard utility account ($25). However, you get **Positive Pay**—which is a digital security guard that stops fraudulent checks or ACH debits before they hit your balance—and **unlimited incoming wires** for your capital infusions."
+"If you maintain a $5,000 balance, the cost is the same as our standard utility account ($25). However, you get **Advanced Fraud Protection**—which is a digital security guard that stops fraudulent checks or ACH debits before they hit your balance—and **unlimited incoming wires** for your capital infusions."
 
 ---
 
