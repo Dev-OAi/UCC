@@ -1,83 +1,43 @@
 # Family Office Relationship Guide: THC Ventures Commodities 5, LLC
 
-## 1. Value Comparison: Why a "Bundle" for a Holding Account?
+## 1. Strategic Verdict: Advantage Business (Type 551) vs. 510
+For a sophisticated family office vehicle like THC Ventures, the **Advantage Business (Type 551)** is the superior recommendation over the standard 510 account.
 
-For a specialized investment vehicle like THC Ventures, the choice between the **Business Banking Checking (510)** and the **Small Business Bundles** comes down to **Security** and **Cost-Efficiency**.
+### The "Cost Trap" of the 510 Account
+While the 510 has a fixed $25 fee, adding the **$15 Wire Module** (essential for an investment firm) brings the total to **$40/month**.
+By contrast, the **Advantage Bundle** costs **$25/month net** (if the $5,000 balance waiver is met), providing higher security and better wire terms for $15 less per month.
 
 | Feature | **Business Banking Checking (510)** | **Advantage Business (Type 551)** |
 | :--- | :--- | :--- |
-| **Maintenance Charge** | $25.00 (Fixed) | $20.00 (Waived at $5k Balance) |
-| **Treasury Services Fee** | N/A | $25.00 (Fixed - Includes Security Suite) |
-| **Wire Module Fee** | $15.00 | **Included (No Extra Charge)** |
-| **Net Monthly Cost** | **$40.00 (Fixed)** | **$25.00 (With $5k Balance Waiver)** |
-| **Incoming Wires** | First 5 Free (Combined) | **Included / Unlimited** |
-| **Outgoing Wires** | First 5 Free (Combined) | **First 5 Sent Free** (then $25 Online) |
-| **Security: Positive Pay** | Not Included (Additional Cost) | **Included (RPP & ACHPP Protection)** |
-| **ACH Origination** | Unavailable | **Included (Unlimited Single Outgoing)** |
-| **Online Banking** | Single User Focus | **Multiple Users (Team Access)** |
-
-**The Verdict:** While the 510 offers 500 free transactions, a Family Office rarely needs high volume. The **Advantage Bundle** is price-competitive ($25 net with balance) while providing **unlimited incoming wires** and **Positive Pay security**—both essential for protecting multi-million dollar capital calls.
+| **Security Suite** | Not Included | **Included (Positive Pay & ACH Protection)** |
+| **Wire Terms** | 5 Combined Free (then module fee) | **Unlimited Incoming** + 5 Free Sent |
+| **User Access** | Single User Focus | **Multi-User Secure Access** |
+| **ACH Origination** | Unavailable | **Included (Single Outgoing)** |
 
 ---
 
-## 2. Banker Decision Matrix: Picking the Right Tool
+## 2. KYC & Compliance: The "THC" Acronym Defense
+**Critical:** To avoid "Marijuana-Related Business" (MRB) red flags during onboarding, the banker must proactively define the name.
 
-*   **Choose the 510 IF:** The client expects 400+ transactions per month and does not require multi-user access or integrated fraud protection. **(Total cost: $40 with wire module).**
-*   **Choose the Basic Business (Type 550) IF:** The business is small (1-3 employees) and needs basic tools with a lower balance requirement ($1,500 waiver). Note: Does not include Advanced Fraud Protection or Single ACH Origination.
-*   **Choose the Advantage Business (Type 551) IF:** Security and fund movement are the priority. The client gains **Advanced Fraud Protection (RPP & ACHPP)**, **Unlimited Single Outgoing ACH originations**, and **Multi-User access** at a lower price point ($25 net) than the utility account.
-*   **Choose the Premier Business (Type 552) IF:** The client maintains $10,000+ and needs **Batch ACH Origination** for payroll or distributions across multiple portfolio companies.
-
----
-
-## 3. Educational Discovery Questions (The "Pre-Meeting" Strategy)
-
-To help make our meeting as efficient as possible, I wanted to share a few thoughts on the business checking account that will be linked to your boxes. We can discuss which one fits you best, but consider the following:
-
-1.  **Holding Strategy:** Will this account be used primarily for holding funds? (Helps determine if the 500-transaction limit of the 510 is even relevant).
-2.  **Balance Efficiency:** Do you anticipate keeping a reserve balance of $5,000 or more? (If yes, the Advantage Bundle's maintenance fee is waived, making it the clear security winner).
-3.  **Wire Activity:** Beyond the first 5 free outgoing wires, do you anticipate frequent wire activity? (Advantage offers **unlimited incoming**, which is superior to the 510's combined 5-free limit).
-4.  **User Access:** Does Adam Ryan need to provide online banking access to other members of the Trog Hawley team (e.g., an assistant or COO), or will he be the sole user? (Advantage/Premier support multi-user access, which protects the CEO's personal credentials).
+*   **The Narrative:** "The 'THC' in the name stands for **Trog Hawley Capital**, a single-family office established in 2012. This is a proprietary investment vehicle, not a cannabis-related entity."
+*   **Proof Points:** Highlight their blue-chip portfolio: **SpaceX, Databricks, xAI, and Anthropic**. These names demonstrate institutional-grade legitimacy.
 
 ---
 
-## 4. The "Advisor" Appointment Flow
+## 3. Discovery Strategy: Open-Ended Questions
+Since we are in the discovery phase, use these questions to guide the client toward the right account:
 
-### Step 1: Secure the Safe Deposit Boxes (The Immediate Need)
-"Let’s get those 3 Safe Deposit Boxes secured for you first. Since these are for the business owner, the bank simply requires a linked business checking account for the annual rental. It’s a standard prerequisite."
-
-### Step 2: The Security Pitch (The "Why")
-"Because THC Ventures moves significant capital into commodities and venture equity, I don't recommend a basic checking account. I recommend our **Advantage Business (Type 551)** account. It treats your account like an institutional vault."
-
-### Step 3: Highlight the "Free" Upgrade
-"If you maintain a $5,000 balance, the cost is the same as our standard utility account ($25). However, you get **Advanced Fraud Protection**—which is a digital security guard that stops fraudulent checks or ACH debits before they hit your balance—and **unlimited incoming wires** for your capital infusions."
+*   **On Treasury & Movement:** "Given your focus on commodities and venture capital, how do you typically manage the 'lumpy' nature of capital calls? Are you primarily receiving or sending wires during a typical deal cycle?"
+*   **On Security:** "With high-value transactions, what internal controls do you currently use to authorize payments? Would having a 'digital security guard' like Positive Pay to block unauthorized checks/ACH be beneficial for your peace of mind?"
+*   **On Team Access:** "Will you be the sole person managing the online banking, or do you have a controller or assistant who needs their own secure credentials to prepare transfers for your approval?"
+*   **On Holding Strategy:** "What is your target 'working capital' balance for this specific LLC? If you plan to keep $5,000 or more on hand, we can upgrade you to an institutional bundle that waives the maintenance fee."
 
 ---
 
-## 5. Outreach Email Template (Educational & Professional)
+## 4. Account Opening: The "Linkage" Requirement
+Because this is a **Manager-Managed LLC**, we must "link" the individuals to the entity through the parent company.
 
-(See `Data/Expert_Guides/Outreach_Email_Template.md` for a complete educational template including detailed discovery questions and expert hooks.)
-
----
-
-## 6. Comprehensive Account Opening Checklist (Family Office Ready)
-
-Since THC Ventures is a **Manager-Managed LLC** (managed by Trog Hawley Capital, LLC), the following documents are required to prove Adam Ryan's authority to sign.
-
-### A. Legal & Formation Documents
-*   [ ] **Articles of Organization:** The filed document from Sunbiz for *THC Ventures Commodities 5, LLC*.
-*   [ ] **Operating Agreement (Sub 5):** The agreement for *THC Ventures Commodities 5, LLC* that names *Trog Hawley Capital, LLC* as the Manager.
-*   [ ] **Operating Agreement (Parent):** The agreement for *Trog Hawley Capital, LLC* proving that Adam C. Ryan is the Authorized Member/MD of the parent company.
-*   [ ] **EIN Verification Letter:** The IRS CP575 or 147C letter for the specific LLC.
-
-### B. Resolution & Authorization
-*   [ ] **Corporate Resolution:** Signed by Adam Ryan in his capacity as MD of the Manager (Trog Hawley Capital).
-*   [ ] **Certificate of Incumbency:** A simple document (often provided by the bank) stating who the current officers/managers are.
-
-### C. Beneficial Ownership (FinCEN Compliance)
-*   [ ] **Certification of Beneficial Ownership:** A bank-standard form where you list anyone with 25% or more equity or Substantial Control.
-*   [ ] **SSN & Photo ID:** A clear copy of Adam Ryan’s Driver’s License or Passport.
-*   [ ] **Residential Address:** Personal address for Adam Ryan (Note: Banks generally cannot accept a P.O. Box for beneficial owners).
-
-### D. Business Verification (The "Anti-Red Flag" Pack)
-*   [ ] **Business Purpose Statement:** A brief explanation of the "THC" acronym (Trog Hawley Capital) and investment focus (Venture/Commodities) to provide to compliance.
-*   [ ] **Website Printout:** A copy of the "About" and "Portfolio" pages from *troghawley.com* (to show SpaceX, Databricks, etc.).
+*   **Step 1:** Articles of Organization for *THC Ventures Commodities 5, LLC*.
+*   **Step 2:** Operating Agreement naming *Trog Hawley Capital, LLC* as the Manager.
+*   **Step 3:** Operating Agreement for *Trog Hawley Capital, LLC* naming **Adam C. Ryan** as the authorized signer.
+*   **Step 4:** EIN Verification (IRS Letter) for the specific Ventures 5 LLC.
