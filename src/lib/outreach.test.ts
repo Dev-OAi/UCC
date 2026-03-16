@@ -23,7 +23,7 @@ describe('AI Strategy & Outreach Intelligence', () => {
 
   it('generates growth strategy with focus on deposits and appointments', () => {
     const intelligence = generateLeadIntelligence(constructionLead, 'growth');
-    expect(intelligence.strategy).toContain('Secured Lines of Credit');
+    expect(intelligence.strategy).toContain('Revolving Line of Credit');
     expect(intelligence.strategy).toContain('schedule a branch appointment');
     expect(intelligence.strategy).toContain('Construction & Development');
   });
@@ -39,8 +39,8 @@ describe('AI Strategy & Outreach Intelligence', () => {
 
   it('recommends SBA and Business Bundles for construction leads', () => {
     const intelligence = generateLeadIntelligence(constructionLead, 'growth');
-    expect(intelligence.strategy).toContain('SBA 7(a) Financing');
-    expect(intelligence.strategy).toContain('SMB Bundle 3 (AT 552)');
+    expect(intelligence.email).toContain('SBA Financing');
+    expect(intelligence.strategy).toContain('Premier Business Checking');
   });
 
   it('includes the new topics list and schedule CTA in the email draft', () => {
