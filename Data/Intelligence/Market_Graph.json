@@ -1,36 +1,36 @@
 {
   "connections": [
     {
-      "source": "SWEET ENDINGS  INC",
-      "source_cat": "Retail Bakeries",
-      "target": "GALAXY GLASS",
-      "target_cat": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+      "source": "GALAXY GLASS",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "reason": "Distribution Point: Local venue for selling branded boutique items."
     },
     {
-      "source": "SWEET ENDINGS  INC",
-      "source_cat": "Retail Bakeries",
-      "target": "LUXURE BY LAUREN",
-      "target_cat": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+      "source": "LUXURE BY LAUREN",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "reason": "Distribution Point: Local venue for selling branded boutique items."
     },
     {
-      "source": "SWEET ENDINGS  INC",
-      "source_cat": "Retail Bakeries",
-      "target": "TOP IMAGE USA INC",
-      "target_cat": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+      "source": "TOP IMAGE USA INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "reason": "Distribution Point: Local venue for selling branded boutique items."
     },
     {
-      "source": "SWEET ENDINGS  INC",
-      "source_cat": "Retail Bakeries",
-      "target": "KAMTEX USA INC",
-      "target_cat": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "reason": "Branding Partner: Source for custom branded uniforms and aprons."
+      "source": "KAMTEX USA INC",
+      "source_cat": "Accessories and Other Apparel Manufacturers",
+      "target": "SWEET ENDINGS  INC",
+      "target_cat": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "reason": "Distribution Point: Local venue for selling branded boutique items."
     },
     {
       "source": "SWEET ENDINGS  INC",
@@ -91,36 +91,36 @@
   ],
   "strategic_referrals": [
     {
-      "primary": "SWEET ENDINGS  INC",
-      "primary_industry": "Retail Bakeries",
-      "partner": "GALAXY GLASS",
-      "partner_industry": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "referral_script": "I noticed you are in Retail Bakeries. We just started working with GALAXY GLASS (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+      "primary": "GALAXY GLASS",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries distribution point)\u2014would an introduction to help optimize your business be helpful?"
     },
     {
-      "primary": "SWEET ENDINGS  INC",
-      "primary_industry": "Retail Bakeries",
-      "partner": "LUXURE BY LAUREN",
-      "partner_industry": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "referral_script": "I noticed you are in Retail Bakeries. We just started working with LUXURE BY LAUREN (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+      "primary": "LUXURE BY LAUREN",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries distribution point)\u2014would an introduction to help optimize your business be helpful?"
     },
     {
-      "primary": "SWEET ENDINGS  INC",
-      "primary_industry": "Retail Bakeries",
-      "partner": "TOP IMAGE USA INC",
-      "partner_industry": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "referral_script": "I noticed you are in Retail Bakeries. We just started working with TOP IMAGE USA INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+      "primary": "TOP IMAGE USA INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries distribution point)\u2014would an introduction to help optimize your business be helpful?"
     },
     {
-      "primary": "SWEET ENDINGS  INC",
-      "primary_industry": "Retail Bakeries",
-      "partner": "KAMTEX USA INC",
-      "partner_industry": "Accessories and Other Apparel Manufacturers",
-      "rel_type": "Branding Partner",
-      "referral_script": "I noticed you are in Retail Bakeries. We just started working with KAMTEX USA INC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
+      "primary": "KAMTEX USA INC",
+      "primary_industry": "Accessories and Other Apparel Manufacturers",
+      "partner": "SWEET ENDINGS  INC",
+      "partner_industry": "Retail Bakeries",
+      "rel_type": "Distribution Point",
+      "referral_script": "I noticed you are in Accessories and Other Apparel Manufacturers. We just started working with SWEET ENDINGS  INC (a Retail Bakeries distribution point)\u2014would an introduction to help optimize your business be helpful?"
     },
     {
       "primary": "SWEET ENDINGS  INC",
@@ -179,5 +179,5 @@
       "referral_script": "I noticed you are in Retail Bakeries. We just started working with GLOBAX LLC (a Accessories and Other Apparel Manufacturers branding partner)\u2014would an introduction to help optimize your business be helpful?"
     }
   ],
-  "last_updated": "2026-03-27T04:43:51.800050"
+  "last_updated": "2026-03-28T04:31:06.704745"
 }
