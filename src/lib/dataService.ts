@@ -611,6 +611,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
         const fileLoc = scrubValue(file.location || '');
         const fileSource = file.filename;
         const fileType = file.type;
+        const now = new Date();
 
         let rows: DataRow[] = data.slice(startIndex).map(row => {
           const obj: DataRow = {};
@@ -630,7 +631,7 @@ export async function loadCsv(file: FileManifest): Promise<DataRow[]> {
           obj._type = fileType;
           obj._zip = fileZip || scrubValue(obj['Zip'] || obj['ZIP'] || '');
           obj._location = fileLoc || scrubValue(obj['Location'] || '');
-          obj.Score = calculateScore(obj);
+          obj.Score = calculateScore(obj, undefined, now);
           
           return obj;
         });

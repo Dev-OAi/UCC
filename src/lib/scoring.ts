@@ -20,32 +20,46 @@ export interface ScoreResult {
   insights: ScoreInsight[];
 }
 
-export function calculateScore(item: DataRow | BusinessLead, learnedTrends?: any): number {
-  return getScoreDetails(item, learnedTrends).total;
+/**
+ * Caches for O(1) lookups of learned insights to avoid millions of iterations during data ingestion.
+ * Using WeakMap ensures we don't leak memory if the metadata objects are garbage collected.
+ * Expected performance impact: Reduces scoring time from O(N*M) to O(N+M) for bulk ingestion.
+ */
+const learnedTrendsCache = new WeakMap<any, {
+  hotIndustries: Map<string, any>;
+}>();
+
+const learnedInsightsCache = new WeakMap<any, {
+  winningIndustries: Map<string, any>;
+  hotZips: Map<string, any>;
+}>();
+
+// Helper to get value from either DataRow or BusinessLead, moved to top level to avoid repeated closure creation
+const getVal = (item: any, keys: string[]) => {
+  for (const key of keys) {
+    const val = item[key];
+    if (val && val !== 'N/A' && val !== '') return val;
+  }
+  return null;
+};
+
+export function calculateScore(item: DataRow | BusinessLead, learnedTrends?: any, now?: Date): number {
+  return getScoreDetails(item, learnedTrends, now).total;
 }
 
 /**
  * Calculates a lead priority score from 0-100 and provides a breakdown of reasons.
  */
-export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: any): ScoreResult {
+export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: any, passedNow?: Date): ScoreResult {
   let total = 0;
   const insights: ScoreInsight[] = [];
-
-  // Helper to get value from either DataRow or BusinessLead
-  const getVal = (keys: string[]) => {
-    for (const key of keys) {
-      const val = (item as any)[key];
-      if (val && val !== 'N/A' && val !== '') return val;
-    }
-    return null;
-  };
+  const now = passedNow || new Date();
 
   // 1. UCC Expiration (Max 40 points)
-  const expiryStr = getVal(['Expires', 'expires']);
+  const expiryStr = getVal(item, ['Expires', 'expires']);
   if (expiryStr) {
     const expiryDate = new Date(expiryStr);
     if (!isNaN(expiryDate.getTime())) {
-      const now = new Date();
       const diffDays = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays > 0 && diffDays < 30) {
@@ -67,13 +81,12 @@ export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: an
   const type = (item as any)._type || (item as any).source;
   const isNewType = type === 'Last 90 Days';
 
-  const establishedStr = getVal(['Date Filed', 'establishedDate', 'Record Date']);
+  const establishedStr = getVal(item, ['Date Filed', 'establishedDate', 'Record Date']);
   let isRecentReg = false;
   let recentDays = 0;
   if (establishedStr) {
     const estDate = new Date(establishedStr);
     if (!isNaN(estDate.getTime())) {
-      const now = new Date();
       recentDays = Math.ceil((now.getTime() - estDate.getTime()) / (1000 * 60 * 60 * 24));
       if (recentDays <= 90 && recentDays >= 0) isRecentReg = true;
     }
@@ -85,44 +98,64 @@ export function getScoreDetails(item: DataRow | BusinessLead, learnedTrends?: an
   }
 
   // 3. Contactability (Max 20 points)
-  const phone = getVal(['Phone', 'phone']);
+  const phone = getVal(item, ['Phone', 'phone']);
   if (phone) {
     total += 15;
     insights.push({ label: 'Phone number available', points: 15 });
   }
 
-  const website = getVal(['Website', 'website']);
+  const website = getVal(item, ['Website', 'website']);
   if (website) {
     total += 5;
     insights.push({ label: 'Website available', points: 5 });
   }
 
   // 4. Data Completeness (Max 10 points)
-  const principal = getVal(['Key Principal', 'Officer/Director', 'keyPrincipal', 'DirectName', 'CONTACTNAMECOMP']);
+  const principal = getVal(item, ['Key Principal', 'Officer/Director', 'keyPrincipal', 'DirectName', 'CONTACTNAMECOMP']);
   if (principal) {
     total += 10;
     insights.push({ label: 'Key principal identified', points: 10 });
   }
 
-  // 5. Recursive Intelligence Boost (Max 15 points)
-  const industry = getVal(['Category', 'Category ', 'industry']);
-  if (learnedTrends?.hot_industries?.some((h: any) => h.name === industry)) {
-    total += 15;
-    insights.push({ label: 'Strategic vertical momentum boost', points: 15 });
+  const industry = getVal(item, ['Category', 'Category ', 'industry']);
+
+  // 5. Recursive Intelligence Boost (Max 15 points) - Optimized O(1) Lookup
+  if (learnedTrends) {
+    let trendsMap = learnedTrendsCache.get(learnedTrends);
+    if (!trendsMap) {
+      const hotIndustries = new Map();
+      learnedTrends.hot_industries?.forEach((h: any) => hotIndustries.set(h.name, h));
+      trendsMap = { hotIndustries };
+      learnedTrendsCache.set(learnedTrends, trendsMap);
+    }
+    if (trendsMap.hotIndustries.has(industry)) {
+      total += 15;
+      insights.push({ label: 'Strategic vertical momentum boost', points: 15 });
+    }
   }
 
-  // 6. Outcome-Driven Learning Boost (Max 20 points)
+  // 6. Outcome-Driven Learning Boost (Max 20 points) - Optimized O(1) Lookup
   const learnedInsights = typeof window !== 'undefined' ? (window as any)._learnedInsights : null;
   if (learnedInsights) {
-    const industryMatch = learnedInsights.winning_industries?.find((i: any) => i.industry === industry);
+    let insightMap = learnedInsightsCache.get(learnedInsights);
+    if (!insightMap) {
+      const winningIndustries = new Map();
+      const hotZips = new Map();
+      learnedInsights.winning_industries?.forEach((i: any) => winningIndustries.set(i.industry, i));
+      learnedInsights.hot_zips?.forEach((z: any) => hotZips.set(z.zip, z));
+      insightMap = { winningIndustries, hotZips };
+      learnedInsightsCache.set(learnedInsights, insightMap);
+    }
+
+    const industryMatch = insightMap.winningIndustries.get(industry);
     if (industryMatch) {
       const boost = Math.round(industryMatch.weight * 20);
       total += boost;
       insights.push({ label: `Learned success factor: ${industry} (+${boost})`, points: boost });
     }
 
-    const zip = getVal(['Zip', 'zip']);
-    const zipMatch = learnedInsights.hot_zips?.find((z: any) => z.zip === zip);
+    const zip = getVal(item, ['Zip', 'zip']);
+    const zipMatch = insightMap.hotZips.get(zip);
     if (zipMatch) {
       const boost = Math.round(zipMatch.momentum * 15);
       total += boost;
